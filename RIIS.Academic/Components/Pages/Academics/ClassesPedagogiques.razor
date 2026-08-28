@@ -1,0 +1,135 @@
+@page "/classes-pedagogiques"
+@inject IClassesPedagogiquesService ClassesPedagogiquesService
+@inject NotificationService NotificationService
+
+<RadzenStack Gap="1rem">
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+            <RadzenStack Gap="0">
+                <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-m-0" Text="Classes pédagogiques" />
+                <RadzenText Text="Gestion des groupes pédagogiques par parcours." />
+            </RadzenStack>
+            <RadzenButton Text="Nouvelle classe" Icon="add_circle" Click="@Create" ButtonStyle="ButtonStyle.Primary" />
+        </RadzenStack>
+    </RadzenCard>
+
+    @if (showForm)
+    {
+        <RadzenCard>
+            <RadzenTemplateForm TItem="ClassePedagogiqueDto" Data="@model" Submit="@Save">
+                <RadzenStack Gap="1rem">
+                    <RadzenRow>
+                        <RadzenColumn Size="12" SizeMD="6">
+                            <RadzenFormField Text="Parcours" Style="width:100%">
+                                <RadzenDropDown Data="@parcours" TextProperty="Libelle" ValueProperty="Id" @bind-Value="@model.ParcoursAcademiqueId" Name="ParcoursAcademiqueId" Style="width:100%" />
+                            </RadzenFormField>
+                            <RadzenRequiredValidator Component="ParcoursAcademiqueId" Text="Parcours obligatoire." />
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="6">
+                            <RadzenFormField Text="Libellé" Style="width:100%">
+                                <RadzenTextBox @bind-Value="@model.Libelle" Name="Libelle" />
+                            </RadzenFormField>
+                            <RadzenRequiredValidator Component="Libelle" Text="Libellé obligatoire." />
+                        </RadzenColumn>
+                    </RadzenRow>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
+                        <RadzenButton Text="Annuler" Icon="close" ButtonStyle="ButtonStyle.Light" Click="@Cancel" />
+                        <RadzenButton Text="Enregistrer" Icon="save" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" />
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenTemplateForm>
+        </RadzenCard>
+    }
+
+    <RadzenCard>
+        <RadzenDataGrid Data="@items" TItem="ClassePedagogiqueDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+            <Columns>
+                <RadzenDataGridColumn TItem="ClassePedagogiqueDto" Property="ParcoursAcademiqueLibelle" Title="Parcours" />
+                <RadzenDataGridColumn TItem="ClassePedagogiqueDto" Property="Libelle" Title="Libellé" />
+                <RadzenDataGridColumn TItem="ClassePedagogiqueDto" Property="Effectif" Title="Effectif" Width="110px" />
+                <RadzenDataGridColumn TItem="ClassePedagogiqueDto" Title="Actions" Width="160px" Sortable="false" Filterable="false">
+                    <Template Context="item">
+                        <RadzenButton Icon="edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(() => Edit(item))" />
+                        <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Click="@(() => Delete(item))" class="rz-ml-1" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    private List<ClassePedagogiqueDto> items = [];
+    private List<LookupDto> parcours = [];
+    private ClassePedagogiqueDto model = new();
+    private bool showForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLookups();
+        await Load();
+    }
+
+    private async Task LoadLookups()
+    {
+        parcours = await ClassesPedagogiquesService.GetParcoursAcademiquesLookupAsync();
+    }
+
+    private async Task Load()
+    {
+        items = await ClassesPedagogiquesService.GetClassesPedagogiquesAsync();
+    }
+
+    private async Task Create()
+    {
+        model = await ClassesPedagogiquesService.CreateDefaultClassePedagogiqueAsync();
+        showForm = true;
+    }
+
+    private void Edit(ClassePedagogiqueDto item)
+    {
+        model = new ClassePedagogiqueDto
+        {
+            Id = item.Id,
+            ParcoursAcademiqueId = item.ParcoursAcademiqueId,
+            ParcoursAcademiqueLibelle = item.ParcoursAcademiqueLibelle,
+            Libelle = item.Libelle,
+            Effectif = item.Effectif
+        };
+        showForm = true;
+    }
+
+    private async Task Save(ClassePedagogiqueDto _)
+    {
+        try
+        {
+            await ClassesPedagogiquesService.SaveClassePedagogiqueAsync(model);
+            NotifySuccess();
+            showForm = false;
+            await LoadLookups();
+            await Load();
+        }
+        catch (Exception ex)
+        {
+            NotifyError(ex.Message);
+        }
+    }
+
+    private async Task Delete(ClassePedagogiqueDto item)
+    {
+        try
+        {
+            await ClassesPedagogiquesService.DeleteClassePedagogiqueAsync(item.Id);
+            await Load();
+        }
+        catch (Exception ex)
+        {
+            NotifyError(ex.Message);
+        }
+    }
+
+    private void Cancel() => showForm = false;
+    private void NotifySuccess() => NotificationService.Notify(NotificationSeverity.Success, "Succès", "Données enregistrées.");
+    private void NotifyError(string message) => NotificationService.Notify(NotificationSeverity.Error, "Erreur", message);
+}

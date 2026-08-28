@@ -1,0 +1,611 @@
+@page "/etudiants/dossier"
+@page "/etudiants/{EtudiantId:long}/dossier"
+@inject IEtudiantsService EtudiantsService
+@inject IReferentielsService ReferentielsService
+@inject IDossierEtudiantService DossierEtudiantService
+@inject IFinancesScolariteService FinancesScolariteService
+@inject NavigationManager Navigation
+@inject NotificationService NotificationService
+
+<RadzenStack Gap="1rem">
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+            <RadzenStack Gap="0">
+                <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-m-0" Text="Dossier étudiant" />
+                <RadzenText Text="Consultation des dossiers créés et création d'un nouveau dossier annuel." />
+            </RadzenStack>
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                <RadzenButton Text="Actualiser" Icon="refresh" ButtonStyle="ButtonStyle.Light" Click="@Load" />
+                <RadzenButton Text="Créer dossier"
+                              Icon="add"
+                              ButtonStyle="ButtonStyle.Success"
+                              Click="@OpenCreationForm" />
+                <RadzenButton Text="Retour" Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Click="@(() => Navigation.NavigateTo("/etudiants"))" />
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
+
+    @if (showCreationForm)
+    {
+        <RadzenCard>
+            <RadzenStack Gap="1rem">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" class="rz-m-0" Text="Créer un dossier" />
+                    <RadzenButton Text="Retour" Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" Click="@CloseCreationForm" />
+                </RadzenStack>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="5">
+                        <RadzenFormField Text="Étudiant sans dossier" Style="width:100%">
+                            <RadzenDropDown Data="@CreationEtudiantOptions"
+                                            TextProperty="Libelle"
+                                            ValueProperty="Id"
+                                            TValue="long?"
+                                            @bind-Value="@creationEtudiantId"
+                                            AllowFiltering="true"
+                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                            Placeholder="Sélectionner un étudiant"
+                                            Style="width:100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="5">
+                        <RadzenFormField Text="Parcours académique" Style="width:100%">
+                            <RadzenDropDown Data="@parcours"
+                                            TextProperty="Libelle"
+                                            ValueProperty="Id"
+                                            TValue="long?"
+                                            @bind-Value="@creationParcoursAcademiqueId"
+                                            AllowFiltering="true"
+                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                            Placeholder="Sélectionner un parcours"
+                                            Style="width:100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="2">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End" Gap="0.5rem" Style="height:100%">
+                            <RadzenButton Text="Créer"
+                                          Icon="save"
+                                          ButtonStyle="ButtonStyle.Success"
+                                          Disabled="@(!CanCreateDossier)"
+                                          Click="@CreerDossier" />
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                @if (!CreationEtudiantOptions.Any())
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Info" ShowIcon="true">
+                        Tous les étudiants ont déjà un dossier.
+                    </RadzenAlert>
+                }
+            </RadzenStack>
+        </RadzenCard>
+    }
+
+    @if (!showCreationForm)
+    {
+        <RadzenCard>
+            <RadzenStack Gap="1rem">
+                <RadzenText TextStyle="TextStyle.H6" Text="Dossiers créés" />
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="8">
+                        <RadzenFormField Text="Filtre parcours académique" Style="width:100%">
+                            <RadzenDropDown Data="@parcours"
+                                            TextProperty="Libelle"
+                                            ValueProperty="Id"
+                                            TValue="long?"
+                                            @bind-Value="@filtreParcoursAcademiqueId"
+                                            Change="@OnFiltreParcoursChanged"
+                                            AllowClear="true"
+                                            AllowFiltering="true"
+                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                            Placeholder="Tous les parcours"
+                                            Style="width:100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End" Gap="0.5rem" Style="height:100%">
+                            <RadzenButton Text="Réinitialiser" Icon="restart_alt" ButtonStyle="ButtonStyle.Light" Click="@ResetFilters" />
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                @if (isBusy)
+                {
+                    <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" />
+                }
+
+                <RadzenDataGrid Data="@items" TItem="DossierEtudiantAnnuelDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="DossierEtudiantAnnuelDto" Title="Étudiant">
+                            <Template Context="item">
+                                <RadzenText Text="@DisplayEtudiant(item)" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="DossierEtudiantAnnuelDto" Title="Matricule" Width="140px">
+                            <Template Context="item">
+                                <RadzenText Text="@DisplayMatricule(item)" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="DossierEtudiantAnnuelDto" Title="Année" Width="140px">
+                            <Template Context="item">
+                                <RadzenText Text="@DisplayAnnee(item)" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="DossierEtudiantAnnuelDto" Title="Parcours">
+                            <Template Context="item">
+                                <RadzenText Text="@DisplayParcours(item)" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="DossierEtudiantAnnuelDto" Title="Statuts" Width="290px" Sortable="false" Filterable="false">
+                            <Template Context="item">
+                                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.25rem">
+                                    <RadzenBadge Text="@($"Adm. {DisplayStatut(item.Administratif?.Statut)}")" BadgeStyle="BadgeStyle.Info" />
+                                    <RadzenBadge Text="@($"Aca. {DisplayStatut(item.Academique?.Statut)}")" BadgeStyle="BadgeStyle.Primary" />
+                                    <RadzenBadge Text="@($"Fin. {DisplayStatut(item.Financier?.StatutGlobal)}")" BadgeStyle="BadgeStyle.Success" />
+                                </RadzenStack>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="DossierEtudiantAnnuelDto" Title="Créé le" Width="130px">
+                            <Template Context="item">@FormatDate(GetDateCreation(item))</Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="DossierEtudiantAnnuelDto" Title="Actions" Width="140px" Sortable="false" Filterable="false">
+                            <Template Context="item">
+                                <RadzenButton Text="Charger"
+                                              Icon="folder_open"
+                                              Size="ButtonSize.Small"
+                                              ButtonStyle="ButtonStyle.Primary"
+                                              Disabled="@(operationKey == GetOperationKey(item))"
+                                              Click="@(() => ChargerDossier(item))" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenStack>
+        </RadzenCard>
+
+        @if (selectedDossier is not null)
+        {
+            <RadzenCard>
+                <RadzenStack Gap="0.75rem">
+                    <RadzenStack Gap="0.25rem">
+                        <RadzenText TextStyle="TextStyle.H5" class="rz-m-0" Text="@DisplayEtudiant(selectedDossier)" />
+                        <RadzenText Text="@($"Parcours : {DisplayParcours(selectedDossier)}")" />
+                        <RadzenText Text="@($"Année : {DisplayAnnee(selectedDossier)}")" />
+                    </RadzenStack>
+
+                    <RadzenTabs>
+                        <Tabs>
+                            <RadzenTabsItem Text="Dossier administratif">
+                                @if (selectedDossier.Administratif is null)
+                                {
+                                    <RadzenAlert AlertStyle="AlertStyle.Warning" ShowIcon="true">
+                                        Dossier administratif non créé.
+                                    </RadzenAlert>
+                                }
+                                else
+                                {
+                                    <RadzenRow>
+                                        <RadzenColumn Size="12" SizeMD="4">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Statut" />
+                                            <RadzenBadge Text="@DisplayStatut(selectedDossier.Administratif.Statut)" BadgeStyle="BadgeStyle.Info" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="4">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Créé le" />
+                                            <RadzenText Text="@FormatDate(selectedDossier.Administratif.CreeLeUtc)" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="4">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Parcours" />
+                                            <RadzenText Text="@DisplayParcours(selectedDossier)" />
+                                        </RadzenColumn>
+                                    </RadzenRow>
+                                    <RadzenRow>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Matricule" />
+                                            <RadzenText Text="@DisplayMatricule(selectedDossier)" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Nom" />
+                                            <RadzenText Text="@(selectedDossier.Etudiant?.Nom ?? "-")" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Prénoms" />
+                                            <RadzenText Text="@(selectedDossier.Etudiant?.Prenoms ?? "-")" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Sexe" />
+                                            <RadzenText Text="@(selectedDossier.Etudiant?.Sexe.ToString() ?? "-")" />
+                                        </RadzenColumn>
+                                    </RadzenRow>
+                                    <RadzenRow>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Date de naissance" />
+                                            <RadzenText Text="@FormatDate(selectedDossier.Etudiant?.DateNaissance)" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Lieu de naissance" />
+                                            <RadzenText Text="@(selectedDossier.Etudiant?.LieuNaissance ?? "-")" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Nationalité" />
+                                            <RadzenText Text="@(selectedDossier.Etudiant?.Nationalite ?? "-")" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Région d'origine" />
+                                            <RadzenText Text="@(selectedDossier.Etudiant?.RegionOrigine ?? "-")" />
+                                        </RadzenColumn>
+                                    </RadzenRow>
+                                    <RadzenRow>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Téléphone principal" />
+                                            <RadzenText Text="@(selectedDossier.Etudiant?.TelephonePrincipal ?? "-")" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Téléphone secondaire" />
+                                            <RadzenText Text="@(selectedDossier.Etudiant?.TelephoneSecondaire ?? "-")" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Email" />
+                                            <RadzenText Text="@(selectedDossier.Etudiant?.Email ?? "-")" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Résidence" />
+                                            <RadzenText Text="@(selectedDossier.Etudiant?.LieuResidence ?? "-")" />
+                                        </RadzenColumn>
+                                    </RadzenRow>
+                                }
+                            </RadzenTabsItem>
+
+                            <RadzenTabsItem Text="Dossier académique">
+                                @if (selectedDossier.Academique is null)
+                                {
+                                    <RadzenAlert AlertStyle="AlertStyle.Warning" ShowIcon="true">
+                                        Dossier académique non créé.
+                                    </RadzenAlert>
+                                }
+                                else
+                                {
+                                    <RadzenRow>
+                                        <RadzenColumn Size="12" SizeMD="4">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Statut" />
+                                            <RadzenBadge Text="@DisplayStatut(selectedDossier.Academique.Statut)" BadgeStyle="BadgeStyle.Primary" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="4">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Créé le" />
+                                            <RadzenText Text="@FormatDate(selectedDossier.Academique.CreeLeUtc)" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="4">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Classe pédagogique" />
+                                            <RadzenText Text="@DisplayClassePedagogique(selectedDossier)" />
+                                        </RadzenColumn>
+                                    </RadzenRow>
+                                }
+                            </RadzenTabsItem>
+
+                            <RadzenTabsItem Text="Financier">
+                                @if (selectedDossier.Financier is null)
+                                {
+                                    <RadzenAlert AlertStyle="AlertStyle.Info" ShowIcon="true">
+                                        Aucun paiement n'a encore créé le dossier financier de cet étudiant.
+                                    </RadzenAlert>
+                                }
+                                else if (selectedFinance is null)
+                                {
+                                    <RadzenAlert AlertStyle="AlertStyle.Warning" ShowIcon="true">
+                                        Les états financiers globaux ne sont pas disponibles.
+                                    </RadzenAlert>
+                                }
+                                else
+                                {
+                                    <RadzenRow>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Statut global" />
+                                            <RadzenBadge Text="@DisplayStatut(selectedDossier.Financier.StatutGlobal)" BadgeStyle="BadgeStyle.Success" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Administratif" />
+                                            <RadzenText Text="@DisplayStatut(selectedDossier.Financier.StatutAdministratif)" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Financier" />
+                                            <RadzenText Text="@DisplayStatut(selectedDossier.Financier.StatutFinancier)" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Dernier recalcul" />
+                                            <RadzenText Text="@FormatDate(selectedDossier.Financier.DateDernierRecalculUtc)" />
+                                        </RadzenColumn>
+                                    </RadzenRow>
+                                    <RadzenRow>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Total attendu" />
+                                            <RadzenText Text="@FormatMoney(TotalAttendu(selectedFinance))" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Paiements reçus" />
+                                            <RadzenText Text="@FormatMoney(selectedFinance.TotalPaiements)" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Solde restant" />
+                                            <RadzenText Text="@FormatMoney(SoldeRestant(selectedFinance))" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="3">
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Non affecté" />
+                                            <RadzenText Text="@FormatMoney(selectedFinance.TotalPaiementsNonAffectes)" />
+                                        </RadzenColumn>
+                                    </RadzenRow>
+                                }
+                            </RadzenTabsItem>
+                        </Tabs>
+                    </RadzenTabs>
+                </RadzenStack>
+            </RadzenCard>
+        }
+    }
+</RadzenStack>
+
+@code {
+    [Parameter] public long? EtudiantId { get; set; }
+
+    private List<EtudiantDto> etudiants = [];
+    private List<EtudiantOption> etudiantOptions = [];
+    private List<ParcoursAcademiqueDto> parcours = [];
+    private List<DossierEtudiantAnnuelDto> allDossiers = [];
+    private List<DossierEtudiantAnnuelDto> items = [];
+    private DossierEtudiantAnnuelDto? selectedDossier;
+    private FinanceDossierScolariteDto? selectedFinance;
+    private long? filtreParcoursAcademiqueId;
+    private long? creationEtudiantId;
+    private long? creationParcoursAcademiqueId;
+    private bool showCreationForm;
+    private bool isBusy;
+    private string? operationKey;
+
+    private bool CanCreateDossier => creationEtudiantId is not null && creationParcoursAcademiqueId is not null && !isBusy;
+
+    private List<EtudiantOption> CreationEtudiantOptions
+    {
+        get
+        {
+            var etudiantIdsAvecDossier = allDossiers
+                .Select(x => x.EtudiantId)
+                .ToHashSet();
+
+            return etudiantOptions
+                .Where(x => !etudiantIdsAvecDossier.Contains(x.Id))
+                .ToList();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        etudiants = await EtudiantsService.GetEtudiantsAsync();
+        etudiantOptions = etudiants
+            .OrderBy(x => x.Matricule)
+            .ThenBy(x => x.NomComplet)
+            .Select(x => new EtudiantOption(x.Id, FormatEtudiant(x)))
+            .ToList();
+        parcours = await ReferentielsService.GetParcoursAcademiquesAsync(inclureInactifs: false);
+
+        await Load();
+
+        if (EtudiantId is not null)
+        {
+            var dossier = allDossiers
+                .Where(x => x.EtudiantId == EtudiantId.Value)
+                .OrderByDescending(GetDateCreation)
+                .FirstOrDefault();
+
+            if (dossier is not null)
+            {
+                await ChargerDossier(dossier);
+            }
+        }
+    }
+
+    private async Task Load()
+    {
+        try
+        {
+            isBusy = true;
+            allDossiers = await DossierEtudiantService.GetDossiersEtudiantAnnuelsAsync();
+            ApplyFilter();
+        }
+        catch (Exception ex)
+        {
+            NotifyError(ex.Message);
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private void OnFiltreParcoursChanged(object? _)
+    {
+        selectedDossier = null;
+        selectedFinance = null;
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        items = allDossiers
+            .Where(x => filtreParcoursAcademiqueId is null || x.ParcoursAcademiqueId == filtreParcoursAcademiqueId.Value)
+            .OrderByDescending(GetDateCreation)
+            .ThenBy(DisplayEtudiant)
+            .ToList();
+    }
+
+    private async Task ResetFilters()
+    {
+        filtreParcoursAcademiqueId = null;
+        selectedDossier = null;
+        selectedFinance = null;
+        ApplyFilter();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OpenCreationForm()
+    {
+        showCreationForm = true;
+        creationEtudiantId = null;
+        creationParcoursAcademiqueId = null;
+        selectedDossier = null;
+        selectedFinance = null;
+    }
+
+    private void CloseCreationForm()
+    {
+        showCreationForm = false;
+        creationEtudiantId = null;
+        creationParcoursAcademiqueId = null;
+    }
+
+    private async Task OnCreationParcoursChanged(object? _)
+    {
+        if (creationEtudiantId is not null && CreationEtudiantOptions.All(x => x.Id != creationEtudiantId.Value))
+        {
+            creationEtudiantId = null;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ChargerDossier(DossierEtudiantAnnuelDto item)
+    {
+        var key = GetOperationKey(item);
+
+        try
+        {
+            operationKey = key;
+            selectedDossier = await DossierEtudiantService.GetDossierEtudiantAnnuelAsync(
+                item.EtudiantId,
+                item.ParcoursAcademiqueId);
+
+            if (selectedDossier?.EstComplet == true)
+            {
+                selectedFinance = selectedDossier.Financier is null
+                    ? null
+                    : await FinancesScolariteService.GetFinanceDossierScolariteAsync(selectedDossier.Financier.Id);
+                showCreationForm = false;
+                NotifySuccess("Dossier étudiant chargé.");
+            }
+            else
+            {
+                selectedDossier = null;
+                selectedFinance = null;
+                NotifyWarning("Ce dossier n'existe plus.");
+                await Load();
+            }
+        }
+        catch (Exception ex)
+        {
+            NotifyError(ex.Message);
+        }
+        finally
+        {
+            operationKey = null;
+        }
+    }
+
+    private async Task CreerDossier()
+    {
+        if (!CanCreateDossier)
+        {
+            return;
+        }
+
+        try
+        {
+            isBusy = true;
+            selectedDossier = await DossierEtudiantService.GetOrCreateDossierEtudiantAnnuelAsync(
+                creationEtudiantId!.Value,
+                creationParcoursAcademiqueId!.Value);
+            selectedFinance = selectedDossier.Financier is null
+                ? null
+                : await FinancesScolariteService.GetFinanceDossierScolariteAsync(selectedDossier.Financier.Id);
+
+            NotifySuccess("Dossier étudiant créé.");
+            showCreationForm = false;
+            creationEtudiantId = null;
+            creationParcoursAcademiqueId = null;
+            await Load();
+        }
+        catch (Exception ex)
+        {
+            NotifyError(ex.Message);
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private static string FormatEtudiant(EtudiantDto etudiant)
+        => string.IsNullOrWhiteSpace(etudiant.Matricule)
+            ? etudiant.NomComplet
+            : $"{etudiant.Matricule} - {etudiant.NomComplet}";
+
+    private static string DisplayEtudiant(DossierEtudiantAnnuelDto item)
+        => item.Etudiant?.NomComplet
+            ?? item.Academique?.EtudiantNomComplet
+            ?? item.Financier?.EtudiantNomComplet
+            ?? item.Administratif?.EtudiantNomComplet
+            ?? "-";
+
+    private static string DisplayMatricule(DossierEtudiantAnnuelDto item)
+        => item.Etudiant?.Matricule
+            ?? item.Academique?.EtudiantMatricule
+            ?? item.Financier?.EtudiantMatricule
+            ?? item.Administratif?.EtudiantMatricule
+            ?? "-";
+
+    private static string DisplayParcours(DossierEtudiantAnnuelDto item)
+        => item.Academique?.ParcoursLibelle
+            ?? item.Financier?.ParcoursLibelle
+            ?? item.Administratif?.ParcoursLibelle
+            ?? "-";
+
+    private static string DisplayAnnee(DossierEtudiantAnnuelDto item)
+        => item.Academique?.AnneeAcademiqueLibelle
+            ?? item.Financier?.AnneeAcademiqueLibelle
+            ?? item.Administratif?.AnneeAcademiqueLibelle
+            ?? "-";
+
+    private static string DisplayClassePedagogique(DossierEtudiantAnnuelDto item)
+        => string.IsNullOrWhiteSpace(item.Academique?.ClassePedagogiqueLibelle)
+            ? "-"
+            : item.Academique.ClassePedagogiqueLibelle;
+
+    private static string DisplayStatut(object? statut)
+        => statut?.ToString() ?? "-";
+
+    private static DateTime? GetDateCreation(DossierEtudiantAnnuelDto item)
+        => item.Academique?.CreeLeUtc
+            ?? item.Administratif?.CreeLeUtc
+            ?? item.Financier?.CreeLeUtc;
+
+    private static string FormatDate(DateTime? value)
+        => value is null ? "-" : value.Value.ToLocalTime().ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+    private static string FormatDate(DateOnly? value)
+        => value is null ? "-" : value.Value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+    private static string FormatMoney(decimal value)
+        => value.ToString("N0", CultureInfo.InvariantCulture);
+
+    private static decimal TotalAttendu(FinanceDossierScolariteDto finance)
+        => finance.Elements.Sum(x => x.MontantAttendu);
+
+    private static decimal SoldeRestant(FinanceDossierScolariteDto finance)
+        => finance.Elements.Sum(x => x.MontantRestant);
+
+    private static string GetOperationKey(DossierEtudiantAnnuelDto item)
+        => $"{item.EtudiantId}:{item.ParcoursAcademiqueId}";
+
+    private void NotifySuccess(string message) => NotificationService.Notify(NotificationSeverity.Success, "Succès", message);
+    private void NotifyWarning(string message) => NotificationService.Notify(NotificationSeverity.Warning, "Information", message);
+    private void NotifyError(string message) => NotificationService.Notify(NotificationSeverity.Error, "Erreur", message);
+
+    private sealed record EtudiantOption(long Id, string Libelle);
+}

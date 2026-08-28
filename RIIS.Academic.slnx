@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="RIIS.Academic.Application/RIIS.Academic.Application.csproj" Id="a4cd2bfb-5e1b-4e0a-8ee9-ece45d1e0ab7" />
+  <Project Path="RIIS.Academic.Domain/RIIS.Academic.Domain.csproj" Id="5b68f28d-0d9f-4be8-951a-79f6843348c3" />
+  <Project Path="RIIS.Academic.Infrastructure/RIIS.Academic.Infrastructure.csproj" Id="cc7919fb-bbc0-4d65-9cdc-543776279c67" />
+  <Project Path="RIIS.Academic/RIIS.Academic.csproj" />
+</Solution>

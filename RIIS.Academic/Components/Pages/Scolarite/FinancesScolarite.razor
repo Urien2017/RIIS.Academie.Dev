@@ -1,0 +1,526 @@
+@page "/scolarite/finances"
+@inject IDossierEtudiantService DossierEtudiantService
+@inject IFinancesScolariteService FinancesScolariteService
+@inject IReferentielsService ReferentielsService
+@inject IModesPaiementScolariteService ModesPaiementScolariteService
+@inject NotificationService NotificationService
+
+<RadzenStack Gap="1rem">
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+            <RadzenStack Gap="0">
+                <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-m-0" Text="Gestion financière" />
+                <RadzenText Text="Suivi des soldes, échéances et paiements des dossiers scolarité." />
+            </RadzenStack>
+
+            <RadzenButton Text="Actualiser" Icon="refresh" ButtonStyle="ButtonStyle.Light" Click="@Load" />
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenCard>
+        <RadzenStack Gap="1rem">
+            <RadzenText TextStyle="TextStyle.H6" Text="Filtres" />
+
+            <RadzenRow>
+                <RadzenColumn Size="12" SizeMD="4">
+                    <RadzenFormField Text="Matricule + nom complet" Style="width:100%">
+                        <RadzenDropDown Data="@matriculeOptions"
+                                        @bind-Value="@selectedMatricule"
+                                        TextProperty="Libelle"
+                                        ValueProperty="Matricule"
+                                        TValue="string"
+                                        AllowClear="true"
+                                        AllowFiltering="true"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        Change="@OnFiltersChanged"
+                                        Placeholder="Tous les étudiants"
+                                        Style="width:100%" />
+                    </RadzenFormField>
+                </RadzenColumn>
+
+                <RadzenColumn Size="12" SizeMD="5">
+                    <RadzenFormField Text="Parcours académique" Style="width:100%">
+                        <RadzenDropDown Data="@parcoursAcademiques"
+                                        @bind-Value="@selectedParcoursAcademiqueId"
+                                        TextProperty="Libelle"
+                                        ValueProperty="Id"
+                                        TValue="long?"
+                                        AllowClear="true"
+                                        AllowFiltering="true"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        Change="@OnFiltersChanged"
+                                        Placeholder="Tous les parcours"
+                                        Style="width:100%" />
+                    </RadzenFormField>
+                </RadzenColumn>
+
+                <RadzenColumn Size="12" SizeMD="3">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End" Gap="0.5rem" Style="height:100%">
+                        <RadzenButton Text="Réinitialiser" Icon="restart_alt" ButtonStyle="ButtonStyle.Light" Click="@ResetFilters" />
+                    </RadzenStack>
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenCard>
+        <RadzenDataGrid Data="@items" TItem="DossierFinanceCaisseDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+            <Columns>
+                <RadzenDataGridColumn TItem="DossierFinanceCaisseDto" Property="EtudiantNomComplet" Title="Étudiant" />
+                <RadzenDataGridColumn TItem="DossierFinanceCaisseDto" Property="EtudiantMatricule" Title="Matricule" Width="140px" />
+                <RadzenDataGridColumn TItem="DossierFinanceCaisseDto" Property="AnneeAcademiqueLibelle" Title="Année" Width="130px" />
+                <RadzenDataGridColumn TItem="DossierFinanceCaisseDto" Title="Parcours">
+                    <Template Context="item">
+                        <RadzenText Text="@DisplayParcours(item)" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="DossierFinanceCaisseDto" Title="Statut financier" Width="150px">
+                    <Template Context="item">
+                        <RadzenBadge Text="@DisplayStatut(item.StatutFinancier)" BadgeStyle="@GetStatutBadgeStyle(item.StatutFinancier)" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="DossierFinanceCaisseDto" Title="Actions" Width="150px" Sortable="false" Filterable="false">
+                    <Template Context="item">
+                        <RadzenButton Text="Gérer"
+                                      Icon="payments"
+                                      Size="ButtonSize.Small"
+                                      ButtonStyle="ButtonStyle.Primary"
+                                      Click="@(() => SelectDossier(item))" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+    @if (selectedDossier is not null)
+    {
+        <RadzenCard>
+            <RadzenStack Gap="1rem">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+                    <RadzenStack Gap="0">
+                        <RadzenText TextStyle="TextStyle.H6" class="rz-m-0" Text="@selectedDossier.EtudiantNomComplet" />
+                        <RadzenText Text="@($"{selectedDossier.AnneeAcademiqueLibelle} - {DisplayParcours(selectedDossier)}")" />
+                    </RadzenStack>
+                    <RadzenBadge Text="@DisplayStatut(selectedDossier.StatutFinancier)" BadgeStyle="@GetStatutBadgeStyle(selectedDossier.StatutFinancier)" />
+                </RadzenStack>
+
+                @if (finance is null)
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Info" ShowIcon="true">
+                        Aucun paiement n'a encore créé le dossier financier. Le premier encaissement le créera automatiquement.
+                    </RadzenAlert>
+                }
+                else
+                {
+                    <RadzenRow>
+                        <RadzenColumn Size="12" SizeMD="3">
+                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Total attendu" />
+                            <RadzenText Text="@FormatMoney(TotalAttendu(finance))" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="3">
+                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Paiements reçus" />
+                            <RadzenText Text="@FormatMoney(finance.TotalPaiements)" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="3">
+                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Solde restant" />
+                            <RadzenText Text="@FormatMoney(SoldeRestant(finance))" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="3">
+                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="Paiements non affectés" />
+                            <RadzenText Text="@FormatMoney(finance.TotalPaiementsNonAffectes)" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                }
+
+                <RadzenStack Gap="0.75rem">
+                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Paiement libre" />
+                    @if (optionsPaiement.Count == 0)
+                    {
+                        <RadzenAlert AlertStyle="AlertStyle.Warning" ShowIcon="true">
+                            Aucun type d'élément payable avec tarif applicable n'est disponible pour ce parcours.
+                        </RadzenAlert>
+                    }
+                    @if (modesPaiement.Count == 0)
+                    {
+                        <RadzenAlert AlertStyle="AlertStyle.Warning" ShowIcon="true">
+                            Aucun mode de paiement actif n'est disponible. Crée un mode de paiement avant d'enregistrer un paiement.
+                        </RadzenAlert>
+                    }
+
+                    <RadzenRow>
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenFormField Text="Type d'élément / tarif" Style="width:100%">
+                                <RadzenDropDown Data="@optionsPaiement"
+                                                @bind-Value="@optionPaiementTarifId"
+                                                TextProperty="Libelle"
+                                                ValueProperty="TarifScolariteId"
+                                                TValue="long?"
+                                                AllowClear="true"
+                                                Style="width:100%" />
+                            </RadzenFormField>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="2">
+                            <RadzenFormField Text="Date" Style="width:100%">
+                                <RadzenDatePicker @bind-Value="@datePaiementLibre" DateFormat="dd/MM/yyyy" Style="width:100%" />
+                            </RadzenFormField>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="2">
+                            <RadzenFormField Text="Montant" Style="width:100%">
+                                <RadzenNumeric @bind-Value="@montantPaiementLibre" TValue="decimal" Min="0" Style="width:100%" />
+                            </RadzenFormField>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenFormField Text="Mode de paiement" Style="width:100%">
+                                <RadzenDropDown Data="@modesPaiement"
+                                                @bind-Value="@modePaiementScolariteId"
+                                                TextProperty="Libelle"
+                                                ValueProperty="Id"
+                                                TValue="long?"
+                                                AllowClear="true"
+                                                Style="width:100%" />
+                            </RadzenFormField>
+                        </RadzenColumn>
+                    </RadzenRow>
+
+                    <RadzenRow>
+                        <RadzenColumn Size="12" SizeMD="6">
+                            <RadzenFormField Text="Référence" Style="width:100%">
+                                <RadzenTextBox @bind-Value="@referencePaiementLibre" Style="width:100%" />
+                            </RadzenFormField>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="6">
+                            <RadzenFormField Text="Nature / commentaire" Style="width:100%">
+                                <RadzenTextBox @bind-Value="@observationPaiementLibre" Style="width:100%" />
+                            </RadzenFormField>
+                        </RadzenColumn>
+                    </RadzenRow>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+                        <RadzenButton Text="Enregistrer paiement"
+                                      Icon="payments"
+                                      ButtonStyle="ButtonStyle.Primary"
+                                      Disabled="@(optionPaiementTarifId is null || modePaiementScolariteId is null)"
+                                      Click="@EnregistrerPaiementLibre" />
+                    </RadzenStack>
+                </RadzenStack>
+
+                @if (finance is not null)
+                {
+                    <RadzenRow>
+                        <RadzenColumn Size="12" SizeMD="6">
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Échéances" />
+                            <RadzenDataGrid Data="@finance.Echeances" TItem="EcheanceFinanciereDossierDto" AllowPaging="true" PageSize="5">
+                                <Columns>
+                                    <RadzenDataGridColumn TItem="EcheanceFinanciereDossierDto" Property="Libelle" Title="Échéance" />
+                                    <RadzenDataGridColumn TItem="EcheanceFinanciereDossierDto" Title="Date">
+                                        <Template Context="item">@item.DateExigibilite.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)</Template>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="EcheanceFinanciereDossierDto" Title="Restant">
+                                        <Template Context="item">@FormatMoney(item.MontantRestant)</Template>
+                                    </RadzenDataGridColumn>
+                                </Columns>
+                            </RadzenDataGrid>
+                        </RadzenColumn>
+
+                        <RadzenColumn Size="12" SizeMD="6">
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Paiements" />
+                            <RadzenDataGrid Data="@finance.Paiements" TItem="PaiementLibreDossierDto" AllowPaging="true" PageSize="5">
+                                <Columns>
+                                    <RadzenDataGridColumn TItem="PaiementLibreDossierDto" Title="Date">
+                                        <Template Context="item">@item.DatePaiement.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)</Template>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="PaiementLibreDossierDto" Title="Montant">
+                                        <Template Context="item">@FormatMoney(item.Montant)</Template>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="PaiementLibreDossierDto" Property="TypeElementScolariteLibelle" Title="Type" />
+                                    <RadzenDataGridColumn TItem="PaiementLibreDossierDto" Property="ModePaiement" Title="Mode" />
+                                    <RadzenDataGridColumn TItem="PaiementLibreDossierDto" Title="Non affecté">
+                                        <Template Context="item">@FormatMoney(item.MontantNonAffecte)</Template>
+                                    </RadzenDataGridColumn>
+                                </Columns>
+                            </RadzenDataGrid>
+                        </RadzenColumn>
+                    </RadzenRow>
+                }
+            </RadzenStack>
+        </RadzenCard>
+    }
+</RadzenStack>
+
+@code {
+    private List<ParcoursAcademiqueDto> parcoursAcademiques = [];
+    private List<MatriculeOption> matriculeOptions = [];
+    private List<DossierFinanceCaisseDto> allItems = [];
+    private List<DossierFinanceCaisseDto> items = [];
+    private List<PaiementTypeElementTarifOptionDto> optionsPaiement = [];
+    private List<ModePaiementScolariteDto> modesPaiement = [];
+    private DossierFinanceCaisseDto? selectedDossier;
+    private FinanceDossierScolariteDto? finance;
+    private long? optionPaiementTarifId;
+    private long? modePaiementScolariteId;
+    private DateTime? datePaiementLibre = DateTime.Today;
+    private decimal montantPaiementLibre;
+    private string? referencePaiementLibre;
+    private string? observationPaiementLibre;
+    private string? selectedMatricule;
+    private long? selectedParcoursAcademiqueId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        parcoursAcademiques = await ReferentielsService.GetParcoursAcademiquesAsync(inclureInactifs: true);
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        var dossiers = await DossierEtudiantService.GetDossiersEtudiantAnnuelsAsync();
+        allItems = dossiers
+            .Where(x => x.EstComplet)
+            .Select(MapDossierFinance)
+            .ToList();
+        matriculeOptions = BuildMatriculeOptions(allItems);
+        ApplyFilters();
+
+        if (selectedDossier is not null)
+        {
+            selectedDossier = items.FirstOrDefault(x =>
+                x.EtudiantId == selectedDossier.EtudiantId
+                && x.ParcoursAcademiqueId == selectedDossier.ParcoursAcademiqueId);
+            if (selectedDossier is not null)
+            {
+                await LoadFinance();
+            }
+            else
+            {
+                finance = null;
+            }
+        }
+    }
+
+    private void OnFiltersChanged(object? _)
+    {
+        selectedDossier = null;
+        finance = null;
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        items = allItems
+            .Where(x => string.IsNullOrWhiteSpace(selectedMatricule) || SameCode(x.EtudiantMatricule, selectedMatricule))
+            .Where(x => selectedParcoursAcademiqueId is null || x.ParcoursAcademiqueId == selectedParcoursAcademiqueId.Value)
+            .OrderBy(x => x.EtudiantNomComplet)
+            .ThenByDescending(x => x.AnneeAcademiqueLibelle)
+            .ToList();
+    }
+
+    private async Task ResetFilters()
+    {
+        selectedMatricule = null;
+        selectedParcoursAcademiqueId = null;
+        selectedDossier = null;
+        finance = null;
+        ApplyFilters();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SelectDossier(DossierFinanceCaisseDto item)
+    {
+        selectedDossier = item;
+        await LoadFinance();
+    }
+
+    private async Task LoadFinance()
+    {
+        if (selectedDossier is null)
+        {
+            finance = null;
+            return;
+        }
+
+        await LoadFinanceLookups();
+        finance = selectedDossier.DossierFinancierId > 0
+            ? await FinancesScolariteService.GetFinanceDossierScolariteAsync(selectedDossier.DossierFinancierId)
+            : null;
+        RefreshFinanceDefaults();
+    }
+
+    private async Task LoadFinanceLookups()
+    {
+        if (selectedDossier is null)
+        {
+            optionsPaiement = [];
+            modesPaiement = [];
+            return;
+        }
+
+        optionsPaiement = selectedDossier.DossierFinancierId > 0
+            ? await FinancesScolariteService.GetOptionsTypesElementsTarifsPaiementAsync(selectedDossier.DossierFinancierId)
+            : await FinancesScolariteService.GetOptionsTypesElementsTarifsPaiementParParcoursAsync(selectedDossier.ParcoursAcademiqueId);
+        modesPaiement = await ModesPaiementScolariteService.GetModesPaiementScolariteAsync();
+
+        if (optionPaiementTarifId is not null && optionsPaiement.All(x => x.TarifScolariteId != optionPaiementTarifId))
+        {
+            optionPaiementTarifId = null;
+        }
+
+        if (modePaiementScolariteId is not null && modesPaiement.All(x => x.Id != modePaiementScolariteId))
+        {
+            modePaiementScolariteId = null;
+        }
+    }
+
+    private async Task EnregistrerPaiementLibre()
+    {
+        if (selectedDossier is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var option = optionsPaiement.FirstOrDefault(x => x.TarifScolariteId == optionPaiementTarifId)
+                ?? throw new InvalidOperationException("Le type d'élément et le tarif du paiement sont obligatoires.");
+
+            finance = await FinancesScolariteService.SavePaiementLibreAsync(new PaiementLibreDossierDto
+            {
+                DossierFinancierId = selectedDossier.DossierFinancierId,
+                EtudiantId = selectedDossier.EtudiantId,
+                ParcoursAcademiqueId = selectedDossier.ParcoursAcademiqueId,
+                TypeElementScolariteId = option.TypeElementScolariteId,
+                TarifScolariteId = option.TarifScolariteId,
+                ModePaiementScolariteId = modePaiementScolariteId
+                    ?? throw new InvalidOperationException("Le mode de paiement est obligatoire."),
+                DatePaiement = DateOnly.FromDateTime(datePaiementLibre ?? DateTime.Today),
+                Montant = montantPaiementLibre,
+                ReferencePaiement = referencePaiementLibre,
+                Observation = observationPaiementLibre
+            });
+
+            await Load();
+            montantPaiementLibre = 0;
+            referencePaiementLibre = null;
+            observationPaiementLibre = null;
+            RefreshFinanceDefaults();
+            NotifySuccess("Paiement libre enregistré.");
+        }
+        catch (Exception ex)
+        {
+            NotifyError(ex.Message);
+        }
+    }
+
+    private void RefreshFinanceDefaults()
+    {
+        if (finance is null)
+        {
+            return;
+        }
+
+        optionPaiementTarifId = optionPaiementTarifId is not null && optionsPaiement.Any(x => x.TarifScolariteId == optionPaiementTarifId)
+            ? optionPaiementTarifId
+            : null;
+        modePaiementScolariteId = modePaiementScolariteId is not null && modesPaiement.Any(x => x.Id == modePaiementScolariteId)
+            ? modePaiementScolariteId
+            : null;
+    }
+
+    private static string DisplayParcours(DossierFinanceCaisseDto item)
+        => string.IsNullOrWhiteSpace(item.ParcoursLibelle) ? "-" : item.ParcoursLibelle;
+
+    private static string DisplayStatut(StatutDossierScolarite? statut)
+        => statut switch
+        {
+            null => "Aucun paiement",
+            StatutDossierScolarite.EnPreparation => "En préparation",
+            StatutDossierScolarite.EnCours => "En cours",
+            StatutDossierScolarite.Regulier => "Régulier",
+            StatutDossierScolarite.Incomplet => "Incomplet",
+            StatutDossierScolarite.EnRetard => "En retard",
+            StatutDossierScolarite.Bloque => "Bloqué",
+            StatutDossierScolarite.Cloture => "Clôturé",
+            _ => statut?.ToString() ?? "-"
+        };
+
+    private static BadgeStyle GetStatutBadgeStyle(StatutDossierScolarite? statut)
+        => statut switch
+        {
+            StatutDossierScolarite.Regulier => BadgeStyle.Success,
+            StatutDossierScolarite.EnRetard or StatutDossierScolarite.Bloque => BadgeStyle.Danger,
+            StatutDossierScolarite.Incomplet => BadgeStyle.Warning,
+            StatutDossierScolarite.Cloture => BadgeStyle.Secondary,
+            _ => BadgeStyle.Info
+        };
+
+    private static string FormatMoney(decimal value)
+        => value.ToString("N0", CultureInfo.InvariantCulture);
+
+    private static decimal TotalAttendu(FinanceDossierScolariteDto finance)
+        => finance.Elements.Sum(x => x.MontantAttendu);
+
+    private static decimal SoldeRestant(FinanceDossierScolariteDto finance)
+        => finance.Elements.Sum(x => x.MontantRestant);
+
+    private DossierFinanceCaisseDto MapDossierFinance(DossierEtudiantAnnuelDto dossier)
+    {
+        var parcours = parcoursAcademiques.FirstOrDefault(x => x.Id == dossier.ParcoursAcademiqueId);
+
+        return new DossierFinanceCaisseDto(
+            dossier.EtudiantId,
+            dossier.ParcoursAcademiqueId,
+            dossier.Financier?.Id ?? 0,
+            dossier.Etudiant?.Matricule
+                ?? dossier.Academique?.EtudiantMatricule
+                ?? dossier.Administratif?.EtudiantMatricule
+                ?? dossier.Financier?.EtudiantMatricule
+                ?? string.Empty,
+            dossier.Etudiant?.NomComplet
+                ?? dossier.Academique?.EtudiantNomComplet
+                ?? dossier.Administratif?.EtudiantNomComplet
+                ?? dossier.Financier?.EtudiantNomComplet
+                ?? string.Empty,
+            dossier.Academique?.AnneeAcademiqueLibelle
+                ?? dossier.Administratif?.AnneeAcademiqueLibelle
+                ?? dossier.Financier?.AnneeAcademiqueLibelle
+                ?? parcours?.AnneeAcademiqueLibelle
+                ?? string.Empty,
+            dossier.Academique?.ParcoursLibelle
+                ?? dossier.Administratif?.ParcoursLibelle
+                ?? dossier.Financier?.ParcoursLibelle
+                ?? parcours?.Libelle
+                ?? string.Empty,
+            dossier.Financier?.StatutFinancier);
+    }
+
+    private static List<MatriculeOption> BuildMatriculeOptions(IEnumerable<DossierFinanceCaisseDto> dossiers)
+        => dossiers
+            .Where(x => !string.IsNullOrWhiteSpace(x.EtudiantMatricule))
+            .GroupBy(x => x.EtudiantMatricule, StringComparer.OrdinalIgnoreCase)
+            .Select(x =>
+            {
+                var first = x.First();
+                return new MatriculeOption(first.EtudiantMatricule, FormatCodeLibelle(first.EtudiantMatricule, first.EtudiantNomComplet));
+            })
+            .OrderBy(x => x.Libelle)
+            .ToList();
+
+    private static string FormatCodeLibelle(string? code, string libelle)
+        => string.IsNullOrWhiteSpace(code) ? libelle : $"{code} - {libelle}";
+
+    private static bool SameCode(string? left, string? right)
+        => string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
+
+    private void NotifySuccess(string message) => NotificationService.Notify(NotificationSeverity.Success, "Succès", message);
+    private void NotifyError(string message) => NotificationService.Notify(NotificationSeverity.Error, "Erreur", message);
+
+    private sealed record MatriculeOption(string Matricule, string Libelle);
+    private sealed record DossierFinanceCaisseDto(
+        long EtudiantId,
+        long ParcoursAcademiqueId,
+        long DossierFinancierId,
+        string EtudiantMatricule,
+        string EtudiantNomComplet,
+        string AnneeAcademiqueLibelle,
+        string ParcoursLibelle,
+        StatutDossierScolarite? StatutFinancier);
+}

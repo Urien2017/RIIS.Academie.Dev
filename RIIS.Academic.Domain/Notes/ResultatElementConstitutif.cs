@@ -1,0 +1,22 @@
+namespace RIIS.Academic.Domain;
+
+public class ResultatElementConstitutif
+{
+    public long Id { get; set; }
+    public long DossierAcademiqueId { get; set; }
+    public long MaquetteElementConstitutifId { get; set; }
+    public decimal? MoyenneControleContinu { get; set; }
+    public decimal? MoyenneControleConnaissance { get; set; }
+    public decimal? MoyenneSessionNormale { get; set; }
+    public decimal? MoyenneSessionRattrapage { get; set; }
+    public decimal? MoyenneAvantRattrapage { get; set; }
+    public decimal? MoyenneApresRattrapage { get; set; }
+    public decimal? MoyenneRetenue { get; set; }
+    public decimal CreditsAcquis { get; set; }
+    public StatutValidationAcademique StatutValidation { get; set; } = StatutValidationAcademique.NonCalcule;
+    public bool EstEligibleRattrapage { get; set; }
+    public DateTime CalculeLeUtc { get; set; } = DateTime.UtcNow;
+
+    public DossierAcademique DossierAcademique { get; set; } = null!;
+    public MaquetteElementConstitutif MaquetteElementConstitutif { get; set; } = null!;
+}

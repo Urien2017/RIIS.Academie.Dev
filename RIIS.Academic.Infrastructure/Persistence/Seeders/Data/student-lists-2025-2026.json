@@ -1,0 +1,1197 @@
+{
+  "anneeAcademique": "2025-2026",
+  "classes": [
+    {
+      "source": "LMD/BAT 3.docx",
+      "entete": [
+        "LISTE DES ETUDIANTS INSCRITS EN LICENCE",
+        "FILIERES : GENIE CIVIL SPECIALITE : BATIMENT NIVEAU : 3 ANNEE :2025/2026"
+      ],
+      "code": "LMD-BAT-3",
+      "libelle": "Licence Bâtiment - Niveau 3",
+      "cycleCode": "LICENCE",
+      "filiereCode": "GENIE-CIVIL",
+      "specialiteCode": "BAT",
+      "niveauNumero": 3,
+      "dateInscription": "2025-09-01",
+      "students": [
+        {
+          "ordre": 1,
+          "matricule": "25BAT03F",
+          "nomPrenoms": "FEUKENG ZANGUE AUREL",
+          "sexe": "M",
+          "dateNaissance": "2000-12-29",
+          "lieuNaissance": "BANGANG"
+        },
+        {
+          "ordre": 2,
+          "matricule": "23BAT01K",
+          "nomPrenoms": "KEMAYOU NDJEUMENI ALEXANDRA",
+          "sexe": "F",
+          "dateNaissance": "2001-05-09",
+          "lieuNaissance": "YAOUNDE 5 e"
+        },
+        {
+          "ordre": 3,
+          "matricule": "23BAT02K",
+          "nomPrenoms": "KEMAYOU TCHIEMENI STEVE PACOME",
+          "sexe": "M",
+          "dateNaissance": "2001-05-09",
+          "lieuNaissance": "YAOUNDE 5e"
+        },
+        {
+          "ordre": 4,
+          "matricule": "23BAT005",
+          "nomPrenoms": "NOMO ELOUNDOU DYLAN VALDEZ",
+          "sexe": "M",
+          "dateNaissance": "2007-07-19",
+          "lieuNaissance": "YAOUNDE"
+        }
+      ]
+    },
+    {
+      "source": "LMD/COFI.docx",
+      "entete": [
+        "LISTE DES ETUDIANTS INSCRITS EN LICENCE",
+        "FILIERES : GESTION SPECIALITE : COFI NIVEAU : 3 ANNEE :2025/2026"
+      ],
+      "code": "LMD-COFI-3",
+      "libelle": "Licence Comptabilité et Finance - Niveau 3",
+      "cycleCode": "LICENCE",
+      "filiereCode": "GESTION",
+      "specialiteCode": "COFI",
+      "niveauNumero": 3,
+      "dateInscription": "2025-09-01",
+      "students": [
+        {
+          "ordre": 1,
+          "matricule": "25COFI007A",
+          "nomPrenoms": "ANNAS BABA",
+          "sexe": "M",
+          "dateNaissance": "2005-11-10",
+          "lieuNaissance": "MOULVOUDAYE"
+        },
+        {
+          "ordre": 2,
+          "matricule": "25COFI002B",
+          "nomPrenoms": "BAYIHA EMILIENNE SUZANNE",
+          "sexe": "F",
+          "dateNaissance": "2002-11-21",
+          "lieuNaissance": "DOUALA"
+        },
+        {
+          "ordre": 3,
+          "matricule": "23MAN08A",
+          "nomPrenoms": "EFFANGONO ILAN MANUEL",
+          "sexe": "M",
+          "dateNaissance": "2005-11-10",
+          "lieuNaissance": "MEZESSE"
+        },
+        {
+          "ordre": 4,
+          "matricule": "25COFI004L",
+          "nomPrenoms": "LEGOUE DJEUGOUE CHRISTIAN RICHIL",
+          "sexe": "M",
+          "dateNaissance": "2006-03-01",
+          "lieuNaissance": "DOUALA"
+        },
+        {
+          "ordre": 5,
+          "matricule": "23CGEO05M",
+          "nomPrenoms": "MBOUDOU LEONS GRACE",
+          "sexe": "F",
+          "dateNaissance": "2000-06-18",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 6,
+          "matricule": "25COFI005M",
+          "nomPrenoms": "MOUSSIPI CHRISTIAN CLAUDE JEROME",
+          "sexe": "M",
+          "dateNaissance": "2004-07-06",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 7,
+          "matricule": "25COFI006N",
+          "nomPrenoms": "NGATCHA JOVIC CLAIRE",
+          "sexe": "M",
+          "dateNaissance": "2005-01-06",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 8,
+          "matricule": "22ECO01B",
+          "nomPrenoms": "NOUBISSIE FONGANG STACY",
+          "sexe": "M",
+          "dateNaissance": "2003-08-25",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 9,
+          "matricule": "25COFI001O",
+          "nomPrenoms": "OUSSAMA ABAKAR ABDRAMAN NOUR",
+          "sexe": "M",
+          "dateNaissance": "2001-11-29",
+          "lieuNaissance": "NDJAMENA"
+        },
+        {
+          "ordre": 10,
+          "matricule": "25COFI003T",
+          "nomPrenoms": "TONNANG LEKENA LESLY CERENA",
+          "sexe": "F",
+          "dateNaissance": null,
+          "lieuNaissance": "LIBREVILLE"
+        }
+      ]
+    },
+    {
+      "source": "LMD/IGL 3.docx",
+      "entete": [
+        "LISTE DES ETUDIANTS INSCRITS EN LICENCE",
+        "FILIERES : GENIE INFORMATIQUE SPECIALITE : IGL NIVEAU : 3 ANNEE :2025/2026"
+      ],
+      "code": "LMD-IGL-3",
+      "libelle": "Licence Informatique Génie Logiciel - Niveau 3",
+      "cycleCode": "LICENCE",
+      "filiereCode": "INFORMATIQUE",
+      "specialiteCode": "IGL",
+      "niveauNumero": 3,
+      "dateInscription": "2025-09-01",
+      "students": [
+        {
+          "ordre": 1,
+          "matricule": "23IGL027",
+          "nomPrenoms": "ABESSOLO JASON OBERLIN JUNIOR",
+          "sexe": "M",
+          "dateNaissance": "2001-07-10",
+          "lieuNaissance": "ENONGAL"
+        },
+        {
+          "ordre": 2,
+          "matricule": "23IGL003",
+          "nomPrenoms": "HADIDJA ADA MAMAT",
+          "sexe": "F",
+          "dateNaissance": "2004-10-01",
+          "lieuNaissance": "MAROUA"
+        },
+        {
+          "ordre": 3,
+          "matricule": "23IGL010",
+          "nomPrenoms": "IYONG RUSSEL ERWANN",
+          "sexe": "M",
+          "dateNaissance": "2004-01-03",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 4,
+          "matricule": "25IGL001K",
+          "nomPrenoms": "KIRGUINE SAWALDA ALEX FREDY",
+          "sexe": "M",
+          "dateNaissance": "2005-10-07",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 5,
+          "matricule": "23IGL021",
+          "nomPrenoms": "MOUHAMED FADIL BEN ABDOULAYE",
+          "sexe": "M",
+          "dateNaissance": "2002-07-31",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 6,
+          "matricule": "23IGL016",
+          "nomPrenoms": "NGONO NOAH ANTOINETTE FLORINE",
+          "sexe": "F",
+          "dateNaissance": "2006-10-10",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 7,
+          "matricule": "23ING01A",
+          "nomPrenoms": "YOTCHOUM FONGANG STEPHANIE",
+          "sexe": "F",
+          "dateNaissance": "2005-09-24",
+          "lieuNaissance": "YAOUNDE"
+        }
+      ]
+    },
+    {
+      "source": "LMD/L 1 eco-man1.docx",
+      "entete": [
+        "LISTE DES ETUDIANTS INSCRITS EN LICENCE",
+        "FILIERES : Gestion SPECIALITE : CGE/BQF/GRH NIVEAU : 1 ANNEE :2025/2026"
+      ],
+      "code": "LMD-GESTION-1",
+      "libelle": "Licence Gestion - Niveau 1",
+      "cycleCode": "LICENCE",
+      "filiereCode": "GESTION",
+      "specialiteCode": null,
+      "niveauNumero": 1,
+      "dateInscription": "2025-09-01",
+      "students": [
+        {
+          "ordre": 1,
+          "matricule": "25CGE40A",
+          "nomPrenoms": "AWONO CYVAN ADRIINO",
+          "sexe": "M",
+          "dateNaissance": "2007-10-28",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 2,
+          "matricule": "25CGE45K",
+          "nomPrenoms": "KAMDEM JEROME",
+          "sexe": "M",
+          "dateNaissance": "2009-04-01",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 3,
+          "matricule": "25BQF11M",
+          "nomPrenoms": "MAFUA ZOFOA MARHEL LINE",
+          "sexe": "F",
+          "dateNaissance": "2006-02-14",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 4,
+          "matricule": "25CGE43M",
+          "nomPrenoms": "MISSI CALIXTE MARIE-ROGER",
+          "sexe": "F",
+          "dateNaissance": "2006-05-28",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 5,
+          "matricule": "25CGE41M",
+          "nomPrenoms": "MOUNCHILI NJOYA GLORIA KEVINE",
+          "sexe": "F",
+          "dateNaissance": "2006-09-11",
+          "lieuNaissance": "DOUALA"
+        },
+        {
+          "ordre": 6,
+          "matricule": "25BQF010N",
+          "nomPrenoms": "NAMOU DEFFO MAURELLE KENDRA",
+          "sexe": "F",
+          "dateNaissance": "2007-07-30",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 7,
+          "matricule": "25BQF012N",
+          "nomPrenoms": "NGAH JULIENNE",
+          "sexe": "F",
+          "dateNaissance": "2005-03-04",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 8,
+          "matricule": "25BQF13N",
+          "nomPrenoms": "NKOU YOHANN",
+          "sexe": "M",
+          "dateNaissance": "2008-05-11",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 9,
+          "matricule": "25GRH43N",
+          "nomPrenoms": "NGONO MVOGO CHRISTINE ORLANE",
+          "sexe": "F",
+          "dateNaissance": "2008-04-06",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 10,
+          "matricule": "25CGE42T",
+          "nomPrenoms": "TEKAM HAPO YAN KYLIAN",
+          "sexe": "M",
+          "dateNaissance": "2006-01-30",
+          "lieuNaissance": "YAOUNDE"
+        }
+      ]
+    },
+    {
+      "source": "LMD/l 1 ing.docx",
+      "entete": [
+        "LISTE DES ETUDIANTS INSCRITS EN LICENCE",
+        "FILIERES : génie informatique SPECIALITE : IGL NIVEAU : 1 ANNEE :2025/2026"
+      ],
+      "code": "LMD-IGL-1",
+      "libelle": "Licence Informatique Génie Logiciel - Niveau 1",
+      "cycleCode": "LICENCE",
+      "filiereCode": "INFORMATIQUE",
+      "specialiteCode": "IGL",
+      "niveauNumero": 1,
+      "dateInscription": "2025-09-01",
+      "students": [
+        {
+          "ordre": 1,
+          "matricule": "25IGL21A",
+          "nomPrenoms": "ALO’O EMMANUEL",
+          "sexe": "M",
+          "dateNaissance": "2008-05-13",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 2,
+          "matricule": "25CGE45G",
+          "nomPrenoms": "GOTCHANGA MBACKO ADRICK DE LA GRACE",
+          "sexe": "M",
+          "dateNaissance": "2005-05-20",
+          "lieuNaissance": "BANGUI"
+        },
+        {
+          "ordre": 3,
+          "matricule": "25IGL19S",
+          "nomPrenoms": "SHARIF HASSANA",
+          "sexe": "M",
+          "dateNaissance": "2006-07-21",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 4,
+          "matricule": "25IGL20Y",
+          "nomPrenoms": "YOMO AFANDA FAHROSIA",
+          "sexe": "F",
+          "dateNaissance": "2008-10-18",
+          "lieuNaissance": "EFANDI"
+        }
+      ]
+    },
+    {
+      "source": "LMD/L 2 ECO-MAN.docx",
+      "entete": [
+        "LISTE DES ETUDIANTS INSCRITS EN LICENCE",
+        "FILIERES : Gestion SPECIALITE : CGE/BQF/GRH NIVEAU : 2 ANNEE :2025/2026"
+      ],
+      "code": "LMD-GESTION-2",
+      "libelle": "Licence Gestion - Niveau 2",
+      "cycleCode": "LICENCE",
+      "filiereCode": "GESTION",
+      "specialiteCode": null,
+      "niveauNumero": 2,
+      "dateInscription": "2025-09-01",
+      "students": [
+        {
+          "ordre": 1,
+          "matricule": "24CGE033A",
+          "nomPrenoms": "ARCHANGE RAPHAELLA LEUMI EDWIGE LA DOUCE",
+          "sexe": "F",
+          "dateNaissance": "2007-03-28",
+          "lieuNaissance": "FOUMBOT"
+        },
+        {
+          "ordre": 2,
+          "matricule": "24CGE032A",
+          "nomPrenoms": "ANGE LEILA TCHOUMI ASHELY TRECY",
+          "sexe": "F",
+          "dateNaissance": "2007-03-28",
+          "lieuNaissance": "FOUMBOT"
+        },
+        {
+          "ordre": 3,
+          "matricule": "24CGE035E",
+          "nomPrenoms": "EDJIGUI NDONGO RUFINE FLAVIE",
+          "sexe": "F",
+          "dateNaissance": "2004-11-25",
+          "lieuNaissance": "EFOK-OBALA"
+        },
+        {
+          "ordre": 4,
+          "matricule": "24CGE036E",
+          "nomPrenoms": "EDOA MICHELINE LISA",
+          "sexe": "F",
+          "dateNaissance": "2005-05-21",
+          "lieuNaissance": "KOMO- ESSELE"
+        },
+        {
+          "ordre": 5,
+          "matricule": "24GRH042N",
+          "nomPrenoms": "NGONO AWOUDA CUNEGONDE",
+          "sexe": "F",
+          "dateNaissance": "2002-09-18",
+          "lieuNaissance": "EKENGUE"
+        },
+        {
+          "ordre": 6,
+          "matricule": "24CGE039S",
+          "nomPrenoms": "SOTKAO MAISSIRI ANGE STEPHANIE",
+          "sexe": "F",
+          "dateNaissance": "2006-07-07",
+          "lieuNaissance": "DSCHANG"
+        }
+      ]
+    },
+    {
+      "source": "LMD/L 2 ING.docx",
+      "entete": [
+        "LISTE DES ETUDIANTS INSCRITS EN LICENCE",
+        "FILIERES : génie informatique SPECIALITE : IGL NIVEAU :2 ANNEE :2025/2026"
+      ],
+      "code": "LMD-IGL-2",
+      "libelle": "Licence Informatique Génie Logiciel - Niveau 2",
+      "cycleCode": "LICENCE",
+      "filiereCode": "INFORMATIQUE",
+      "specialiteCode": "IGL",
+      "niveauNumero": 2,
+      "dateInscription": "2025-09-01",
+      "students": [
+        {
+          "ordre": 1,
+          "matricule": "24IGL001A",
+          "nomPrenoms": "AKANDE CLAUDE AUREL",
+          "sexe": "M",
+          "dateNaissance": "1998-06-13",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 2,
+          "matricule": "24IGL002A",
+          "nomPrenoms": "AKONO EMANE LIONEL APOLLINAIRE JUNIOR",
+          "sexe": "M",
+          "dateNaissance": "2004-07-01",
+          "lieuNaissance": "BAFIA"
+        },
+        {
+          "ordre": 3,
+          "matricule": "24IGL003A",
+          "nomPrenoms": "AMBIANA ARNOLD",
+          "sexe": "M",
+          "dateNaissance": "2001-04-09",
+          "lieuNaissance": "ESEKA"
+        },
+        {
+          "ordre": 4,
+          "matricule": "24IGL005D",
+          "nomPrenoms": "DJUEGO KAMGANG MERVEILLE CHANCIA",
+          "sexe": "F",
+          "dateNaissance": "2006-10-20",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 5,
+          "matricule": null,
+          "nomPrenoms": "MBALLA MANI CLAUDEL",
+          "sexe": "M",
+          "dateNaissance": "2005-10-28",
+          "lieuNaissance": "YAOUNDE 5"
+        },
+        {
+          "ordre": 6,
+          "matricule": "24IGL011N",
+          "nomPrenoms": "NGOUE MBIDA JEAN ROBERT",
+          "sexe": "M",
+          "dateNaissance": "2002-11-17",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 7,
+          "matricule": "24IGL013N",
+          "nomPrenoms": "NYAM PAUL EZEKIEL",
+          "sexe": "M",
+          "dateNaissance": "2004-10-20",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 8,
+          "matricule": "24IGL017T",
+          "nomPrenoms": "TANA NKOUDOU FREDERIC",
+          "sexe": "M",
+          "dateNaissance": "2004-06-08",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 9,
+          "matricule": "24IGL018T",
+          "nomPrenoms": "TSELE ANGE LIONEL",
+          "sexe": "M",
+          "dateNaissance": "2007-08-30",
+          "lieuNaissance": "YAOUNDE"
+        }
+      ]
+    },
+    {
+      "source": "LMD/L2ING BAT.docx",
+      "entete": [
+        "LISTE DES ETUDIANTS INSCRITS EN LICENCE",
+        "FILIERES : génie informatique/Génie civil SPECIALITE : IGL /BAT NIVEAU : ANNEE :2025/2026"
+      ],
+      "code": "LMD-BAT-2",
+      "libelle": "Licence Bâtiment - Niveau 2",
+      "cycleCode": "LICENCE",
+      "filiereCode": "GENIE-CIVIL",
+      "specialiteCode": "BAT",
+      "niveauNumero": 2,
+      "dateInscription": "2025-09-01",
+      "students": [
+        {
+          "ordre": 1,
+          "matricule": "24BAT019D",
+          "nomPrenoms": "DONFACK KAZE STAREHELLE",
+          "sexe": "F",
+          "dateNaissance": "2003-10-02",
+          "lieuNaissance": "BALEVENG"
+        },
+        {
+          "ordre": 2,
+          "matricule": "24BAT022K",
+          "nomPrenoms": "KUATE TAGNE VIANEY ORSEL",
+          "sexe": "M",
+          "dateNaissance": "2006-01-12",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 3,
+          "matricule": null,
+          "nomPrenoms": "MBALLA MANI CLAUDEL",
+          "sexe": "M",
+          "dateNaissance": "2005-10-28",
+          "lieuNaissance": "YAOUNDE 5"
+        },
+        {
+          "ordre": 4,
+          "matricule": "24BAT024N",
+          "nomPrenoms": "NGANG BETI NICOLAS",
+          "sexe": null,
+          "dateNaissance": "1998-05-01",
+          "lieuNaissance": "MATERNITE MISSION CATH NGORO"
+        },
+        {
+          "ordre": 5,
+          "matricule": "24BAT025T",
+          "nomPrenoms": "TABOU SOUPGWI ADRIEL",
+          "sexe": "M",
+          "dateNaissance": "2005-05-12",
+          "lieuNaissance": "DOUALA"
+        },
+        {
+          "ordre": 6,
+          "matricule": "24BAT026T",
+          "nomPrenoms": "TADJEUNTE TSOPMO KEVINE",
+          "sexe": "F",
+          "dateNaissance": "2005-03-23",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 7,
+          "matricule": "24BAT029Z",
+          "nomPrenoms": "ZINGA BIDZANA CREPIN",
+          "sexe": "M",
+          "dateNaissance": "2005-04-11",
+          "lieuNaissance": "NDJORE-MBANDJOCK"
+        }
+      ]
+    },
+    {
+      "source": "PREPA/NIV 1/Liste des étudiants de MANECO 1.docx",
+      "entete": [
+        "Liste des étudiants inscrits en cycle préparatoire",
+        "Filiere : GESTION SPECIALITE : MANAGEMENT /ECONOMIE 1"
+      ],
+      "code": "PREPA-MANECO-1",
+      "libelle": "Prépa Management / Économie - Niveau 1",
+      "cycleCode": "PREPA",
+      "filiereCode": "MANAGEMENT-ECONOMIE",
+      "specialiteCode": null,
+      "niveauNumero": 1,
+      "dateInscription": "2025-09-01",
+      "students": [
+        {
+          "ordre": 1,
+          "matricule": "25MAN1A",
+          "nomPrenoms": "ABOSSOLO TOKO VAN CHELSEA",
+          "sexe": "M",
+          "dateNaissance": "2007-01-28",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 2,
+          "matricule": "25MAN2B",
+          "nomPrenoms": "BAYOI BINAM FLORENCE",
+          "sexe": "F",
+          "dateNaissance": "2006-01-08",
+          "lieuNaissance": "NGAMBE"
+        },
+        {
+          "ordre": 3,
+          "matricule": "25MAN4D",
+          "nomPrenoms": "DJOMAHA KAMENI SANDRA GERARDINE",
+          "sexe": "F",
+          "dateNaissance": "2008-01-12",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 4,
+          "matricule": "25ECO8D",
+          "nomPrenoms": "DOMKAM MAGNE CLAIRE ALEXIA",
+          "sexe": "F",
+          "dateNaissance": "2008-01-04",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 5,
+          "matricule": "25ECO10E",
+          "nomPrenoms": "ELA JOSEPH MANICHE",
+          "sexe": "M",
+          "dateNaissance": "2006-06-30",
+          "lieuNaissance": "MEFO"
+        },
+        {
+          "ordre": 6,
+          "matricule": "25MAN7F",
+          "nomPrenoms": "FOKOM YHEMOSIE ISRAEL DARIUS",
+          "sexe": "M",
+          "dateNaissance": "2002-03-05",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 7,
+          "matricule": "25MAN11K",
+          "nomPrenoms": "KPOUMIE NSANGOU ABDEL RACHIDOU",
+          "sexe": "M",
+          "dateNaissance": "2007-11-19",
+          "lieuNaissance": "KOUTABA"
+        },
+        {
+          "ordre": 8,
+          "matricule": "25MAN5M",
+          "nomPrenoms": "MAKAMTA MIAFFO ADRIENNE",
+          "sexe": "F",
+          "dateNaissance": "2008-05-20",
+          "lieuNaissance": "BALOUM"
+        },
+        {
+          "ordre": 9,
+          "matricule": "25MAN10M",
+          "nomPrenoms": "MANSOUR NAFISSATOU ARFA",
+          "sexe": "F",
+          "dateNaissance": "2008-10-06",
+          "lieuNaissance": "GAROUA"
+        },
+        {
+          "ordre": 10,
+          "matricule": "25MAN12M",
+          "nomPrenoms": "MOUCHILI NJOYA RUSHDA",
+          "sexe": "F",
+          "dateNaissance": "2005-03-01",
+          "lieuNaissance": "YAOUNDE 5e"
+        },
+        {
+          "ordre": 11,
+          "matricule": "25MAN15O",
+          "nomPrenoms": "OTELE ALEXANDRIE FRANCIS LUCAS",
+          "sexe": "M",
+          "dateNaissance": "2005-04-13",
+          "lieuNaissance": "YAOUNDE"
+        }
+      ]
+    },
+    {
+      "source": "PREPA/NIV 1/Liste des étudiants INGENIERIE 1.docx",
+      "entete": [
+        "Liste des étudiants inscrits en cycle préparatoire",
+        "Filière : génie informatique SPECIALITE : Ingénierie"
+      ],
+      "code": "PREPA-INGENIERIE-1",
+      "libelle": "Prépa Ingénieur - Niveau 1",
+      "cycleCode": "PREPA",
+      "filiereCode": "INGENIEUR",
+      "specialiteCode": null,
+      "niveauNumero": 1,
+      "dateInscription": "2025-09-01",
+      "students": [
+        {
+          "ordre": 1,
+          "matricule": "25ING2A",
+          "nomPrenoms": "ADONIS DARLIN YONNENEN",
+          "sexe": "M",
+          "dateNaissance": "2005-01-27",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 2,
+          "matricule": "25ING11C",
+          "nomPrenoms": "CHEKUO NKEMTSA CABREL DAVID",
+          "sexe": "M",
+          "dateNaissance": "2009-03-28",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": null,
+          "matricule": "25ING60E",
+          "nomPrenoms": "EYENGA CLAUDE STEPHANE",
+          "sexe": null,
+          "dateNaissance": null,
+          "lieuNaissance": null
+        },
+        {
+          "ordre": 3,
+          "matricule": "25ING8K",
+          "nomPrenoms": "KAMDOUN TOMY YVAN ULRICH",
+          "sexe": "M",
+          "dateNaissance": "2005-03-26",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 4,
+          "matricule": "25ING9K",
+          "nomPrenoms": "KOUBISSACK LEGBANE SAGE LAWRENCE",
+          "sexe": "F",
+          "dateNaissance": "2008-01-05",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 5,
+          "matricule": "25ING20L",
+          "nomPrenoms": "LE GRAND SIMON DAREL MEYANGA III",
+          "sexe": "M",
+          "dateNaissance": "2007-12-31",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 6,
+          "matricule": "25ING22M",
+          "nomPrenoms": "MEZELE JUNIOR EMMANUEL",
+          "sexe": "M",
+          "dateNaissance": "2005-12-05",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 7,
+          "matricule": "25ING25M",
+          "nomPrenoms": "MVE ELEMVA LANCE BRIANI",
+          "sexe": "M",
+          "dateNaissance": "2007-07-03",
+          "lieuNaissance": "AMBAM"
+        },
+        {
+          "ordre": 8,
+          "matricule": "25ING10N",
+          "nomPrenoms": "NDE SIKONGNE YVES",
+          "sexe": "M",
+          "dateNaissance": "2003-08-22",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 9,
+          "matricule": "25ING12N",
+          "nomPrenoms": "NDONGO ARMAND DENZEL",
+          "sexe": "M",
+          "dateNaissance": "2006-01-12",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 10,
+          "matricule": "25ING14N",
+          "nomPrenoms": "NGOUENI NDEYO PRINCES LOURDES",
+          "sexe": "F",
+          "dateNaissance": "2006-04-21",
+          "lieuNaissance": "BAMENDA"
+        },
+        {
+          "ordre": 11,
+          "matricule": "25ING36N",
+          "nomPrenoms": "NKOLO FRANCOIS JUNIOR",
+          "sexe": null,
+          "dateNaissance": null,
+          "lieuNaissance": null
+        },
+        {
+          "ordre": 12,
+          "matricule": "25ING7N",
+          "nomPrenoms": "NNANGA ESSONO RAPHAEL BIENVENU",
+          "sexe": "M",
+          "dateNaissance": "2007-05-14",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 13,
+          "matricule": "25ING13P",
+          "nomPrenoms": "PEKA ARIEL",
+          "sexe": "M",
+          "dateNaissance": "2008-03-02",
+          "lieuNaissance": "BERTOUA"
+        },
+        {
+          "ordre": 14,
+          "matricule": "25ING15T",
+          "nomPrenoms": "TANA MBALLA LEWIN JUNIOR",
+          "sexe": "M",
+          "dateNaissance": "2007-09-11",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 15,
+          "matricule": "25ING40T",
+          "nomPrenoms": "TCHAMGOUE WAPI PAULIN NATHAN",
+          "sexe": "M",
+          "dateNaissance": "2008-01-09",
+          "lieuNaissance": "SANGMELIMA"
+        },
+        {
+          "ordre": 16,
+          "matricule": "25ING26T",
+          "nomPrenoms": "TCHATCHOUA DJOMO JANE CHLOE",
+          "sexe": "M",
+          "dateNaissance": "2008-01-12",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 17,
+          "matricule": "25ING30T",
+          "nomPrenoms": "TCHONTA TCHIENGUE BRAYAN ALEX",
+          "sexe": "M",
+          "dateNaissance": "2007-01-20",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 18,
+          "matricule": "25ING27Y",
+          "nomPrenoms": "YAMTCHEU SIAMBEU ADRIENNE",
+          "sexe": "F",
+          "dateNaissance": "2008-12-10",
+          "lieuNaissance": "C.S.I DE BALEMBO"
+        },
+        {
+          "ordre": 19,
+          "matricule": "25ING33Y",
+          "nomPrenoms": "YANKOUA TCHAZOU LIONEL CALISTE",
+          "sexe": "M",
+          "dateNaissance": "2009-01-05",
+          "lieuNaissance": "YAOUNDE"
+        }
+      ]
+    },
+    {
+      "source": "PREPA/NIV 2/Liste des étudiants de MANECO 2.docx",
+      "entete": [
+        "Liste des étudiants inscrits en cycle préparatoire",
+        "Filière : Gestion Spécialité : Management /Economie 2"
+      ],
+      "code": "PREPA-MANECO-2",
+      "libelle": "Prépa Management / Économie - Niveau 2",
+      "cycleCode": "PREPA",
+      "filiereCode": "MANAGEMENT-ECONOMIE",
+      "specialiteCode": null,
+      "niveauNumero": 2,
+      "dateInscription": "2025-09-01",
+      "students": [
+        {
+          "ordre": 1,
+          "matricule": "24MAN169A",
+          "nomPrenoms": "AMOUGOU AKOA RYAN JUNIOR",
+          "sexe": "M",
+          "dateNaissance": "2001-01-09",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 2,
+          "matricule": "24MAN164A",
+          "nomPrenoms": "AVA MBALLA JOEL",
+          "sexe": "M",
+          "dateNaissance": "2005-06-01",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 3,
+          "matricule": "24MAN17B",
+          "nomPrenoms": "BIKELE ABOUI CHRIS LEVY",
+          "sexe": "M",
+          "dateNaissance": "2006-09-12",
+          "lieuNaissance": "YAOUNDE Ve"
+        },
+        {
+          "ordre": 4,
+          "matricule": "24MAN58E",
+          "nomPrenoms": "EBELLE BATAMAK ELOY LAUREN",
+          "sexe": "M",
+          "dateNaissance": "2005-05-20",
+          "lieuNaissance": "EDEA"
+        },
+        {
+          "ordre": 5,
+          "matricule": "24ECO26F",
+          "nomPrenoms": "FANYI KEMAMY ELISHA MERYL",
+          "sexe": "F",
+          "dateNaissance": "2006-10-04",
+          "lieuNaissance": "SEVRES (FRANCE)"
+        },
+        {
+          "ordre": 6,
+          "matricule": "24ECO80K",
+          "nomPrenoms": "KOA BIDIAS WINNIE CLAUDINE",
+          "sexe": "F",
+          "dateNaissance": "1999-11-04",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 7,
+          "matricule": "24ECO15K",
+          "nomPrenoms": "KONLACK TSOMELOU PAGNOL",
+          "sexe": "M",
+          "dateNaissance": "2007-08-22",
+          "lieuNaissance": "MBOUDA"
+        },
+        {
+          "ordre": 8,
+          "matricule": "24ECO80M",
+          "nomPrenoms": "MACHE EDWIRA JOE",
+          "sexe": "F",
+          "dateNaissance": "2005-06-24",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 9,
+          "matricule": "24MAN14M",
+          "nomPrenoms": "MAFOTSING KANKEU MAYEVA ODREY",
+          "sexe": "F",
+          "dateNaissance": "2004-08-15",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 10,
+          "matricule": "24MAN20M",
+          "nomPrenoms": "MAGNI MANANGA TATIANA",
+          "sexe": "F",
+          "dateNaissance": "2007-07-12",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 11,
+          "matricule": "24MAN30M",
+          "nomPrenoms": "MBEUSSINE MBOUPODA JENN URSULA",
+          "sexe": "F",
+          "dateNaissance": "2006-03-15",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 12,
+          "matricule": "24MAN16N",
+          "nomPrenoms": "NDJENG APIANE SUZY GIOVANY ANOUCHKA",
+          "sexe": "F",
+          "dateNaissance": "2006-02-08",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 13,
+          "matricule": "24MAN44N",
+          "nomPrenoms": "NGANDI MEKA BANDON JUSTINE",
+          "sexe": "F",
+          "dateNaissance": "2003-10-13",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 14,
+          "matricule": "24MAN18N",
+          "nomPrenoms": "NGUEKAM KOUEKAM DOMINICK",
+          "sexe": "F",
+          "dateNaissance": "2006-11-02",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 15,
+          "matricule": "24MAN12N",
+          "nomPrenoms": "NNA ANATOLE FRANK REYES MASUNGE",
+          "sexe": "M",
+          "dateNaissance": "2008-08-05",
+          "lieuNaissance": "BUEA"
+        },
+        {
+          "ordre": 16,
+          "matricule": "24ECO13T",
+          "nomPrenoms": "TCHATCHOUANG NTENGBI PRINCESSE DIANA",
+          "sexe": "F",
+          "dateNaissance": "2006-02-20",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 17,
+          "matricule": "24MAN160T",
+          "nomPrenoms": "TCHOKOTCHA MANDELA CEDRIC",
+          "sexe": "M",
+          "dateNaissance": "1997-07-23",
+          "lieuNaissance": "DOUALA"
+        }
+      ]
+    },
+    {
+      "source": "PREPA/NIV 2/Liste des étudiants ING 2.docx",
+      "entete": [
+        "Liste des étudiants inscrits en cycle préparatoire",
+        "FILIERE :Informatique SPECIALITE : INGENIERIE 2"
+      ],
+      "code": "PREPA-INGENIERIE-2",
+      "libelle": "Prépa Ingénieur - Niveau 2",
+      "cycleCode": "PREPA",
+      "filiereCode": "INGENIEUR",
+      "specialiteCode": null,
+      "niveauNumero": 2,
+      "dateInscription": "2025-09-01",
+      "students": [
+        {
+          "ordre": 1,
+          "matricule": "24ING8D",
+          "nomPrenoms": "DAFANG WEDZE GERMAINE",
+          "sexe": "F",
+          "dateNaissance": "2001-10-26",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 2,
+          "matricule": "24ING30D",
+          "nomPrenoms": "DJIEMENI WEMAGUE CAROLE DELINDA MADLY",
+          "sexe": "F",
+          "dateNaissance": "2006-02-17",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 3,
+          "matricule": "24ING11F",
+          "nomPrenoms": "FOKOM NJIKI KEVINE KARENE",
+          "sexe": "F",
+          "dateNaissance": "2004-07-05",
+          "lieuNaissance": "BAFOUSSAM"
+        },
+        {
+          "ordre": 4,
+          "matricule": "24ING144K",
+          "nomPrenoms": "KENFACK NIATIZE CHEQUIL LAVOINE",
+          "sexe": "M",
+          "dateNaissance": "2006-04-13",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 5,
+          "matricule": "24ING170K",
+          "nomPrenoms": "KOMGUEM KUIGNE MURIEL PATRICIA",
+          "sexe": "F",
+          "dateNaissance": "2005-05-14",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 6,
+          "matricule": "24ING27M",
+          "nomPrenoms": "MBANG BIDJANA JEAN-MICHEL EDWIN",
+          "sexe": "M",
+          "dateNaissance": "2007-08-14",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 7,
+          "matricule": "24ING4N",
+          "nomPrenoms": "NANA FOE DANIEL TRYPHENE",
+          "sexe": "M",
+          "dateNaissance": "2004-02-11",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 8,
+          "matricule": "25ING180N",
+          "nomPrenoms": "NANKENG YOUNTE AURELIEN WILLIAMS",
+          "sexe": "M",
+          "dateNaissance": "2006-03-10",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 9,
+          "matricule": "24ING20N",
+          "nomPrenoms": "NGNIGNIKOUA NJOYA HYPOLITHE JACQUES",
+          "sexe": "M",
+          "dateNaissance": "2001-09-09",
+          "lieuNaissance": "NJISSEE FOUMBAN"
+        },
+        {
+          "ordre": 10,
+          "matricule": "24ING167N",
+          "nomPrenoms": "NGOBE TALLA RAVEL KYLIALL",
+          "sexe": "M",
+          "dateNaissance": "2006-08-07",
+          "lieuNaissance": "YAOUNDE V"
+        },
+        {
+          "ordre": 11,
+          "matricule": "24ING149N",
+          "nomPrenoms": "NZENDA TCHANA SILANTOS JUNIOR",
+          "sexe": "M",
+          "dateNaissance": "2007-07-21",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 12,
+          "matricule": "24ING166O",
+          "nomPrenoms": "OUMAROU HAMADOU INOUSSA",
+          "sexe": "M",
+          "dateNaissance": "2005-06-03",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 13,
+          "matricule": "24ING3P",
+          "nomPrenoms": "PIAP-LEE SIPEHOU JAMES",
+          "sexe": "M",
+          "dateNaissance": "2007-10-17",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 14,
+          "matricule": "24ING7S",
+          "nomPrenoms": "SAHA TEMENO BENJAMIN FRANCK",
+          "sexe": "M",
+          "dateNaissance": "2003-01-01",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 15,
+          "matricule": "24ING75S",
+          "nomPrenoms": "SIETCHA TIENTCHEU KEVINE OSWALD",
+          "sexe": "F",
+          "dateNaissance": "2002-08-01",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 16,
+          "matricule": "24ING59T",
+          "nomPrenoms": "TALTO ESTELLE SARAH",
+          "sexe": "F",
+          "dateNaissance": "2004-01-22",
+          "lieuNaissance": "YAOUNDE Ve"
+        },
+        {
+          "ordre": 17,
+          "matricule": "24ING120T",
+          "nomPrenoms": "TCHINDA FOUDJIO BILIOS CABREL",
+          "sexe": "M",
+          "dateNaissance": "2005-06-24",
+          "lieuNaissance": "BATCHAM"
+        },
+        {
+          "ordre": 18,
+          "matricule": "24ING102T",
+          "nomPrenoms": "TOMO ELOBO FRANC ROMARIC",
+          "sexe": "M",
+          "dateNaissance": "2003-01-08",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 19,
+          "matricule": "24ING158T",
+          "nomPrenoms": "TSAFACK NGUIMATSA FREDY ENDERSON",
+          "sexe": "M",
+          "dateNaissance": "2003-01-21",
+          "lieuNaissance": "YAOUNDE"
+        },
+        {
+          "ordre": 20,
+          "matricule": "24ING2W",
+          "nomPrenoms": "WOUEGO TCHOMKEM XAVIERE CARINE",
+          "sexe": "F",
+          "dateNaissance": "2006-02-20",
+          "lieuNaissance": "YAOUNDE Ve"
+        }
+      ]
+    }
+  ]
+}

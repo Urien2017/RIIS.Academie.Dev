@@ -1,0 +1,16 @@
+namespace RIIS.Academic.Domain;
+
+public class ResultatUniteEnseignement
+{
+    public long Id { get; set; }
+    public long DossierAcademiqueId { get; set; }
+    public long SemestrePedagogiqueId { get; set; }
+    public decimal? Moyenne { get; set; }
+    public decimal CreditsAcquis { get; set; }
+    public decimal CreditsAttendus { get; set; }
+    public StatutValidationAcademique StatutValidation { get; set; } = StatutValidationAcademique.NonCalcule;
+    public DateTime CalculeLeUtc { get; set; } = DateTime.UtcNow;
+
+    public DossierAcademique DossierAcademique { get; set; } = null!;
+    public SemestrePedagogique SemestrePedagogique { get; set; } = null!;
+}

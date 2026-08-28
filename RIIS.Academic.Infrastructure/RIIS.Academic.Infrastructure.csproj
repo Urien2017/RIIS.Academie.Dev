@@ -1,0 +1,49 @@
+﻿
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Persistence\Seeders\DataSeeder.cs" />
+    <Compile Remove="Persistence\Seeders\EvaluationNotesSeeder.cs" />
+    <Compile Remove="Persistence\Seeders\EvaluationSeeder.cs" />
+    <Compile Remove="Persistence\Seeders\InscriptionMaquetteSeeder.cs" />
+    <Compile Remove="Persistence\Seeders\NotesSeeder.cs" />
+    <Compile Remove="Persistence\Seeders\OfficialProgrammeSeeder.cs" />
+    <Compile Remove="Persistence\Seeders\PrepaTestNotesSeeder.cs" />
+    <Compile Remove="Persistence\Seeders\ProcesVerbalSeeder.cs" />
+    <Compile Remove="Persistence\Seeders\ProgrammeSeeder.cs" />
+    <Compile Remove="Persistence\Seeders\StudentsSeeder.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+	  <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.11" />
+	  <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.11" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RIIS.Academic.Application\RIIS.Academic.Application.csproj" />
+    <ProjectReference Include="..\RIIS.Academic.Domain\RIIS.Academic.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Documents\Templates\ProcesVerbalTemplate.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Documents\Templates\ReleveNoteTemplate.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Persistence\Configurations\Inscriptions\" />
+  </ItemGroup>
+</Project>
