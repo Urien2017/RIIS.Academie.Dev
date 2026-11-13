@@ -20,6 +20,7 @@ public class ParcoursAcademique
     public ICollection<DossierAdministratif> DossiersAdministratifs { get; set; } = [];
     public ICollection<DossierAcademique> DossiersAcademiques { get; set; } = [];
     public ICollection<DossierFinancier> DossiersFinanciers { get; set; } = [];
+    public ICollection<DossierEtudiant> DossiersEtudiants { get; set; } = [];
     public ICollection<ProcesVerbal> ProcesVerbaux { get; set; } = [];
-    public ICollection<MaquettePedagogique> MaquettesPedagogiques { get; set; } = [];
+    public ICollection<AffectationMaquette> AffectationsMaquettes { get; set; } = [];
 }

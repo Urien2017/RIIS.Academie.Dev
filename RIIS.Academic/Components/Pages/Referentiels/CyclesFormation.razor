@@ -15,9 +15,11 @@
 
     @if (showForm)
     {
-        <RadzenCard>
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
             <RadzenTemplateForm TItem="CycleFormationDto" Data="@model" Submit="@Save">
                 <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="riis-modal-title rz-m-0">@(model.Id == 0 ? "Nouveau cycle" : "Modifier le cycle")</RadzenText>
                     <RadzenRow>
                         <RadzenColumn Size="12" SizeMD="3">
                             <RadzenFormField Text="Code" Style="width:100%">
@@ -47,11 +49,12 @@
                     </RadzenStack>
                 </RadzenStack>
             </RadzenTemplateForm>
-        </RadzenCard>
+            </RadzenCard>
+        </div>
     }
 
     <RadzenCard>
-        <RadzenDataGrid Data="@items" TItem="CycleFormationDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+        <RadzenDataGrid @ref="cyclesGrid" Data="@items" TItem="CycleFormationDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
             <Columns>
                 <RadzenDataGridColumn TItem="CycleFormationDto" Property="Code" Title="Code" />
                 <RadzenDataGridColumn TItem="CycleFormationDto" Property="Libelle" Title="Libellé" />
@@ -72,6 +75,7 @@
 
 @code {
     private List<CycleFormationDto> items = [];
+    private RadzenDataGrid<CycleFormationDto>? cyclesGrid;
     private CycleFormationDto model = new();
     private bool showForm;
 
@@ -80,6 +84,7 @@
     private async Task Load()
     {
         items = await ReferentielsService.GetCyclesFormationAsync();
+        if (cyclesGrid is not null) await cyclesGrid.Reload();
     }
 
     private void Create()

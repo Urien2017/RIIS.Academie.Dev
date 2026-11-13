@@ -7,6 +7,7 @@ namespace RIIS.Academic.Application.Programmes.Services;
 
 public class ProgrammePedagogiqueService(
     IRepository<MaquettePedagogique> maquettes,
+    IRepository<AffectationMaquette> affectationsMaquettes,
     IRepository<SemestrePedagogique> semestres,
     IRepository<UniteEnseignement> unitesEnseignement,
     IRepository<ElementConstitutif> elementsConstitutifs,
@@ -15,17 +16,20 @@ public class ProgrammePedagogiqueService(
     IRepository<CycleFormation> cyclesFormation,
     IRepository<ParcoursAcademique> parcoursAcademiques,
     IRepository<ClassePedagogique> classesPedagogiques,
-    IRepository<NiveauEtude> niveauxEtude) : IProgrammePedagogiqueService
+    IRepository<NiveauEtude> niveauxEtude,
+    IRepository<EvaluationAcademique> evaluationsAcademiques,
+    IRepository<ResultatElementConstitutif> resultatsElementsConstitutifs) : IProgrammePedagogiqueService
 {
     public async Task<List<MaquettePedagogiqueDto>> GetMaquettesAsync(CancellationToken cancellationToken = default)
     {
         var maquetteItems = await maquettes.ListAsync(cancellationToken);
         var ouvertureItems = await parcoursAcademiques.ListAsync(cancellationToken);
+        var affectationItems = await affectationsMaquettes.ListAsync(cancellationToken);
         var semestreItems = await semestres.ListAsync(cancellationToken);
 
         return maquetteItems
-            .Select(x => ToDto(x, ouvertureItems, semestreItems))
-            .OrderBy(x => x.ParcoursAcademiqueLibelle)
+            .Select(x => ToDto(x, affectationItems, ouvertureItems, semestreItems))
+            .OrderBy(x => x.ParcoursAcademiquesLibelle)
             .ThenBy(x => x.Libelle)
             .ThenBy(x => x.Version)
             .ToList();
@@ -34,32 +38,47 @@ public class ProgrammePedagogiqueService(
     public async Task<List<MaquettePedagogiqueHierarchyDto>> GetMaquettesHierarchyAsync(
         long? anneeAcademiqueId = null,
         long? cycleFormationId = null,
+        long? niveauEtudeId = null,
         long? maquettePedagogiqueId = null,
         CancellationToken cancellationToken = default)
     {
         var maquetteItems = await maquettes.ListAsync(cancellationToken);
+        var affectationItems = await affectationsMaquettes.ListAsync(cancellationToken);
         var anneeItems = await anneesAcademiques.ListAsync(cancellationToken);
         var ouvertureItems = await parcoursAcademiques.ListAsync(cancellationToken);
+        var niveauItems = await niveauxEtude.ListAsync(cancellationToken);
         var classeItems = await classesPedagogiques.ListAsync(cancellationToken);
         var semestreItems = await semestres.ListAsync(cancellationToken);
         var ueItems = await unitesEnseignement.ListAsync(cancellationToken);
         var ecItems = await elementsConstitutifs.ListAsync(cancellationToken);
         var maquetteEcItems = await maquetteElementsConstitutifs.ListAsync(cancellationToken);
 
-        maquetteItems = FilterMaquettes(maquetteItems, anneeItems, ouvertureItems, classeItems, anneeAcademiqueId, cycleFormationId, maquettePedagogiqueId);
+        maquetteItems = FilterMaquettes(
+            maquetteItems,
+            affectationItems,
+            anneeItems,
+            ouvertureItems,
+            classeItems,
+            semestreItems,
+            niveauItems,
+            anneeAcademiqueId,
+            cycleFormationId,
+            niveauEtudeId,
+            maquettePedagogiqueId);
 
         return maquetteItems
             .OrderBy(x => x.Libelle)
             .ThenBy(x => x.Version)
             .Select(maquette =>
             {
-                var ouverture = ouvertureItems.FirstOrDefault(x => x.Id == maquette.ParcoursAcademiqueId);
+                var affectations = affectationItems.Where(x => x.MaquettePedagogiqueId == maquette.Id).ToList();
+                var parcoursAffectes = ouvertureItems.Where(x => affectations.Any(a => a.ParcoursAcademiqueId == x.Id)).ToList();
 
                 return new MaquettePedagogiqueHierarchyDto
                 {
                     Id = maquette.Id,
-                    ParcoursAcademiqueId = ouverture?.Id ?? 0,
-                    ParcoursAcademiqueLibelle = ouverture is null ? string.Empty : FormatCodeLibelle(ouverture.Code, ouverture.Libelle),
+                    ParcoursAcademiquesLibelle = string.Join(", ", parcoursAffectes.Select(x => FormatCodeLibelle(x.Code, x.Libelle))),
+                    NombreAffectations = parcoursAffectes.Count,
                     Code = maquette.Code,
                     Libelle = maquette.Libelle,
                     Version = maquette.Version,
@@ -70,6 +89,7 @@ public class ProgrammePedagogiqueService(
                     Observation = maquette.Observation,
                     Semestres = semestreItems
                         .Where(semestre => semestre.MaquettePedagogiqueId == maquette.Id)
+                        .Where(semestre => IsSemestreForNiveau(semestre, niveauEtudeId, niveauItems))
                         .OrderBy(semestre => semestre.OrdreAffichage)
                         .ThenBy(semestre => semestre.NumeroSemestre)
                         .Select(semestre =>
@@ -96,8 +116,15 @@ public class ProgrammePedagogiqueService(
                                 Id = semestre.Id,
                                 NumeroSemestre = semestre.NumeroSemestre,
                                 Libelle = semestre.Libelle,
-                                CreditsUE = semestre.CreditsUE,
-                                VolumeHoraireUE = semestre.VolumeHoraireUE,
+                                NiveauEtudeLibelle = GetNiveauForSemestre(semestre, niveauItems)?.Libelle ?? string.Empty,
+                                CreditsUE = maquetteEcsForSemestre
+                                    .Select(mec => ecItems.FirstOrDefault(ec => ec.Id == mec.ElementConstitutifId))
+                                    .Where(ec => ec is not null)
+                                    .Sum(ec => ec!.Credits),
+                                VolumeHoraireUE = (short)maquetteEcsForSemestre
+                                    .Select(mec => ecItems.FirstOrDefault(ec => ec.Id == mec.ElementConstitutifId))
+                                    .Where(ec => ec is not null)
+                                    .Sum(ec => ec!.VolumeHoraire),
                                 OrdreAffichage = semestre.OrdreAffichage,
                                 UnitesEnseignement = ueGroups
                                     .Select(group =>
@@ -163,26 +190,63 @@ public class ProgrammePedagogiqueService(
         if (entity is null) return null;
 
         var ouvertureItems = await parcoursAcademiques.ListAsync(cancellationToken);
+        var affectationItems = await affectationsMaquettes.ListAsync(cancellationToken);
         var semestreItems = await semestres.ListAsync(cancellationToken);
 
-        return ToDto(entity, ouvertureItems, semestreItems);
+        return ToDto(entity, affectationItems, ouvertureItems, semestreItems);
     }
 
-    public MaquettePedagogiqueDto CreateDefaultMaquette(long? parcoursAcademiqueId = null)
+    public MaquettePedagogiqueDto CreateDefaultMaquette()
         => new()
         {
-            ParcoursAcademiqueId = parcoursAcademiqueId ?? 0,
             Version = "V1",
             Statut = StatutMaquettePedagogique.Brouillon
         };
 
-    public async Task SaveMaquetteAsync(MaquettePedagogiqueDto dto, CancellationToken cancellationToken = default)
+    public async Task<string> GenerateMaquetteCodeAsync(
+        string? libelle,
+        long excludeId = 0,
+        CancellationToken cancellationToken = default)
     {
-        if (dto.ParcoursAcademiqueId <= 0)
+        var key = NormalizeLibelleKey(libelle);
+        if (string.IsNullOrWhiteSpace(key)) return string.Empty;
+
+        var ignoredWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            throw new InvalidOperationException("Le parcours de la maquette est obligatoire.");
+            "DE", "DES", "DU", "D", "ET", "EN", "A", "AU", "AUX", "LA", "LE", "LES",
+            "PROGRAMME", "PROGRAMMES", "FORMATION", "FORMATIONS"
+        };
+        var words = key.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(x => !ignoredWords.Contains(x))
+            .ToList();
+
+        var token = string.Concat(words
+                .Take(4)
+                .Select(x => x[..Math.Min(3, x.Length)]))
+            .ToUpperInvariant();
+
+        if (string.IsNullOrWhiteSpace(token)) token = "MAQUETTE";
+
+        var baseCode = $"MAQ-{token}";
+        var existingCodes = (await maquettes.ListAsync(cancellationToken))
+            .Where(x => x.Id != excludeId)
+            .Select(x => x.Code)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (!existingCodes.Contains(baseCode)) return baseCode;
+
+        for (var suffix = 2; suffix <= 9999; suffix++)
+        {
+            var candidate = $"{baseCode}-{suffix}";
+            if (!existingCodes.Contains(candidate)) return candidate;
         }
 
+        throw new InvalidOperationException("Impossible de générer un code unique pour la maquette.");
+    }
+
+    public async Task SaveMaquetteAsync(MaquettePedagogiqueDto dto, CancellationToken cancellationToken = default)
+    {
         dto.Code = NormalizeCode(dto.Code, "Le code de la maquette est obligatoire.");
         dto.Libelle = RequireText(dto.Libelle, "Le libellé de la maquette est obligatoire.");
         dto.Version = RequireText(dto.Version, "La version de la maquette est obligatoire.").ToUpperInvariant();
@@ -199,20 +263,18 @@ public class ProgrammePedagogiqueService(
         var existing = await maquettes.ListAsync(cancellationToken);
         var duplicate = existing.Any(x =>
             x.Id != dto.Id
-            && x.ParcoursAcademiqueId == dto.ParcoursAcademiqueId
             && string.Equals(x.Code, dto.Code, StringComparison.OrdinalIgnoreCase)
             && string.Equals(x.Version, dto.Version, StringComparison.OrdinalIgnoreCase));
 
         if (duplicate)
         {
-            throw new InvalidOperationException("Une maquette avec le même code et la même version existe déjà pour ce parcours.");
+            throw new InvalidOperationException("Une maquette avec le même code et la même version existe déjà.");
         }
 
         if (dto.Id == 0)
         {
             await maquettes.AddAsync(new MaquettePedagogique
             {
-                ParcoursAcademiqueId = dto.ParcoursAcademiqueId,
                 Code = dto.Code,
                 Libelle = dto.Libelle,
                 Version = dto.Version,
@@ -228,7 +290,6 @@ public class ProgrammePedagogiqueService(
             var entity = await maquettes.GetByIdAsync(dto.Id, cancellationToken);
             if (entity is null) return;
 
-            entity.ParcoursAcademiqueId = dto.ParcoursAcademiqueId;
             entity.Code = dto.Code;
             entity.Libelle = dto.Libelle;
             entity.Version = dto.Version;
@@ -248,6 +309,135 @@ public class ProgrammePedagogiqueService(
         await maquettes.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<List<AffectationMaquetteDto>> GetAffectationsMaquettesAsync(
+        long? maquettePedagogiqueId = null,
+        long? parcoursAcademiqueId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var affectationItems = await affectationsMaquettes.ListAsync(cancellationToken);
+        var maquetteItems = await maquettes.ListAsync(cancellationToken);
+        var parcoursItems = await parcoursAcademiques.ListAsync(cancellationToken);
+
+        return affectationItems
+            .Where(x => maquettePedagogiqueId is null || x.MaquettePedagogiqueId == maquettePedagogiqueId)
+            .Where(x => parcoursAcademiqueId is null || x.ParcoursAcademiqueId == parcoursAcademiqueId)
+            .Select(x => new AffectationMaquetteDto
+            {
+                Id = x.Id,
+                ParcoursAcademiqueId = x.ParcoursAcademiqueId,
+                MaquettePedagogiqueId = x.MaquettePedagogiqueId,
+                ParcoursAcademiqueLibelle = parcoursItems.FirstOrDefault(p => p.Id == x.ParcoursAcademiqueId) is { } parcours
+                    ? FormatCodeLibelle(parcours.Code, parcours.Libelle)
+                    : string.Empty,
+                MaquettePedagogiqueLibelle = maquetteItems.FirstOrDefault(m => m.Id == x.MaquettePedagogiqueId) is { } maquette
+                    ? $"{maquette.Code} - {maquette.Libelle} ({maquette.Version})"
+                    : string.Empty,
+                EstPrincipale = x.EstPrincipale,
+                EstActive = x.EstActive,
+                DateDebut = x.DateDebut,
+                DateFin = x.DateFin,
+                Observation = x.Observation
+            })
+            .OrderBy(x => x.ParcoursAcademiqueLibelle)
+            .ThenByDescending(x => x.EstPrincipale)
+            .ToList();
+    }
+
+    public async Task SaveAffectationMaquetteAsync(
+        AffectationMaquetteDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        if (dto.ParcoursAcademiqueId <= 0 || dto.MaquettePedagogiqueId <= 0)
+        {
+            throw new InvalidOperationException("Le parcours et la maquette sont obligatoires.");
+        }
+
+        if (dto.DateDebut is not null && dto.DateFin is not null && dto.DateFin < dto.DateDebut)
+        {
+            throw new InvalidOperationException("La date de fin doit être supérieure ou égale à la date de début.");
+        }
+
+        var parcoursItems = await parcoursAcademiques.ListAsync(cancellationToken);
+        if (parcoursItems.All(x => x.Id != dto.ParcoursAcademiqueId))
+        {
+            throw new InvalidOperationException("Le parcours sélectionné est introuvable.");
+        }
+
+        var maquetteItems = await maquettes.ListAsync(cancellationToken);
+        if (maquetteItems.All(x => x.Id != dto.MaquettePedagogiqueId))
+        {
+            throw new InvalidOperationException("La maquette sélectionnée est introuvable.");
+        }
+
+        var existingItems = await affectationsMaquettes.ListAsync(cancellationToken);
+        var duplicate = existingItems.Any(x =>
+            x.Id != dto.Id
+            && x.ParcoursAcademiqueId == dto.ParcoursAcademiqueId
+            && x.MaquettePedagogiqueId == dto.MaquettePedagogiqueId);
+
+        if (duplicate)
+        {
+            throw new InvalidOperationException("Cette maquette est déjà affectée à ce parcours.");
+        }
+
+        var activePrimary = existingItems.FirstOrDefault(x =>
+            x.Id != dto.Id
+            && x.ParcoursAcademiqueId == dto.ParcoursAcademiqueId
+            && x.EstActive
+            && x.EstPrincipale);
+
+        if (dto.EstActive && dto.EstPrincipale && activePrimary is not null)
+        {
+            activePrimary.EstPrincipale = false;
+        }
+
+        var maquette = maquetteItems.First(x => x.Id == dto.MaquettePedagogiqueId);
+        if (dto.EstActive && dto.EstPrincipale)
+        {
+            maquette.ParcoursAcademiqueId = dto.ParcoursAcademiqueId;
+        }
+        else if (maquette.ParcoursAcademiqueId == dto.ParcoursAcademiqueId)
+        {
+            maquette.ParcoursAcademiqueId = null;
+        }
+
+        if (dto.Id == 0)
+        {
+            await affectationsMaquettes.AddAsync(new AffectationMaquette
+            {
+                ParcoursAcademiqueId = dto.ParcoursAcademiqueId,
+                MaquettePedagogiqueId = dto.MaquettePedagogiqueId,
+                EstPrincipale = dto.EstPrincipale,
+                EstActive = dto.EstActive,
+                DateDebut = dto.DateDebut,
+                DateFin = dto.DateFin,
+                Observation = string.IsNullOrWhiteSpace(dto.Observation) ? null : dto.Observation.Trim()
+            }, cancellationToken);
+        }
+        else
+        {
+            var entity = await affectationsMaquettes.GetByIdAsync(dto.Id, cancellationToken)
+                ?? throw new InvalidOperationException("L'affectation sélectionnée est introuvable.");
+
+            entity.ParcoursAcademiqueId = dto.ParcoursAcademiqueId;
+            entity.MaquettePedagogiqueId = dto.MaquettePedagogiqueId;
+            entity.EstPrincipale = dto.EstPrincipale;
+            entity.EstActive = dto.EstActive;
+            entity.DateDebut = dto.DateDebut;
+            entity.DateFin = dto.DateFin;
+            entity.Observation = string.IsNullOrWhiteSpace(dto.Observation) ? null : dto.Observation.Trim();
+        }
+
+        await affectationsMaquettes.SaveChangesAsync(cancellationToken);
+        await maquettes.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeleteAffectationMaquetteAsync(long id, CancellationToken cancellationToken = default)
+    {
+        await affectationsMaquettes.DeleteByIdAsync(id, cancellationToken);
+        await affectationsMaquettes.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<List<SemestrePedagogiqueDto>> GetSemestresAsync(
         long? maquettePedagogiqueId = null,
         CancellationToken cancellationToken = default)
@@ -260,9 +450,13 @@ public class ProgrammePedagogiqueService(
         }
 
         var maquetteItems = await maquettes.ListAsync(cancellationToken);
+        var uniteItems = await unitesEnseignement.ListAsync(cancellationToken);
+        var ecItems = await elementsConstitutifs.ListAsync(cancellationToken);
+        var maquetteEcItems = await maquetteElementsConstitutifs.ListAsync(cancellationToken);
+        var niveauItems = await niveauxEtude.ListAsync(cancellationToken);
 
         return semestreItems
-            .Select(x => ToSemestreDto(x, maquetteItems))
+            .Select(x => ToSemestreDto(x, maquetteItems, uniteItems, ecItems, maquetteEcItems, niveauItems))
             .OrderBy(x => x.MaquettePedagogiqueLibelle)
             .ThenBy(x => x.OrdreAffichage)
             .ThenBy(x => x.NumeroSemestre)
@@ -275,8 +469,12 @@ public class ProgrammePedagogiqueService(
         if (entity is null) return null;
 
         var maquetteItems = await maquettes.ListAsync(cancellationToken);
+        var uniteItems = await unitesEnseignement.ListAsync(cancellationToken);
+        var ecItems = await elementsConstitutifs.ListAsync(cancellationToken);
+        var maquetteEcItems = await maquetteElementsConstitutifs.ListAsync(cancellationToken);
+        var niveauItems = await niveauxEtude.ListAsync(cancellationToken);
 
-        return ToSemestreDto(entity, maquetteItems);
+        return ToSemestreDto(entity, maquetteItems, uniteItems, ecItems, maquetteEcItems, niveauItems);
     }
 
     public async Task<SemestrePedagogiqueDto> CreateDefaultSemestreAsync(
@@ -287,13 +485,15 @@ public class ProgrammePedagogiqueService(
         var filtered = maquettePedagogiqueId is null
             ? semestreItems
             : semestreItems.Where(x => x.MaquettePedagogiqueId == maquettePedagogiqueId).ToList();
-        var nextNumero = filtered.Count == 0 ? (byte)1 : (byte)Math.Min(10, filtered.Max(x => x.NumeroSemestre) + 1);
+        var nextNumero = Enumerable.Range(1, 8)
+            .Select(x => (byte)x)
+            .FirstOrDefault(numero => filtered.All(x => x.NumeroSemestre != numero));
 
         return new SemestrePedagogiqueDto
         {
             MaquettePedagogiqueId = maquettePedagogiqueId ?? 0,
             NumeroSemestre = nextNumero,
-            Libelle = $"Semestre {nextNumero}",
+            Libelle = nextNumero == 0 ? string.Empty : $"Semestre {nextNumero}",
             OrdreAffichage = nextNumero
         };
     }
@@ -305,15 +505,56 @@ public class ProgrammePedagogiqueService(
             throw new InvalidOperationException("La maquette du semestre est obligatoire.");
         }
 
-        if (dto.NumeroSemestre is < 1 or > 10)
+        var selectedUniteIds = dto.UniteEnseignementIds
+            .Where(id => id > 0)
+            .Distinct()
+            .ToList();
+
+        if (selectedUniteIds.Count == 0)
         {
-            throw new InvalidOperationException("Le numéro du semestre doit être compris entre 1 et 10.");
+            throw new InvalidOperationException("Sélectionnez au moins une UE pour le semestre.");
+        }
+
+        if (dto.NumeroSemestre is < 1 or > 8)
+        {
+            throw new InvalidOperationException("Le numéro du semestre doit être compris entre 1 et 8.");
         }
 
         dto.Libelle = RequireText(dto.Libelle, "Le libellé du semestre est obligatoire.");
         dto.OrdreAffichage = dto.OrdreAffichage == 0 ? dto.NumeroSemestre : dto.OrdreAffichage;
 
+        var niveauNumero = (byte)(((dto.NumeroSemestre - 1) / 2) + 1);
+        var niveauEtude = (await niveauxEtude.ListAsync(cancellationToken))
+            .FirstOrDefault(x => x.Numero == niveauNumero)
+            ?? throw new InvalidOperationException(
+                $"Le niveau d'étude {niveauNumero} est introuvable pour le semestre {dto.NumeroSemestre}.");
+
         await EnsureMaquetteExistsAsync(dto.MaquettePedagogiqueId, cancellationToken);
+
+        var ueItems = await unitesEnseignement.ListAsync(cancellationToken);
+        var selectedUes = ueItems
+            .Where(x => selectedUniteIds.Contains(x.Id))
+            .ToList();
+
+        if (selectedUes.Count != selectedUniteIds.Count)
+        {
+            throw new InvalidOperationException("Une des UE sélectionnées est introuvable.");
+        }
+
+        if (selectedUes.Any(x => x.MaquettePedagogiqueId != dto.MaquettePedagogiqueId))
+        {
+            throw new InvalidOperationException("Toutes les UE sélectionnées doivent appartenir à la maquette du semestre.");
+        }
+
+        var ecItems = await elementsConstitutifs.ListAsync(cancellationToken);
+        var selectedEcItems = selectedUes
+            .SelectMany(ue => ecItems.Where(ec => ec.UniteEnseignementId == ue.Id))
+            .ToList();
+
+        if (selectedEcItems.Count == 0)
+        {
+            throw new InvalidOperationException("Chaque UE sélectionnée doit contenir au moins un EC.");
+        }
 
         var existing = await semestres.ListAsync(cancellationToken);
         var duplicate = existing.Any(x =>
@@ -326,28 +567,89 @@ public class ProgrammePedagogiqueService(
             throw new InvalidOperationException("Ce numéro de semestre existe déjà dans cette maquette.");
         }
 
+        SemestrePedagogique entity;
+
         if (dto.Id == 0)
         {
-            await semestres.AddAsync(new SemestrePedagogique
+            entity = new SemestrePedagogique
             {
                 MaquettePedagogiqueId = dto.MaquettePedagogiqueId,
+                NiveauEtudeId = niveauEtude.Id,
                 NumeroSemestre = dto.NumeroSemestre,
                 Libelle = dto.Libelle,
                 OrdreAffichage = dto.OrdreAffichage
-            }, cancellationToken);
+            };
+
+            await semestres.AddAsync(entity, cancellationToken);
         }
         else
         {
-            var entity = await semestres.GetByIdAsync(dto.Id, cancellationToken);
-            if (entity is null) return;
+            var existingEntity = await semestres.GetByIdAsync(dto.Id, cancellationToken);
+            if (existingEntity is null) return;
+            entity = existingEntity;
 
             entity.MaquettePedagogiqueId = dto.MaquettePedagogiqueId;
+            entity.NiveauEtudeId = niveauEtude.Id;
             entity.NumeroSemestre = dto.NumeroSemestre;
             entity.Libelle = dto.Libelle;
             entity.OrdreAffichage = dto.OrdreAffichage;
         }
 
         await semestres.SaveChangesAsync(cancellationToken);
+
+        var currentMecItems = (await maquetteElementsConstitutifs.ListAsync(cancellationToken))
+            .Where(x => x.SemestrePedagogiqueId == entity.Id)
+            .ToList();
+        var selectedEcIds = selectedEcItems.Select(x => x.Id).ToHashSet();
+        var obsoleteMecItems = currentMecItems
+            .Where(x => !selectedEcIds.Contains(x.ElementConstitutifId))
+            .ToList();
+
+        if (obsoleteMecItems.Count > 0)
+        {
+            var obsoleteMecIds = obsoleteMecItems.Select(x => x.Id).ToHashSet();
+            var hasEvaluations = (await evaluationsAcademiques.ListAsync(cancellationToken))
+                .Any(x => obsoleteMecIds.Contains(x.MaquetteElementConstitutifId));
+            var hasResults = (await resultatsElementsConstitutifs.ListAsync(cancellationToken))
+                .Any(x => obsoleteMecIds.Contains(x.MaquetteElementConstitutifId));
+
+            if (hasEvaluations || hasResults)
+            {
+                throw new InvalidOperationException("Impossible de retirer une UE déjà utilisée dans des évaluations ou des résultats.");
+            }
+
+            foreach (var obsoleteMec in obsoleteMecItems)
+            {
+                maquetteElementsConstitutifs.Delete(obsoleteMec);
+            }
+        }
+
+        var currentMecByEcId = currentMecItems.ToDictionary(x => x.ElementConstitutifId);
+        var ordre = 1;
+
+        foreach (var ec in selectedEcItems.OrderBy(x => selectedUniteIds.IndexOf(x.UniteEnseignementId)).ThenBy(x => x.Code).ThenBy(x => x.Libelle))
+        {
+            if (currentMecByEcId.TryGetValue(ec.Id, out var maquetteElement))
+            {
+                maquetteElement.Credits = ec.Credits;
+                maquetteElement.VolumeHoraire = ec.VolumeHoraire;
+                maquetteElement.OrdreAffichage = (short)ordre++;
+                continue;
+            }
+
+            await maquetteElementsConstitutifs.AddAsync(new MaquetteElementConstitutif
+            {
+                SemestrePedagogiqueId = entity.Id,
+                ElementConstitutifId = ec.Id,
+                Credits = ec.Credits,
+                Coefficient = 1m,
+                VolumeHoraire = ec.VolumeHoraire,
+                OrdreAffichage = (short)ordre++,
+                EstObligatoire = true
+            }, cancellationToken);
+        }
+
+        await maquetteElementsConstitutifs.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteSemestreAsync(long id, CancellationToken cancellationToken = default)
@@ -358,10 +660,12 @@ public class ProgrammePedagogiqueService(
 
     public async Task<List<UniteEnseignementDto>> GetUnitesEnseignementAsync(
         long? semestrePedagogiqueId = null,
+        long? maquettePedagogiqueId = null,
         CancellationToken cancellationToken = default)
     {
         var ueItems = await unitesEnseignement.ListAsync(cancellationToken);
         var ecItems = await elementsConstitutifs.ListAsync(cancellationToken);
+        var maquetteItems = await maquettes.ListAsync(cancellationToken);
 
         if (semestrePedagogiqueId is not null)
         {
@@ -377,8 +681,15 @@ public class ProgrammePedagogiqueService(
             ueItems = ueItems.Where(x => ueIds.Contains(x.Id)).ToList();
         }
 
+        if (maquettePedagogiqueId is not null)
+        {
+            ueItems = ueItems
+                .Where(x => x.MaquettePedagogiqueId == maquettePedagogiqueId)
+                .ToList();
+        }
+
         return ueItems
-            .Select(x => ToUeDto(x, ecItems))
+            .Select(x => ToUeDto(x, ecItems, maquetteItems))
             .OrderBy(x => x.Code)
             .ToList();
     }
@@ -413,7 +724,7 @@ public class ProgrammePedagogiqueService(
         ueItems = ueItems.Where(x => ueIds.Contains(x.Id)).ToList();
 
         return ueItems
-            .Select(x => ToUeDto(x, ecItems))
+            .Select(x => ToUeDto(x, ecItems, null))
             .OrderBy(x => x.Code)
             .ToList();
     }
@@ -442,7 +753,7 @@ public class ProgrammePedagogiqueService(
             .Where(x => semestreIds.Contains(x.SemestrePedagogiqueId))
             .ToList();
 
-        return maquetteEcsFiltered
+        var result = maquetteEcsFiltered
             .GroupBy(mec => mec.SemestrePedagogiqueId)
             .SelectMany(semGroup =>
             {
@@ -468,8 +779,14 @@ public class ProgrammePedagogiqueService(
                             SemestrePedagogiqueLibelle = $"{semestre.NumeroSemestre} - {semestre.Libelle}",
                             Code = ue.Code,
                             Libelle = ue.Libelle,
-                            Credits = ueGroup.Sum(m => m.Credits),
-                            VolumeHoraire = (short)ueGroup.Sum(m => m.VolumeHoraire),
+                            Credits = ueGroup
+                                .Select(mec => ecItems.FirstOrDefault(ec => ec.Id == mec.ElementConstitutifId))
+                                .Where(ec => ec is not null)
+                                .Sum(ec => ec!.Credits),
+                            VolumeHoraire = (short)ueGroup
+                                .Select(mec => ecItems.FirstOrDefault(ec => ec.Id == mec.ElementConstitutifId))
+                                .Where(ec => ec is not null)
+                                .Sum(ec => ec!.VolumeHoraire),
                             OrdreAffichage = ueGroup.Min(m => m.OrdreAffichage),
                             EstObligatoire = ueGroup.All(m => m.EstObligatoire),
                             ElementsConstitutifs = ueGroup
@@ -484,9 +801,9 @@ public class ProgrammePedagogiqueService(
                                         Code = mecEc?.Code,
                                         Libelle = mecEc?.Libelle ?? string.Empty,
                                         Type = mecEc?.Type ?? TypeElementConstitutif.CoursMagistraux,
-                                        Credits = m.Credits,
+                                        Credits = mecEc?.Credits ?? 0m,
                                         Coefficient = m.Coefficient,
-                                        VolumeHoraire = m.VolumeHoraire,
+                                        VolumeHoraire = mecEc?.VolumeHoraire ?? 0,
                                         OrdreAffichage = m.OrdreAffichage,
                                         EstObligatoire = m.EstObligatoire,
                                         Observation = m.Observation
@@ -498,6 +815,53 @@ public class ProgrammePedagogiqueService(
                     .Where(x => x is not null);
             })
             .ToList();
+
+        // Une UE peut exister dans le catalogue avant son rattachement a une maquette.
+        // Elle reste visible dans la vue generale avec ses EC et ses totaux propres.
+        if (anneeAcademiqueId is null
+            && cycleFormationId is null
+            && parcoursAcademiqueId is null
+            && semestrePedagogiqueId is null)
+        {
+            var ueIdsAlreadyDisplayed = result.Select(x => x.Id).ToHashSet();
+
+            result.AddRange(ueItems
+                .Where(ue => !ueIdsAlreadyDisplayed.Contains(ue.Id))
+                .Select(ue =>
+                {
+                    var ueEcs = ecItems.Where(ec => ec.UniteEnseignementId == ue.Id).ToList();
+
+                    return new UniteEnseignementHierarchyDto
+                    {
+                        Id = ue.Id,
+                        SemestrePedagogiqueLibelle = "Non rattachee",
+                        Code = ue.Code,
+                        Libelle = ue.Libelle,
+                        Credits = ueEcs.Sum(ec => ec.Credits),
+                        VolumeHoraire = (short)ueEcs.Sum(ec => ec.VolumeHoraire),
+                        OrdreAffichage = 0,
+                        EstObligatoire = true,
+                        ElementsConstitutifs = ueEcs
+                            .OrderBy(ec => ec.Code)
+                            .ThenBy(ec => ec.Libelle)
+                            .Select(ec => new ElementConstitutifHierarchyDto
+                            {
+                                Id = ec.Id,
+                                Code = ec.Code,
+                                Libelle = ec.Libelle,
+                                Type = ec.Type,
+                                Credits = ec.Credits,
+                                VolumeHoraire = ec.VolumeHoraire
+                            })
+                            .ToList()
+                    };
+                }));
+        }
+
+        return result
+            .OrderBy(x => x.SemestrePedagogiqueLibelle)
+            .ThenBy(x => x.Code)
+            .ToList();
     }
 
     public async Task<UniteEnseignementDto?> GetUniteEnseignementAsync(long id, CancellationToken cancellationToken = default)
@@ -507,21 +871,66 @@ public class ProgrammePedagogiqueService(
 
         var ecItems = await elementsConstitutifs.ListAsync(cancellationToken);
 
-        return ToUeDto(entity, ecItems);
+        var maquetteItems = await maquettes.ListAsync(cancellationToken);
+        return ToUeDto(entity, ecItems, maquetteItems);
     }
 
     public Task<UniteEnseignementDto> CreateDefaultUniteEnseignementAsync(
-        long? semestrePedagogiqueId = null,
+        long? maquettePedagogiqueId = null,
         CancellationToken cancellationToken = default)
         => Task.FromResult(new UniteEnseignementDto
         {
-            Code = "UE",
+            Code = string.Empty,
+            MaquettePedagogiqueId = maquettePedagogiqueId
         });
+
+    public async Task<string> GenerateUniteEnseignementCodeAsync(
+        string? libelle,
+        long excludeId = 0,
+        CancellationToken cancellationToken = default)
+    {
+        var key = NormalizeLibelleKey(libelle);
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return string.Empty;
+        }
+
+        var prefix = GenerateCatalogueCodePrefix(key);
+        var existingCodes = (await unitesEnseignement.ListAsync(cancellationToken))
+            .Where(x => x.Id != excludeId)
+            .Select(x => x.Code)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        for (var number = 1; number <= 999; number++)
+        {
+            var candidate = $"{prefix}{number:000}";
+            if (!existingCodes.Contains(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        throw new InvalidOperationException("Impossible de générer un code unique pour cette UE.");
+    }
 
     public async Task SaveUniteEnseignementAsync(UniteEnseignementDto dto, CancellationToken cancellationToken = default)
     {
-        dto.Code = NormalizeCode(dto.Code, "Le code de l'UE est obligatoire.");
+        if (dto.MaquettePedagogiqueId is null or <= 0)
+        {
+            throw new InvalidOperationException("La maquette pédagogique de l'UE est obligatoire.");
+        }
+
+        await EnsureMaquetteExistsAsync(dto.MaquettePedagogiqueId.Value, cancellationToken);
         dto.Libelle = RequireText(dto.Libelle, "Le libellé de l'UE est obligatoire.");
+        dto.Code = NormalizeNullable(dto.Code)?.ToUpperInvariant() ?? string.Empty;
+
+        if (dto.Id == 0 && string.IsNullOrWhiteSpace(dto.Code))
+        {
+            dto.Code = await GenerateUniteEnseignementCodeAsync(dto.Libelle, cancellationToken: cancellationToken);
+        }
+
+        dto.Code = NormalizeCode(dto.Code, "Le code de l'UE est obligatoire.");
 
         var existing = await unitesEnseignement.ListAsync(cancellationToken);
         var duplicate = existing.Any(x =>
@@ -537,6 +946,7 @@ public class ProgrammePedagogiqueService(
         {
             await unitesEnseignement.AddAsync(new UniteEnseignement
             {
+                MaquettePedagogiqueId = dto.MaquettePedagogiqueId,
                 Code = dto.Code,
                 Libelle = dto.Libelle
             }, cancellationToken);
@@ -548,6 +958,7 @@ public class ProgrammePedagogiqueService(
 
             entity.Code = dto.Code;
             entity.Libelle = dto.Libelle;
+            entity.MaquettePedagogiqueId = dto.MaquettePedagogiqueId;
         }
 
         await unitesEnseignement.SaveChangesAsync(cancellationToken);
@@ -594,9 +1005,44 @@ public class ProgrammePedagogiqueService(
         CancellationToken cancellationToken = default)
         => Task.FromResult(new ElementConstitutifDto
         {
-            UniteEnseignementId = uniteEnseignementId ?? 0,
-            Type = TypeElementConstitutif.CoursMagistraux
+            UniteEnseignementId = uniteEnseignementId ?? 0
         });
+
+    public async Task<string> GenerateElementConstitutifCodeAsync(
+        long uniteEnseignementId,
+        string? libelle,
+        long excludeId = 0,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(libelle))
+        {
+            return string.Empty;
+        }
+
+        var uniteEnseignement = await unitesEnseignement.GetByIdAsync(uniteEnseignementId, cancellationToken);
+        var prefix = uniteEnseignement is null ? string.Empty : NormalizeCodeToken(uniteEnseignement.Code);
+        if (string.IsNullOrWhiteSpace(prefix))
+        {
+            return string.Empty;
+        }
+
+        var existingCodes = (await elementsConstitutifs.ListAsync(cancellationToken))
+            .Where(x => x.Id != excludeId)
+            .Select(x => x.Code)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        for (var number = 1; number <= 999; number++)
+        {
+            var candidate = $"{prefix}-EC{number:00}";
+            if (!existingCodes.Contains(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        throw new InvalidOperationException("Impossible de générer un code unique pour cet EC.");
+    }
 
     public async Task SaveElementConstitutifAsync(ElementConstitutifDto dto, CancellationToken cancellationToken = default)
     {
@@ -605,10 +1051,27 @@ public class ProgrammePedagogiqueService(
             throw new InvalidOperationException("L'UE de l'EC est obligatoire.");
         }
 
-        dto.Code = NormalizeNullable(dto.Code)?.ToUpperInvariant();
         dto.Libelle = RequireText(dto.Libelle, "Le libellé de l'EC est obligatoire.");
+        dto.Code = NormalizeNullable(dto.Code)?.ToUpperInvariant();
+        if (dto.Credits < 0)
+        {
+            throw new InvalidOperationException("Les crédits de l'EC doivent être supérieurs ou égaux à 0.");
+        }
+
+        if (dto.VolumeHoraire < 0)
+        {
+            throw new InvalidOperationException("Le volume horaire de l'EC doit être supérieur ou égal à 0.");
+        }
 
         await EnsureUniteEnseignementExistsAsync(dto.UniteEnseignementId, cancellationToken);
+
+        if (dto.Id == 0 && string.IsNullOrWhiteSpace(dto.Code))
+        {
+            dto.Code = await GenerateElementConstitutifCodeAsync(
+                dto.UniteEnseignementId,
+                dto.Libelle,
+                cancellationToken: cancellationToken);
+        }
 
         var existing = await elementsConstitutifs.ListAsync(cancellationToken);
 
@@ -616,12 +1079,11 @@ public class ProgrammePedagogiqueService(
         {
             var duplicateCode = existing.Any(x =>
                 x.Id != dto.Id
-                && x.UniteEnseignementId == dto.UniteEnseignementId
                 && string.Equals(x.Code, dto.Code, StringComparison.OrdinalIgnoreCase));
 
             if (duplicateCode)
             {
-                throw new InvalidOperationException("Un EC avec le même code existe déjà dans cette UE.");
+                throw new InvalidOperationException("Un EC avec le même code existe déjà.");
             }
         }
 
@@ -632,7 +1094,9 @@ public class ProgrammePedagogiqueService(
                 UniteEnseignementId = dto.UniteEnseignementId,
                 Code = dto.Code,
                 Libelle = dto.Libelle,
-                Type = dto.Type
+                Type = dto.Type,
+                Credits = dto.Credits,
+                VolumeHoraire = dto.VolumeHoraire
             }, cancellationToken);
         }
         else
@@ -644,6 +1108,8 @@ public class ProgrammePedagogiqueService(
             entity.Code = dto.Code;
             entity.Libelle = dto.Libelle;
             entity.Type = dto.Type;
+            entity.Credits = dto.Credits;
+            entity.VolumeHoraire = dto.VolumeHoraire;
         }
 
         await elementsConstitutifs.SaveChangesAsync(cancellationToken);
@@ -700,19 +1166,53 @@ public class ProgrammePedagogiqueService(
     public async Task<List<LookupDto>> GetMaquettesLookupAsync(
         long? anneeAcademiqueId = null,
         long? cycleFormationId = null,
+        long? niveauEtudeId = null,
         CancellationToken cancellationToken = default)
     {
         var items = await maquettes.ListAsync(cancellationToken);
         var anneeItems = await anneesAcademiques.ListAsync(cancellationToken);
         var ouvertureItems = await parcoursAcademiques.ListAsync(cancellationToken);
+        var affectationItems = await affectationsMaquettes.ListAsync(cancellationToken);
         var classeItems = await classesPedagogiques.ListAsync(cancellationToken);
+        var semestreItems = await semestres.ListAsync(cancellationToken);
+        var niveauItems = await niveauxEtude.ListAsync(cancellationToken);
 
-        items = FilterMaquettes(items, anneeItems, ouvertureItems, classeItems, anneeAcademiqueId, cycleFormationId, null);
+        items = FilterMaquettes(
+            items,
+            affectationItems,
+            anneeItems,
+            ouvertureItems,
+            classeItems,
+            semestreItems,
+            niveauItems,
+            anneeAcademiqueId,
+            cycleFormationId,
+            niveauEtudeId,
+            null);
 
         return items
             .OrderBy(x => x.Libelle)
             .ThenBy(x => x.Version)
-            .Select(x => new LookupDto { Id = x.Id, Libelle = $"{x.Code} - {x.Libelle} ({x.Version})" })
+            .Select(x =>
+            {
+                var niveaux = semestreItems
+                    .Where(semestre => semestre.MaquettePedagogiqueId == x.Id)
+                    .Select(semestre => GetNiveauForSemestre(semestre, niveauItems)?.Libelle)
+                    .Where(libelle => !string.IsNullOrWhiteSpace(libelle))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(libelle => libelle, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                var niveauSuffix = niveaux.Count == 0
+                    ? string.Empty
+                    : $" - {string.Join(", ", niveaux)}";
+
+                return new LookupDto
+                {
+                    Id = x.Id,
+                    Libelle = $"{x.Code} - {x.Libelle} ({x.Version}){niveauSuffix}"
+                };
+            })
             .ToList();
     }
 
@@ -806,17 +1306,18 @@ public class ProgrammePedagogiqueService(
         var maquetteItems = await maquettes.ListAsync(cancellationToken);
         var anneeItems = await anneesAcademiques.ListAsync(cancellationToken);
         var ouvertureItems = await parcoursAcademiques.ListAsync(cancellationToken);
+        var affectationItems = await affectationsMaquettes.ListAsync(cancellationToken);
         var classeItems = await classesPedagogiques.ListAsync(cancellationToken);
+        var niveauItems = await niveauxEtude.ListAsync(cancellationToken);
 
         maquetteItems = FilterMaquettes(
-            maquetteItems, anneeItems, ouvertureItems, classeItems,
-            anneeAcademiqueId, cycleFormationId, null);
+            maquetteItems, affectationItems, anneeItems, ouvertureItems, classeItems,
+            semestreItems, niveauItems, anneeAcademiqueId, cycleFormationId, null, null);
 
         if (parcoursAcademiqueId is not null)
         {
-            var ouverture = ouvertureItems.FirstOrDefault(x => x.Id == parcoursAcademiqueId);
             maquetteItems = maquetteItems
-                .Where(x => ouverture is not null && x.ParcoursAcademiqueId == ouverture.Id)
+                .Where(x => affectationItems.Any(a => a.MaquettePedagogiqueId == x.Id && a.ParcoursAcademiqueId == parcoursAcademiqueId))
                 .ToList();
         }
 
@@ -841,11 +1342,15 @@ public class ProgrammePedagogiqueService(
 
     private static List<MaquettePedagogique> FilterMaquettes(
         List<MaquettePedagogique> maquetteItems,
+        IReadOnlyCollection<AffectationMaquette> affectationItems,
         IReadOnlyCollection<AnneeAcademique> anneeItems,
         IReadOnlyCollection<ParcoursAcademique> ouvertureItems,
         IReadOnlyCollection<ClassePedagogique> classeItems,
+        IReadOnlyCollection<SemestrePedagogique> semestreItems,
+        IReadOnlyCollection<NiveauEtude> niveauItems,
         long? anneeAcademiqueId,
         long? cycleFormationId,
+        long? niveauEtudeId,
         long? maquettePedagogiqueId)
     {
         IEnumerable<MaquettePedagogique> query = maquetteItems;
@@ -859,7 +1364,7 @@ public class ProgrammePedagogiqueService(
                 .ToHashSet();
 
             var maquetteIdsPourAnnee = maquetteItems
-                .Where(x => parcoursIdsPourAnnee.Contains(x.ParcoursAcademiqueId))
+                .Where(x => affectationItems.Any(a => a.MaquettePedagogiqueId == x.Id && parcoursIdsPourAnnee.Contains(a.ParcoursAcademiqueId)))
                 .Select(x => x.Id)
                 .ToHashSet();
 
@@ -875,7 +1380,24 @@ public class ProgrammePedagogiqueService(
                 .Select(x => x.Id)
                 .ToHashSet();
 
-            query = query.Where(x => ouvertureIds.Contains(x.ParcoursAcademiqueId));
+            query = query.Where(x => affectationItems.Any(a => a.MaquettePedagogiqueId == x.Id && ouvertureIds.Contains(a.ParcoursAcademiqueId)));
+        }
+
+        if (niveauEtudeId is not null)
+        {
+            var niveau = niveauItems.FirstOrDefault(x => x.Id == niveauEtudeId.Value);
+
+            if (niveau is null)
+            {
+                return [];
+            }
+
+            var maquetteIdsPourNiveau = semestreItems
+                .Where(semestre => IsSemestreForNiveau(semestre, niveau))
+                .Select(semestre => semestre.MaquettePedagogiqueId)
+                .ToHashSet();
+
+            query = query.Where(x => maquetteIdsPourNiveau.Contains(x.Id));
         }
 
         if (maquettePedagogiqueId is not null)
@@ -884,6 +1406,48 @@ public class ProgrammePedagogiqueService(
         }
 
         return query.ToList();
+    }
+
+    private static bool IsSemestreForNiveau(
+        SemestrePedagogique semestre,
+        long? niveauEtudeId,
+        IReadOnlyCollection<NiveauEtude> niveauItems)
+    {
+        if (niveauEtudeId is null)
+        {
+            return true;
+        }
+
+        var niveau = niveauItems.FirstOrDefault(x => x.Id == niveauEtudeId.Value);
+        return niveau is not null && IsSemestreForNiveau(semestre, niveau);
+    }
+
+    private static bool IsSemestreForNiveau(
+        SemestrePedagogique semestre,
+        NiveauEtude niveau)
+    {
+        if (semestre.NumeroSemestre is < 1 or > 8)
+        {
+            return false;
+        }
+
+        var niveauCalcule = (byte)(((semestre.NumeroSemestre - 1) / 2) + 1);
+        return niveauCalcule == niveau.Numero;
+    }
+
+    private static NiveauEtude? GetNiveauForSemestre(
+        SemestrePedagogique semestre,
+        IReadOnlyCollection<NiveauEtude> niveauItems)
+    {
+        if (semestre.NumeroSemestre is >= 1 and <= 8)
+        {
+            var niveauCalcule = (byte)(((semestre.NumeroSemestre - 1) / 2) + 1);
+            return niveauItems.FirstOrDefault(x => x.Numero == niveauCalcule);
+        }
+
+        return semestre.NiveauEtudeId is null
+            ? null
+            : niveauItems.FirstOrDefault(x => x.Id == semestre.NiveauEtudeId.Value);
     }
 
     private static bool IsMaquetteValidForAcademicYear(MaquettePedagogique maquette, AnneeAcademique annee)
@@ -899,16 +1463,19 @@ public class ProgrammePedagogiqueService(
 
     private static MaquettePedagogiqueDto ToDto(
         MaquettePedagogique maquette,
+        IReadOnlyCollection<AffectationMaquette> affectationItems,
         IReadOnlyCollection<ParcoursAcademique> ouvertures,
         IReadOnlyCollection<SemestrePedagogique> semestreItems)
     {
-        var ouverture = ouvertures.FirstOrDefault(x => x.Id == maquette.ParcoursAcademiqueId);
+        var parcoursAffectes = ouvertures
+            .Where(x => affectationItems.Any(a => a.MaquettePedagogiqueId == maquette.Id && a.ParcoursAcademiqueId == x.Id))
+            .ToList();
 
         return new MaquettePedagogiqueDto
         {
             Id = maquette.Id,
-            ParcoursAcademiqueId = ouverture?.Id ?? 0,
-            ParcoursAcademiqueLibelle = ouverture is null ? string.Empty : FormatCodeLibelle(ouverture.Code, ouverture.Libelle),
+            ParcoursAcademiquesLibelle = string.Join(", ", parcoursAffectes.Select(x => FormatCodeLibelle(x.Code, x.Libelle))),
+            NombreAffectations = parcoursAffectes.Count,
             Code = maquette.Code,
             Libelle = maquette.Libelle,
             Version = maquette.Version,
@@ -923,33 +1490,81 @@ public class ProgrammePedagogiqueService(
 
     private static SemestrePedagogiqueDto ToSemestreDto(
         SemestrePedagogique semestre,
-        IReadOnlyCollection<MaquettePedagogique> maquetteItems)
+        IReadOnlyCollection<MaquettePedagogique> maquetteItems,
+        IReadOnlyCollection<UniteEnseignement> uniteItems,
+        IReadOnlyCollection<ElementConstitutif> ecItems,
+        IReadOnlyCollection<MaquetteElementConstitutif> maquetteEcItems,
+        IReadOnlyCollection<NiveauEtude> niveauItems)
     {
         var maquette = maquetteItems.FirstOrDefault(x => x.Id == semestre.MaquettePedagogiqueId);
+        var semestreMecItems = maquetteEcItems
+            .Where(x => x.SemestrePedagogiqueId == semestre.Id)
+            .ToList();
+        var semestreEcItems = semestreMecItems
+            .Select(mec => ecItems.FirstOrDefault(ec => ec.Id == mec.ElementConstitutifId))
+            .Where(ec => ec is not null)
+            .Select(ec => ec!)
+            .ToList();
+        var semestreUes = uniteItems
+            .Where(ue => semestreEcItems.Any(ec => ec.UniteEnseignementId == ue.Id))
+            .OrderBy(ue => ue.Code)
+            .ToList();
 
         return new SemestrePedagogiqueDto
         {
             Id = semestre.Id,
             MaquettePedagogiqueId = semestre.MaquettePedagogiqueId,
+            NiveauEtudeId = semestre.NiveauEtudeId,
+            NiveauEtudeLibelle = semestre.NiveauEtudeId is null
+                ? string.Empty
+                : niveauItems.FirstOrDefault(x => x.Id == semestre.NiveauEtudeId.Value)?.Libelle ?? string.Empty,
             MaquettePedagogiqueLibelle = maquette is null ? string.Empty : $"{maquette.Code} - {maquette.Libelle} ({maquette.Version})",
+            UniteEnseignementIds = semestreUes.Select(x => x.Id).ToList(),
+            UniteEnseignementLibelle = string.Join(", ", semestreUes.Select(x => FormatCodeLibelle(x.Code, x.Libelle))),
             NumeroSemestre = semestre.NumeroSemestre,
             Libelle = semestre.Libelle,
-            CreditsUE = semestre.CreditsUE,
-            VolumeHoraireUE = semestre.VolumeHoraireUE,
-            OrdreAffichage = semestre.OrdreAffichage
+            CreditsUE = semestreEcItems.Sum(x => x.Credits),
+            VolumeHoraireUE = (short)semestreEcItems.Sum(x => x.VolumeHoraire),
+            OrdreAffichage = semestre.OrdreAffichage,
+            NombreUnitesEnseignement = semestreUes.Count
         };
     }
 
     private static UniteEnseignementDto ToUeDto(
         UniteEnseignement ue,
-        IReadOnlyCollection<ElementConstitutif> ecItems)
-        => new()
+        IReadOnlyCollection<ElementConstitutif> ecItems,
+        IReadOnlyCollection<MaquettePedagogique>? maquetteItems)
+    {
+        var ueEcItems = ecItems
+            .Where(x => x.UniteEnseignementId == ue.Id)
+            .OrderBy(x => x.Code)
+            .ThenBy(x => x.Libelle)
+            .ToList();
+
+        return new UniteEnseignementDto
         {
             Id = ue.Id,
+            MaquettePedagogiqueId = ue.MaquettePedagogiqueId,
+            MaquettePedagogiqueLibelle = maquetteItems is null || ue.MaquettePedagogiqueId is null
+                ? string.Empty
+                : maquetteItems.FirstOrDefault(x => x.Id == ue.MaquettePedagogiqueId)?.Libelle ?? string.Empty,
             Code = ue.Code,
             Libelle = ue.Libelle,
-            NombreElementsConstitutifs = ecItems.Count(x => x.UniteEnseignementId == ue.Id)
+            Credits = ueEcItems.Sum(x => x.Credits),
+            VolumeHoraire = (short)ueEcItems.Sum(x => x.VolumeHoraire),
+            NombreElementsConstitutifs = ueEcItems.Count,
+            ElementsConstitutifs = ueEcItems.Select(ec => new ElementConstitutifDto
+            {
+                Id = ec.Id,
+                UniteEnseignementId = ec.UniteEnseignementId,
+                Code = ec.Code,
+                Libelle = ec.Libelle,
+                Type = ec.Type,
+                Credits = ec.Credits,
+                VolumeHoraire = ec.VolumeHoraire
+            }).ToList()
         };
+    }
 
     private static ElementConstitutifDto ToEcDto(
         ElementConstitutif ec,
@@ -964,12 +1579,61 @@ public class ProgrammePedagogiqueService(
             UniteEnseignementLibelle = ue is null ? string.Empty : FormatCodeLibelle(ue.Code, ue.Libelle),
             Code = ec.Code,
             Libelle = ec.Libelle,
-            Type = ec.Type
+            Type = ec.Type,
+            Credits = ec.Credits,
+            VolumeHoraire = ec.VolumeHoraire
         };
     }
 
     private static string FormatCodeLibelle(string code, string libelle)
         => string.IsNullOrWhiteSpace(code) ? libelle : $"{code} - {libelle}";
+
+    private static string GenerateCatalogueCodePrefix(string normalizedLibelle)
+    {
+        var ignoredWords = new HashSet<string> { "DE", "DES", "DU", "D", "ET", "EN", "A", "AU", "AUX", "LA", "LE", "LES" };
+        var words = normalizedLibelle.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(word => !ignoredWords.Contains(word))
+            .ToList();
+
+        var letters = string.Concat(words).Where(char.IsLetterOrDigit).ToArray();
+        return new string(letters[..Math.Min(3, letters.Length)]).ToUpperInvariant();
+    }
+
+    private static string NormalizeCodeToken(string value)
+        => new string(value.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
+
+    private static string NormalizeLibelleKey(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var normalized = value.Trim().Normalize(System.Text.NormalizationForm.FormD);
+        var builder = new System.Text.StringBuilder(normalized.Length);
+        var previousWasSpace = true;
+
+        foreach (var character in normalized)
+        {
+            if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(character) == System.Globalization.UnicodeCategory.NonSpacingMark)
+            {
+                continue;
+            }
+
+            if (char.IsLetterOrDigit(character))
+            {
+                builder.Append(char.ToUpperInvariant(character));
+                previousWasSpace = false;
+            }
+            else if (!previousWasSpace)
+            {
+                builder.Append(' ');
+                previousWasSpace = true;
+            }
+        }
+
+        return builder.ToString().Trim();
+    }
 
     private static string NormalizeCode(string? value, string errorMessage)
         => RequireText(value, errorMessage).ToUpperInvariant();

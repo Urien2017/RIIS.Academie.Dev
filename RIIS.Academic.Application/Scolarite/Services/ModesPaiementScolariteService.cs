@@ -1,6 +1,8 @@
 using RIIS.Academic.Application.Abstractions.Persistence;
 using RIIS.Academic.Application.Scolarite.Dtos;
 using RIIS.Academic.Domain;
+using System.Globalization;
+using System.Text;
 
 namespace RIIS.Academic.Application.Scolarite.Services;
 
@@ -26,6 +28,28 @@ public class ModesPaiementScolariteService(
         {
             EstActif = true
         };
+
+    public string GenerateCodeFromLibelle(string? libelle)
+    {
+        var normalized = RemoveDiacritics(
+                RequireText(libelle, "Le libelle du mode de paiement est obligatoire."))
+            .ToUpperInvariant();
+        var words = normalized
+            .Split([' ', '-', '_', '\'', '/', '\\', '.', ','], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => new string(x.Where(char.IsLetterOrDigit).ToArray()))
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToList();
+
+        if (words.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "Le libelle du mode de paiement doit contenir au moins une lettre ou un chiffre.");
+        }
+
+        return words.Count == 1
+            ? words[0][..Math.Min(3, words[0].Length)]
+            : string.Concat(words.Select(x => x[0]))[..Math.Min(8, words.Count)];
+    }
 
     public async Task SaveModePaiementScolariteAsync(
         ModePaiementScolariteDto dto,
@@ -91,5 +115,21 @@ public class ModesPaiementScolariteService(
         }
 
         return normalized;
+    }
+
+    private static string RemoveDiacritics(string value)
+    {
+        var normalized = value.Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder(normalized.Length);
+
+        foreach (var character in normalized)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(character) != UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(character);
+            }
+        }
+
+        return builder.ToString().Normalize(NormalizationForm.FormC);
     }
 }

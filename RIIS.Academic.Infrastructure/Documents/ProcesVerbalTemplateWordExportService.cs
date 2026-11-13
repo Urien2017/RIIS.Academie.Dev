@@ -87,15 +87,27 @@ public class ProcesVerbalTemplateWordExportService(IProcesVerbauxService procesV
 
     private static void ReplaceTextPlaceholders(XDocument documentXml, ProcesVerbalDto procesVerbal)
     {
+        var headerLabels = ProcesVerbalExportProjection.GetHeaderLabels(procesVerbal);
+        var parcoursLibelle = headerLabels.Parcours;
+        var classeLibelle = headerLabels.Classe;
+
+        // Une classe représente actuellement un seul parcours. Ne répétons donc pas
+        // exactement le même libellé dans les deux zones de l'en-tête.
+        if (string.Equals(classeLibelle, parcoursLibelle, StringComparison.OrdinalIgnoreCase))
+        {
+            RemoveEmptyHeaderField(documentXml, "Classe", "{{CLASSE_PEDAGOGIQUE}}");
+            classeLibelle = string.Empty;
+        }
+
         var replacements = new Dictionary<string, string>
         {
             ["{{PV_TYPE}}"] = procesVerbal.TypeLibelle,
             ["{{SEMESTRE_LIBELLE}}"] = procesVerbal.SemestrePedagogiqueLibelle,
             ["{{ANNEE_ACADEMIQUE}}"] = procesVerbal.AnneeAcademiqueLibelle,
             ["{{CYCLE_FORMATION}}"] = procesVerbal.CycleFormationLibelle,
-            ["{{PARCOURS}}"] = procesVerbal.ParcoursLibelle,
+            ["{{PARCOURS}}"] = parcoursLibelle,
             ["{{NIVEAU}}"] = InferNiveau(procesVerbal),
-            ["{{CLASSE_PEDAGOGIQUE}}"] = procesVerbal.ClassePedagogiqueLibelle,
+            ["{{CLASSE_PEDAGOGIQUE}}"] = classeLibelle,
             ["{{SEMESTRE_NUMERO}}"] = procesVerbal.SemestreNumero is null
                 ? string.Empty
                 : $"S{procesVerbal.SemestreNumero.Value.ToString(CultureInfo.InvariantCulture)}",
@@ -138,7 +150,7 @@ public class ProcesVerbalTemplateWordExportService(IProcesVerbauxService procesV
 
     private static XElement BuildTable(ProcesVerbalDto procesVerbal)
     {
-        var ecHeaders = BuildEcHeaders(procesVerbal);
+        var ecHeaders = ProcesVerbalExportProjection.BuildEcHeaders(procesVerbal);
         var tableXml = ecHeaders.Count == 0
             ? BuildSimpleTableXml(procesVerbal)
             : BuildDetailsTableXml(procesVerbal, ecHeaders);
@@ -148,9 +160,9 @@ public class ProcesVerbalTemplateWordExportService(IProcesVerbauxService procesV
 
     private static string BuildDetailsTableXml(
         ProcesVerbalDto procesVerbal,
-        IReadOnlyCollection<ProcesVerbalElementConstitutifLigneDto> ecHeaders)
+        IReadOnlyCollection<ProcesVerbalExportProjection.EcHeader> ecHeaders)
     {
-        var columnWidths = BuildDetailsColumnWidths(ecHeaders.Count);
+        var columnWidths = BuildDetailsColumnWidths(ecHeaders);
         var table = new StringBuilder();
 
         table.Append(TableStart(columnWidths));
@@ -164,9 +176,10 @@ public class ProcesVerbalTemplateWordExportService(IProcesVerbauxService procesV
         var columnIndex = 2;
         foreach (var ec in ecHeaders)
         {
-            var spanWidth = columnWidths.Skip(columnIndex).Take(4).Sum();
-            firstHeaderCells.Add(Cell(ec.ElementConstitutifLibelle, spanWidth, bold: true, fill: "1F4E79", textColor: "FFFFFF", gridSpan: 4));
-            columnIndex += 4;
+            var columnCount = ec.Columns.Count;
+            var spanWidth = columnWidths.Skip(columnIndex).Take(columnCount).Sum();
+            firstHeaderCells.Add(Cell(ec.Label, spanWidth, bold: true, fill: "1F4E79", textColor: "FFFFFF", gridSpan: columnCount));
+            columnIndex += columnCount;
         }
 
         firstHeaderCells.Add(Cell("Crédits", columnWidths[columnIndex++], bold: true, fill: "1F4E79", textColor: "FFFFFF"));
@@ -182,12 +195,12 @@ public class ProcesVerbalTemplateWordExportService(IProcesVerbauxService procesV
         };
 
         columnIndex = 2;
-        foreach (var _ in ecHeaders)
+        foreach (var ec in ecHeaders)
         {
-            secondHeaderCells.Add(Cell("CCON", columnWidths[columnIndex++], bold: true, fill: "1F4E79", textColor: "FFFFFF"));
-            secondHeaderCells.Add(Cell("CC", columnWidths[columnIndex++], bold: true, fill: "1F4E79", textColor: "FFFFFF"));
-            secondHeaderCells.Add(Cell("SN", columnWidths[columnIndex++], bold: true, fill: "1F4E79", textColor: "FFFFFF"));
-            secondHeaderCells.Add(Cell("MOY", columnWidths[columnIndex++], bold: true, fill: "1F4E79", textColor: "FFFFFF"));
+            foreach (var column in ec.Columns)
+            {
+                secondHeaderCells.Add(Cell(column, columnWidths[columnIndex++], bold: true, fill: "1F4E79", textColor: "FFFFFF"));
+            }
         }
 
         secondHeaderCells.Add(Cell(string.Empty, columnWidths[columnIndex++], fill: "1F4E79", textColor: "FFFFFF"));
@@ -210,10 +223,17 @@ public class ProcesVerbalTemplateWordExportService(IProcesVerbauxService procesV
             foreach (var ec in ecHeaders)
             {
                 var detail = ligne.ElementsConstitutifs.FirstOrDefault(x => x.Key == ec.Key);
-                cells.Add(Cell(FormatNote(detail?.MoyenneCcon), columnWidths[columnIndex++]));
-                cells.Add(Cell(FormatNote(detail?.MoyenneCc), columnWidths[columnIndex++]));
-                cells.Add(Cell(FormatNote(detail?.MoyenneSn), columnWidths[columnIndex++]));
-                cells.Add(Cell(FormatNote(detail?.MoyenneFinale), columnWidths[columnIndex++], bold: true, textColor: GetNoteColor(detail?.MoyenneFinale)));
+                foreach (var column in ec.Columns)
+                {
+            var value = column == "MOY"
+                        ? detail?.MoyenneFinale
+                        : ProcesVerbalExportProjection.GetEvaluationAverage(detail, column);
+                    cells.Add(Cell(
+                        FormatNote(value),
+                        columnWidths[columnIndex++],
+                        bold: column == "MOY",
+                        textColor: column == "MOY" ? GetNoteColor(value) : null));
+                }
             }
 
             cells.Add(Cell(FormatCredit(ligne.CreditsAcquis), columnWidths[columnIndex++], bold: true));
@@ -260,12 +280,13 @@ public class ProcesVerbalTemplateWordExportService(IProcesVerbauxService procesV
         return table.ToString();
     }
 
-    private static int[] BuildDetailsColumnWidths(int ecCount)
+    private static int[] BuildDetailsColumnWidths(
+        IReadOnlyCollection<ProcesVerbalExportProjection.EcHeader> ecHeaders)
     {
         const int tableWidth = 15600;
         var fixedWidths = new[] { 1150, 3300, 850, 850, 700, 1300 };
         var fixedTotal = fixedWidths.Sum();
-        var ecColumnCount = ecCount * 4;
+        var ecColumnCount = ecHeaders.Sum(x => x.Columns.Count);
         var ecTotal = Math.Max(0, tableWidth - fixedTotal);
         var ecWidth = ecColumnCount == 0 ? 0 : ecTotal / ecColumnCount;
         var remainder = ecColumnCount == 0 ? 0 : ecTotal % ecColumnCount;
@@ -396,12 +417,36 @@ public class ProcesVerbalTemplateWordExportService(IProcesVerbauxService procesV
         return text.ToString();
     }
 
-    private static List<ProcesVerbalElementConstitutifLigneDto> BuildEcHeaders(ProcesVerbalDto procesVerbal)
-        => procesVerbal.Lignes
-            .SelectMany(x => x.ElementsConstitutifs)
-            .GroupBy(x => x.Key)
-            .Select(x => x.First())
-            .ToList();
+    private static void RemoveEmptyHeaderField(
+        XDocument documentXml,
+        string label,
+        string placeholder)
+    {
+        foreach (var parent in documentXml.Descendants(W + "body").Concat(documentXml.Descendants(W + "tc")))
+        {
+            var paragraphs = parent.Elements(W + "p").ToList();
+            for (var index = 0; index < paragraphs.Count; index++)
+            {
+                var paragraphText = string.Concat(paragraphs[index].Descendants(W + "t").Select(x => x.Value));
+                if (!paragraphText.Contains(placeholder, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                paragraphs[index].Remove();
+                if (index > 0)
+                {
+                    var previousText = string.Concat(paragraphs[index - 1].Descendants(W + "t").Select(x => x.Value)).Trim();
+                    if (string.Equals(previousText, label, StringComparison.OrdinalIgnoreCase))
+                    {
+                        paragraphs[index - 1].Remove();
+                    }
+                }
+
+                break;
+            }
+        }
+    }
 
     private static string InferNiveau(ProcesVerbalDto procesVerbal)
     {

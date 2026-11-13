@@ -7,6 +7,8 @@ public class ElementConstitutif
     public string? Code { get; set; }
     public required string Libelle { get; set; }
     public TypeElementConstitutif Type { get; set; } = TypeElementConstitutif.CoursMagistraux;
+    public decimal Credits { get; set; }
+    public short VolumeHoraire { get; set; }
 
     public UniteEnseignement UniteEnseignement { get; set; } = null!;
 }

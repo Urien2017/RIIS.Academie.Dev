@@ -12,15 +12,27 @@ public interface IProcesVerbauxService
         long? classePedagogiqueId = null,
         byte? semestreNumero = null,
         TypeProcesVerbal? type = null,
+        long? parcoursAcademiqueId = null,
         CancellationToken cancellationToken = default);
 
     Task<ProcesVerbalDto?> GetProcesVerbalAsync(long id, CancellationToken cancellationToken = default);
 
+    Task SupprimerProcesVerbalAsync(long id, CancellationToken cancellationToken = default);
+
+    Task<long> GenererProcesVerbalAsync(
+        GenererProcesVerbalRequestDto request,
+        CancellationToken cancellationToken = default);
+
     Task<List<LookupDto>> GetAnneesAcademiquesLookupAsync(CancellationToken cancellationToken = default);
     Task<List<LookupDto>> GetCyclesFormationLookupAsync(CancellationToken cancellationToken = default);
+    Task<List<LookupDto>> GetParcoursAcademiquesLookupAsync(CancellationToken cancellationToken = default);
     Task<List<LookupDto>> GetClassesPedagogiquesLookupAsync(
         long? anneeAcademiqueId = null,
         long? cycleFormationId = null,
+        long? parcoursAcademiqueId = null,
+        CancellationToken cancellationToken = default);
+    Task<List<LookupDto>> GetSemestresForParcoursLookupAsync(
+        long parcoursAcademiqueId,
         CancellationToken cancellationToken = default);
     Task<List<LookupDto>> GetSemestresLookupAsync(
         long? anneeAcademiqueId = null,

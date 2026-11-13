@@ -11,6 +11,7 @@ public class ProcesVerbalDto
     public long? CycleFormationId { get; set; }
     public string AnneeAcademiqueLibelle { get; set; } = string.Empty;
     public string CycleFormationLibelle { get; set; } = string.Empty;
+    public string FiliereLibelle { get; set; } = string.Empty;
     public string ParcoursLibelle { get; set; } = string.Empty;
     public string ClassePedagogiqueLibelle { get; set; } = string.Empty;
     public string SemestrePedagogiqueLibelle { get; set; } = string.Empty;

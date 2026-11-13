@@ -16,6 +16,11 @@
             </RadzenStack>
             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
                 <RadzenButton Text="Actualiser" Icon="refresh" ButtonStyle="ButtonStyle.Light" Click="@Load" />
+                <RadzenButton Text="Exporter la liste"
+                              Icon="download"
+                              ButtonStyle="ButtonStyle.Secondary"
+                              Disabled="@(isBusy || items.Count == 0)"
+                              Click="@ExportDossiers" />
                 <RadzenButton Text="Créer dossier"
                               Icon="add"
                               ButtonStyle="ButtonStyle.Success"
@@ -88,7 +93,52 @@
             <RadzenStack Gap="1rem">
                 <RadzenText TextStyle="TextStyle.H6" Text="Dossiers créés" />
                 <RadzenRow>
-                    <RadzenColumn Size="12" SizeMD="8">
+                    <RadzenColumn Size="12" SizeMD="2">
+                        <RadzenFormField Text="Année académique" Style="width:100%">
+                            <RadzenDropDown Data="@anneesAcademiques"
+                                            TextProperty="Libelle"
+                                            ValueProperty="Id"
+                                            TValue="long?"
+                                            @bind-Value="@filtreAnneeAcademiqueId"
+                                            Change="@OnFiltreAnneeChanged"
+                                            AllowClear="true"
+                                            AllowFiltering="true"
+                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                            Placeholder="Toutes les années"
+                                            Style="width:100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="2">
+                        <RadzenFormField Text="Cycle" Style="width:100%">
+                            <RadzenDropDown Data="@cyclesFormation"
+                                            TextProperty="Libelle"
+                                            ValueProperty="Id"
+                                            TValue="long?"
+                                            @bind-Value="@filtreCycleFormationId"
+                                            Change="@OnFiltreCycleChanged"
+                                            AllowClear="true"
+                                            AllowFiltering="true"
+                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                            Placeholder="Tous les cycles"
+                                            Style="width:100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="2">
+                        <RadzenFormField Text="Niveau" Style="width:100%">
+                            <RadzenDropDown Data="@niveauxEtude"
+                                            TextProperty="Libelle"
+                                            ValueProperty="Id"
+                                            TValue="long?"
+                                            @bind-Value="@filtreNiveauEtudeId"
+                                            Change="@OnFiltreNiveauChanged"
+                                            AllowClear="true"
+                                            AllowFiltering="true"
+                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                            Placeholder="Tous les niveaux"
+                                            Style="width:100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="3">
                         <RadzenFormField Text="Filtre parcours académique" Style="width:100%">
                             <RadzenDropDown Data="@parcours"
                                             TextProperty="Libelle"
@@ -103,7 +153,24 @@
                                             Style="width:100%" />
                         </RadzenFormField>
                     </RadzenColumn>
-                    <RadzenColumn Size="12" SizeMD="4">
+                    <RadzenColumn Size="12" SizeMD="3">
+                        <RadzenFormField Text="Étudiant" Style="width:100%">
+                            <RadzenDropDown Data="@etudiantOptions"
+                                            TextProperty="Libelle"
+                                            ValueProperty="Id"
+                                            TValue="long?"
+                                            @bind-Value="@filtreEtudiantId"
+                                            Change="@OnFiltreEtudiantChanged"
+                                            AllowClear="true"
+                                            AllowFiltering="true"
+                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                            Placeholder="Tous les étudiants"
+                                            Style="width:100%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="12">
                         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End" Gap="0.5rem" Style="height:100%">
                             <RadzenButton Text="Réinitialiser" Icon="restart_alt" ButtonStyle="ButtonStyle.Light" Click="@ResetFilters" />
                         </RadzenStack>
@@ -115,7 +182,7 @@
                     <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" />
                 }
 
-                <RadzenDataGrid Data="@items" TItem="DossierEtudiantAnnuelDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+<RadzenDataGrid @ref="dossiersEtudiantGrid" Data="@items" TItem="DossierEtudiantAnnuelDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
                     <Columns>
                         <RadzenDataGridColumn TItem="DossierEtudiantAnnuelDto" Title="Étudiant">
                             <Template Context="item">
@@ -345,15 +412,25 @@
 
 @code {
     [Parameter] public long? EtudiantId { get; set; }
+    [SupplyParameterFromQuery] public long? ParcoursAcademiqueId { get; set; }
 
     private List<EtudiantDto> etudiants = [];
     private List<EtudiantOption> etudiantOptions = [];
+    private List<AnneeAcademiqueDto> anneesAcademiques = [];
+    private List<CycleFormationDto> cyclesFormation = [];
+    private List<NiveauEtudeDto> niveauxEtude = [];
+    private List<ParcoursAcademiqueDto> tousLesParcours = [];
     private List<ParcoursAcademiqueDto> parcours = [];
     private List<DossierEtudiantAnnuelDto> allDossiers = [];
     private List<DossierEtudiantAnnuelDto> items = [];
+    private RadzenDataGrid<DossierEtudiantAnnuelDto>? dossiersEtudiantGrid;
     private DossierEtudiantAnnuelDto? selectedDossier;
     private FinanceDossierScolariteDto? selectedFinance;
+    private long? filtreAnneeAcademiqueId;
+    private long? filtreCycleFormationId;
+    private long? filtreNiveauEtudeId;
     private long? filtreParcoursAcademiqueId;
+    private long? filtreEtudiantId;
     private long? creationEtudiantId;
     private long? creationParcoursAcademiqueId;
     private bool showCreationForm;
@@ -380,24 +457,34 @@
     {
         etudiants = await EtudiantsService.GetEtudiantsAsync();
         etudiantOptions = etudiants
-            .OrderBy(x => x.Matricule)
-            .ThenBy(x => x.NomComplet)
+            .OrderBy(x => x.NomComplet)
             .Select(x => new EtudiantOption(x.Id, FormatEtudiant(x)))
             .ToList();
-        parcours = await ReferentielsService.GetParcoursAcademiquesAsync(inclureInactifs: false);
+        anneesAcademiques = await ReferentielsService.GetAnneesAcademiquesAsync();
+        cyclesFormation = await ReferentielsService.GetCyclesFormationAsync();
+        niveauxEtude = await ReferentielsService.GetNiveauxEtudeAsync();
+        tousLesParcours = await ReferentielsService.GetParcoursAcademiquesAsync(inclureInactifs: false);
+        RefreshParcoursOptions();
 
         await Load();
 
         if (EtudiantId is not null)
         {
-            var dossier = allDossiers
-                .Where(x => x.EtudiantId == EtudiantId.Value)
-                .OrderByDescending(GetDateCreation)
-                .FirstOrDefault();
+            var dossiersEtudiant = allDossiers
+                .Where(x => x.EtudiantId == EtudiantId.Value);
+            var dossier = ParcoursAcademiqueId is long parcoursId
+                ? dossiersEtudiant.FirstOrDefault(x => x.ParcoursAcademiqueId == parcoursId)
+                : dossiersEtudiant.OrderByDescending(GetDateCreation).FirstOrDefault();
 
             if (dossier is not null)
             {
                 await ChargerDossier(dossier);
+            }
+            else if (etudiantOptions.Any(x => x.Id == EtudiantId.Value))
+            {
+                showCreationForm = true;
+                creationEtudiantId = EtudiantId.Value;
+                creationParcoursAcademiqueId = ParcoursAcademiqueId;
             }
         }
     }
@@ -409,6 +496,7 @@
             isBusy = true;
             allDossiers = await DossierEtudiantService.GetDossiersEtudiantAnnuelsAsync();
             ApplyFilter();
+            if (dossiersEtudiantGrid is not null) await dossiersEtudiantGrid.Reload();
         }
         catch (Exception ex)
         {
@@ -420,29 +508,123 @@
         }
     }
 
-    private void OnFiltreParcoursChanged(object? _)
+    private async Task OnFiltreParcoursChanged(object? _)
     {
         selectedDossier = null;
         selectedFinance = null;
         ApplyFilter();
+        await ReloadDossiersEtudiantGridAsync();
+    }
+
+    private async Task OnFiltreEtudiantChanged(object? _)
+    {
+        selectedDossier = null;
+        selectedFinance = null;
+        ApplyFilter();
+        await ReloadDossiersEtudiantGridAsync();
+    }
+
+    private Task OnFiltreAnneeChanged(object? _)
+        => ApplyReferenceFiltersAsync();
+
+    private Task OnFiltreCycleChanged(object? _)
+        => ApplyReferenceFiltersAsync();
+
+    private Task OnFiltreNiveauChanged(object? _)
+        => ApplyReferenceFiltersAsync();
+
+    private async Task ApplyReferenceFiltersAsync()
+    {
+        selectedDossier = null;
+        selectedFinance = null;
+        RefreshParcoursOptions();
+        ApplyFilter();
+        await ReloadDossiersEtudiantGridAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshParcoursOptions()
+    {
+        parcours = tousLesParcours
+            .Where(x => filtreAnneeAcademiqueId is null || x.AnneeAcademiqueId == filtreAnneeAcademiqueId.Value)
+            .Where(x => filtreCycleFormationId is null || x.CycleFormationId == filtreCycleFormationId.Value)
+            .Where(x => filtreNiveauEtudeId is null || x.NiveauEtudeId == filtreNiveauEtudeId.Value)
+            .OrderBy(x => x.Libelle)
+            .ToList();
+
+        if (filtreParcoursAcademiqueId is not null
+            && parcours.All(x => x.Id != filtreParcoursAcademiqueId.Value))
+        {
+            filtreParcoursAcademiqueId = null;
+        }
     }
 
     private void ApplyFilter()
     {
+        var parcoursIds = parcours
+            .Select(x => x.Id)
+            .ToHashSet();
+
         items = allDossiers
+            .Where(x => parcoursIds.Contains(x.ParcoursAcademiqueId))
             .Where(x => filtreParcoursAcademiqueId is null || x.ParcoursAcademiqueId == filtreParcoursAcademiqueId.Value)
+            .Where(x => filtreEtudiantId is null || x.EtudiantId == filtreEtudiantId.Value)
             .OrderByDescending(GetDateCreation)
             .ThenBy(DisplayEtudiant)
             .ToList();
     }
 
+    private Task ReloadDossiersEtudiantGridAsync()
+        => dossiersEtudiantGrid is null ? Task.CompletedTask : dossiersEtudiantGrid.Reload();
+
     private async Task ResetFilters()
     {
+        filtreAnneeAcademiqueId = null;
+        filtreCycleFormationId = null;
+        filtreNiveauEtudeId = null;
         filtreParcoursAcademiqueId = null;
+        filtreEtudiantId = null;
         selectedDossier = null;
         selectedFinance = null;
+        RefreshParcoursOptions();
         ApplyFilter();
+        await ReloadDossiersEtudiantGridAsync();
         await InvokeAsync(StateHasChanged);
+    }
+
+    private void ExportDossiers()
+    {
+        var queryParts = new List<string>();
+        if (filtreParcoursAcademiqueId is not null)
+        {
+            queryParts.Add($"parcoursAcademiqueId={filtreParcoursAcademiqueId.Value}");
+        }
+
+        if (filtreAnneeAcademiqueId is not null)
+        {
+            queryParts.Add($"anneeAcademiqueId={filtreAnneeAcademiqueId.Value}");
+        }
+
+        if (filtreCycleFormationId is not null)
+        {
+            queryParts.Add($"cycleFormationId={filtreCycleFormationId.Value}");
+        }
+
+        if (filtreNiveauEtudeId is not null)
+        {
+            queryParts.Add($"niveauEtudeId={filtreNiveauEtudeId.Value}");
+        }
+
+        if (filtreEtudiantId is not null)
+        {
+            queryParts.Add($"etudiantId={filtreEtudiantId.Value}");
+        }
+
+        var query = queryParts.Count == 0
+            ? string.Empty
+            : $"?{string.Join("&", queryParts)}";
+
+        Navigation.NavigateTo($"/exports/dossiers-etudiants.xlsx{query}", forceLoad: true);
     }
 
     private void OpenCreationForm()
@@ -542,9 +724,7 @@
     }
 
     private static string FormatEtudiant(EtudiantDto etudiant)
-        => string.IsNullOrWhiteSpace(etudiant.Matricule)
-            ? etudiant.NomComplet
-            : $"{etudiant.Matricule} - {etudiant.NomComplet}";
+        => etudiant.NomComplet;
 
     private static string DisplayEtudiant(DossierEtudiantAnnuelDto item)
         => item.Etudiant?.NomComplet
@@ -554,7 +734,7 @@
             ?? "-";
 
     private static string DisplayMatricule(DossierEtudiantAnnuelDto item)
-        => item.Etudiant?.Matricule
+        => item.Dossier?.Matricule
             ?? item.Academique?.EtudiantMatricule
             ?? item.Financier?.EtudiantMatricule
             ?? item.Administratif?.EtudiantMatricule
@@ -602,6 +782,9 @@
 
     private static string GetOperationKey(DossierEtudiantAnnuelDto item)
         => $"{item.EtudiantId}:{item.ParcoursAcademiqueId}";
+
+    private static string GetOperationKey(long etudiantId, long parcoursAcademiqueId)
+        => $"{etudiantId}:{parcoursAcademiqueId}";
 
     private void NotifySuccess(string message) => NotificationService.Notify(NotificationSeverity.Success, "Succès", message);
     private void NotifyWarning(string message) => NotificationService.Notify(NotificationSeverity.Warning, "Information", message);

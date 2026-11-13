@@ -28,13 +28,20 @@ public interface IReferentielsService
 
     Task<List<FiliereDto>> GetFilieresAsync(CancellationToken cancellationToken = default);
     FiliereDto CreateDefaultFiliere();
+    Task<string> GenerateFiliereCodeAsync(
+        string? libelle,
+        long excludeId = 0,
+        CancellationToken cancellationToken = default);
     Task SaveFiliereAsync(FiliereDto dto, CancellationToken cancellationToken = default);
     Task DeleteFiliereAsync(long id, CancellationToken cancellationToken = default);
 
     Task<List<SpecialiteDto>> GetSpecialitesAsync(CancellationToken cancellationToken = default);
     Task<List<FiliereLookupDto>> GetFilieresActivesLookupAsync(CancellationToken cancellationToken = default);
-    SpecialiteDto CreateDefaultSpecialite(long? filiereId = null, long? cycleFormationId = null);
-    Task<string> GenerateSpecialiteCodeAsync(string? libelle, CancellationToken cancellationToken = default);
+    SpecialiteDto CreateDefaultSpecialite(long? filiereId = null);
+    Task<string> GenerateSpecialiteCodeAsync(
+        string? libelle,
+        long excludeId = 0,
+        CancellationToken cancellationToken = default);
     Task SaveSpecialiteAsync(SpecialiteDto dto, CancellationToken cancellationToken = default);
     Task DeleteSpecialiteAsync(long id, CancellationToken cancellationToken = default);
 

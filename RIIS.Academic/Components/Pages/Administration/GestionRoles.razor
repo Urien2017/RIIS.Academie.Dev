@@ -1,0 +1,357 @@
+@page "/administration/roles"
+@using Microsoft.AspNetCore.Authorization
+@using RIIS.Academic.Application.Authorization.Dtos
+@using RIIS.Academic.Application.Authorization.Services
+@attribute [Authorize(Roles = "Admin")]
+@inject NotificationService NotificationService
+@inject IRolesService RolesService
+
+<PageTitle>Gestion des rôles | RIIS Academic</PageTitle>
+
+<RadzenStack Gap="1.5rem">
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap" Gap="1rem">
+        <RadzenStack Gap="0.25rem">
+            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1">Gestion des rôles</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body2">Configurez les menus accessibles pour chaque rôle.</RadzenText>
+        </RadzenStack>
+        <RadzenButton Text="Ajouter un nouveau rôle" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="BeginAddRole" />
+    </RadzenStack>
+
+    <RadzenCard>
+        <RadzenDataGrid @ref="rolesGrid" Data="@roleRows" TItem="RoleDto" AllowPaging="false" AllowSorting="true" AllowColumnResize="true">
+            <Columns>
+                <RadzenDataGridColumn TItem="RoleDto" Property="Libelle" Title="Rôle" />
+                <RadzenDataGridColumn TItem="RoleDto" Property="Code" Title="Code" Width="150px" />
+                <RadzenDataGridColumn TItem="RoleDto" Title="Actions" Width="180px" Sortable="false" Filterable="false">
+                    <Template Context="role">
+                        <RadzenButton Icon="edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" title="Modifier" Click="@(() => BeginEditRole(role))" />
+                        <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" title="Supprimer" Disabled="@role.EstSysteme" Click="@(() => DeleteRole(role))" class="rz-ml-1" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+    @if (showRoleForm)
+    {
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
+            <RadzenTemplateForm TItem="RoleForm" Data="@roleForm" Submit="@SaveRole">
+                <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" class="riis-modal-title rz-m-0" TagName="TagName.H2">@(editingRole is null ? "Nouveau rôle" : "Modifier le rôle")</RadzenText>
+                    <RadzenFormField Text="Nom du rôle" Style="width:100%">
+                        <RadzenTextBox @bind-Value="@roleForm.Name" Name="RoleName" Style="width:100%" />
+                    </RadzenFormField>
+                    <RadzenRequiredValidator Component="RoleName" Text="Le nom du rôle est obligatoire." />
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
+                        <RadzenButton Text="Annuler" Icon="close" ButtonStyle="ButtonStyle.Light" Click="@CancelRoleForm" />
+                        <RadzenButton Text="Enregistrer" Icon="save" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" />
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenTemplateForm>
+            </RadzenCard>
+        </div>
+    }
+
+    <RadzenRow Gap="1rem">
+        <RadzenColumn Size="12" SizeMD="4">
+            <RadzenCard>
+                <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2">Rôle à configurer</RadzenText>
+                    <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@roleRows"
+                                    TextProperty="Libelle"
+                                    ValueProperty="Id"
+                                    @bind-Value="selectedRoleId"
+                                    TValue="long"
+                                    Change="OnRoleChanged"
+                                    Style="width:100%" />
+                    <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" ShowIcon="true">
+                        Les droits du rôle sélectionné sont cochés dans l'arborescence.
+                    </RadzenAlert>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <RadzenColumn Size="12" SizeMD="8">
+            <RadzenCard>
+                <RadzenStack Gap="1rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2">Menus disponibles</RadzenText>
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                            <RadzenButton Text="Réinitialiser" Icon="restart_alt" ButtonStyle="ButtonStyle.Light" Click="ResetPermissions" />
+                            <RadzenButton Text="Enregistrer les droits" Icon="save" ButtonStyle="ButtonStyle.Primary" Click="SavePermissions" />
+                        </RadzenStack>
+                    </RadzenStack>
+
+                    <RadzenTree AllowCheckBoxes="true"
+                                AllowCheckChildren="true"
+                                AllowCheckParents="true"
+                                @bind-CheckedValues="checkedPermissions"
+                                Style="width:100%; min-height: 28rem;">
+                        <RadzenTreeItem Text="Tableau de bord" Icon="insights" Value="@("/")" />
+                        <RadzenTreeItem Text="Dashboard scolarité" Icon="payments" Value="@("/dashboard-scolarite")" />
+
+                        <RadzenTreeItem Text="Référentiels" Icon="settings" Value="@("referentiels")">
+                            <RadzenTreeItem Text="Année académique" Icon="calendar_month" Value="@("/referentiels/annees")" />
+                            <RadzenTreeItem Text="Cycle" Icon="account_tree" Value="@("/referentiels/cycles")" />
+                            <RadzenTreeItem Text="Filière" Icon="category" Value="@("/referentiels/filieres")" />
+                            <RadzenTreeItem Text="Spécialité" Icon="workspace_premium" Value="@("/referentiels/specialites")" />
+                            <RadzenTreeItem Text="Niveau" Icon="stairs" Value="@("/referentiels/niveaux")" />
+                            <RadzenTreeItem Text="Parcours académiques" Icon="route" Value="@("/referentiels/parcours-academiques")" />
+                            <RadzenTreeItem Text="Classes" Icon="co_present" Value="@("/classes-pedagogiques")" />
+                        </RadzenTreeItem>
+
+                        <RadzenTreeItem Text="Programme pédagogique" Icon="menu_book" Value="@("programme")">
+                            <RadzenTreeItem Text="Maquette" Icon="schema" Value="@("/programme/maquettes")" />
+                            <RadzenTreeItem Text="Affectations des maquettes" Icon="link" Value="@("/programme/affectations-maquettes")" />
+                            <RadzenTreeItem Text="Semestre" Icon="view_timeline" Value="@("/programme/semestres")" />
+                            <RadzenTreeItem Text="UE" Icon="view_module" Value="@("/programme/ue")" />
+                            <RadzenTreeItem Text="EC" Icon="article" Value="@("/programme/ec")" />
+                        </RadzenTreeItem>
+
+                        <RadzenTreeItem Text="Académique" Icon="school" Value="@("academique")">
+                            <RadzenTreeItem Text="Étudiants" Icon="groups" Value="@("/etudiants")" />
+                            <RadzenTreeItem Text="Dossier étudiant" Icon="folder_shared" Value="@("/etudiants/dossier")" />
+                        </RadzenTreeItem>
+
+                        <RadzenTreeItem Text="Évaluations" Icon="fact_check" Value="@("evaluations")">
+                            <RadzenTreeItem Text="Saisie des notes" Icon="edit_note" Value="@("/saisie-notes")" />
+                            <RadzenTreeItem Text="Résultats" Icon="analytics" Value="@("/evaluations")" />
+                            <RadzenTreeItem Text="Calcul des résultats" Icon="calculate" Value="@("/calcul-resultats")" />
+                            <RadzenTreeItem Text="PV" Icon="article" Value="@("/pv")" />
+                            <RadzenTreeItem Text="Relevés" Icon="description" Value="@("/releves")" />
+                        </RadzenTreeItem>
+
+                        <RadzenTreeItem Text="Scolarité" Icon="payments" Value="@("scolarite")">
+                            <RadzenTreeItem Text="Types d'éléments" Icon="tune" Value="@("/scolarite/types-elements")" />
+                            <RadzenTreeItem Text="Tarifs" Icon="price_change" Value="@("/scolarite/tarifs")" />
+                            <RadzenTreeItem Text="Dossiers" Icon="folder_open" Value="@("/scolarite/dossiers")" />
+                            <RadzenTreeItem Text="Finances" Icon="payments" Value="@("/scolarite/finances")" />
+                            <RadzenTreeItem Text="Modes de paiement" Icon="account_balance_wallet" Value="@("/scolarite/modes-paiement")" />
+                        </RadzenTreeItem>
+
+                        <RadzenTreeItem Text="Menu détaillé" Icon="dashboard" Value="@("/Dashboard-docs")" />
+                        <RadzenTreeItem Text="Gestion des rôles" Icon="admin_panel_settings" Value="@("/administration/roles")" />
+                    </RadzenTree>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenStack>
+
+@code {
+    private List<RoleDto> roleRows = [];
+    private RadzenDataGrid<RoleDto>? rolesGrid;
+    private List<PermissionDto> permissions = [];
+    private long selectedRoleId;
+    private IEnumerable<object> checkedPermissions = [];
+    private bool showRoleForm;
+    private RoleDto? editingRole;
+    private RoleForm roleForm = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RolesService.EnsureMenuPermissionsAsync();
+        roleRows = await RolesService.GetRolesAsync();
+        permissions = await RolesService.GetPermissionsAsync();
+        await ReloadRolesGridAsync();
+        selectedRoleId = roleRows.FirstOrDefault(x => x.Code == "ADMIN")?.Id
+            ?? roleRows.FirstOrDefault()?.Id
+            ?? 0;
+        LoadPermissions();
+    }
+
+    private void OnRoleChanged(object? value)
+    {
+        if (long.TryParse(value?.ToString(), out var roleId))
+        {
+            selectedRoleId = roleId;
+        }
+        LoadPermissions();
+    }
+
+    private void LoadPermissions()
+    {
+        var role = roleRows.FirstOrDefault(x => x.Id == selectedRoleId);
+
+        if (string.Equals(role?.Code, "ADMIN", StringComparison.OrdinalIgnoreCase))
+        {
+            checkedPermissions = permissions
+                .Select(GetTreeValue)
+                .Cast<object>()
+                .ToArray();
+            return;
+        }
+
+        var permissionIds = role?.PermissionIds.ToHashSet() ?? [];
+        checkedPermissions = permissions
+            .Where(x => permissionIds.Contains(x.Id))
+            .Select(GetTreeValue)
+            .Cast<object>()
+            .ToArray();
+    }
+
+    private async Task SavePermissions()
+    {
+        try
+        {
+            if (selectedRoleId <= 0)
+            {
+                NotificationService.Notify(NotificationSeverity.Warning, "Rôle requis", "Sélectionnez un rôle.");
+                return;
+            }
+
+            var selectedValues = checkedPermissions
+                .OfType<string>()
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var selectedIds = permissions
+                .Where(permission => selectedValues.Contains(GetTreeValue(permission)))
+                .Select(permission => permission.Id)
+                .ToHashSet();
+
+            // Keep the hierarchy coherent even when Radzen reports only the node clicked.
+            var changed = true;
+            while (changed)
+            {
+                changed = false;
+
+                foreach (var permission in permissions)
+                {
+                    if (permission.ParentPermissionId.HasValue
+                        && selectedIds.Contains(permission.ParentPermissionId.Value)
+                        && selectedIds.Add(permission.Id))
+                    {
+                        changed = true;
+                    }
+
+                    if (selectedIds.Contains(permission.Id)
+                        && permission.ParentPermissionId.HasValue
+                        && selectedIds.Add(permission.ParentPermissionId.Value))
+                    {
+                        changed = true;
+                    }
+                }
+            }
+
+            var permissionIds = selectedIds.ToArray();
+            await RolesService.SaveRolePermissionsAsync(selectedRoleId, permissionIds);
+
+            roleRows = await RolesService.GetRolesAsync();
+            permissions = await RolesService.GetPermissionsAsync();
+            await ReloadRolesGridAsync();
+            LoadPermissions();
+
+            NotificationService.Notify(NotificationSeverity.Success, "Droits enregistrés", "Les permissions du rôle ont été enregistrées.");
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Erreur d'enregistrement", ex.Message);
+        }
+    }
+
+    private static string GetTreeValue(PermissionDto permission) => permission.Route ?? permission.Code;
+
+    private void ResetPermissions()
+    {
+        LoadPermissions();
+    }
+
+    private void BeginAddRole()
+    {
+        editingRole = null;
+        roleForm = new();
+        showRoleForm = true;
+    }
+
+    private void BeginEditRole(RoleDto role)
+    {
+        editingRole = role;
+        roleForm = new() { Name = role.Libelle };
+        showRoleForm = true;
+    }
+
+    private void CancelRoleForm() => showRoleForm = false;
+
+    private async Task SaveRole()
+    {
+        var name = roleForm.Name.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        if (roleRows.Any(x => string.Equals(x.Libelle, name, StringComparison.OrdinalIgnoreCase)
+            && !ReferenceEquals(x, editingRole)))
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Rôle existant", "Un rôle porte déjà ce nom.");
+            return;
+        }
+
+        var dto = new RoleDto
+        {
+            Id = editingRole?.Id ?? 0,
+            Code = editingRole?.Code ?? GenerateCode(name),
+            Libelle = name,
+            EstSysteme = editingRole?.EstSysteme ?? false,
+            EstActif = true
+        };
+
+        try
+        {
+            await RolesService.SaveRoleAsync(dto);
+            roleRows = await RolesService.GetRolesAsync();
+            await ReloadRolesGridAsync();
+            selectedRoleId = dto.Id;
+            showRoleForm = false;
+            LoadPermissions();
+            NotificationService.Notify(NotificationSeverity.Success, "Rôle enregistré", $"Le rôle {name} est disponible.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Enregistrement impossible", ex.Message);
+        }
+    }
+
+    private async Task DeleteRole(RoleDto role)
+    {
+        if (role.EstSysteme)
+        {
+            return;
+        }
+
+        try
+        {
+            await RolesService.DeleteRoleAsync(role.Id);
+            roleRows.Remove(role);
+            if (selectedRoleId == role.Id)
+            {
+                selectedRoleId = roleRows.FirstOrDefault()?.Id ?? 0;
+            }
+            await ReloadRolesGridAsync();
+            LoadPermissions();
+        }
+        catch (InvalidOperationException ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Suppression impossible", ex.Message);
+        }
+    }
+
+    private static string GenerateCode(string name)
+    {
+        var code = new string(name
+            .Normalize(System.Text.NormalizationForm.FormD)
+            .Where(char.IsLetterOrDigit)
+            .ToArray())
+            .ToUpperInvariant();
+        return string.IsNullOrWhiteSpace(code) ? "ROLE" : code[..Math.Min(code.Length, 50)];
+    }
+
+    private Task ReloadRolesGridAsync()
+        => rolesGrid is null ? Task.CompletedTask : rolesGrid.Reload();
+
+    private sealed class RoleForm
+    {
+        public string Name { get; set; } = string.Empty;
+    }
+}

@@ -22,7 +22,8 @@ public class DossierFinancierDto
         DossierFinancier entity,
         Etudiant? etudiant = null,
         ParcoursAcademique? parcours = null,
-        AnneeAcademique? annee = null)
+        AnneeAcademique? annee = null,
+        string? matricule = null)
         => new()
         {
             Id = entity.Id,
@@ -34,7 +35,7 @@ public class DossierFinancierDto
             CreeLeUtc = entity.CreeLeUtc,
             DateDernierRecalculUtc = entity.DateDernierRecalculUtc,
             Observation = entity.Observation,
-            EtudiantMatricule = etudiant?.Matricule ?? string.Empty,
+            EtudiantMatricule = matricule ?? string.Empty,
             EtudiantNomComplet = etudiant is null ? string.Empty : $"{etudiant.Nom} {etudiant.Prenoms}".Trim(),
             ParcoursLibelle = parcours?.Libelle ?? string.Empty,
             AnneeAcademiqueLibelle = annee?.Libelle ?? string.Empty

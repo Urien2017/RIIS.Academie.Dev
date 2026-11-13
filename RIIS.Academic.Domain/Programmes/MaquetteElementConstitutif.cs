@@ -16,4 +16,5 @@ public class MaquetteElementConstitutif
     public ElementConstitutif ElementConstitutif { get; set; } = null!;
     public ICollection<EvaluationAcademique> Evaluations { get; set; } = [];
     public ICollection<ResultatElementConstitutif> ResultatsElementsConstitutifs { get; set; } = [];
+    public ICollection<SeanceCours> SeancesCours { get; set; } = [];
 }

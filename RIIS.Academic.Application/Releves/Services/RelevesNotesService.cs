@@ -2,11 +2,13 @@ using RIIS.Academic.Application.Abstractions.Persistence;
 using RIIS.Academic.Application.Abstractions.Services;
 using RIIS.Academic.Application.Releves.Dtos;
 using RIIS.Academic.Domain;
+using QRCoder;
 
 namespace RIIS.Academic.Application.Releves.Services;
 
 public class RelevesNotesService(
     IRepository<DossierAcademique> dossiersAcademiques,
+    IRepository<DossierEtudiant> dossiersEtudiants,
     IRepository<Etudiant> etudiants,
     IRepository<AnneeAcademique> anneesAcademiques,
     IRepository<ParcoursAcademique> parcoursAcademiques,
@@ -15,6 +17,7 @@ public class RelevesNotesService(
     IRepository<Specialite> specialites,
     IRepository<NiveauEtude> niveauxEtude,
     IRepository<MaquettePedagogique> maquettesPedagogiques,
+    IRepository<AffectationMaquette> affectationsMaquettes,
     IRepository<SemestrePedagogique> semestresPedagogiques,
     IRepository<UniteEnseignement> unitesEnseignement,
     IRepository<ElementConstitutif> elementsConstitutifs,
@@ -28,13 +31,23 @@ public class RelevesNotesService(
         long? cycleFormationId = null,
         long? niveauEtudeId = null,
         long? classePedagogiqueId = null,
+        long? parcoursAcademiqueId = null,
         CancellationToken cancellationToken = default)
     {
         var dossierItems = await dossiersAcademiques.ListAsync(cancellationToken);
+        var dossierEtudiantItems = await dossiersEtudiants.ListAsync(cancellationToken);
         var etudiantItems = await etudiants.ListAsync(cancellationToken);
         var anneeItems = await anneesAcademiques.ListAsync(cancellationToken);
         var parcoursItems = await parcoursAcademiques.ListAsync(cancellationToken);
         var niveauItems = await niveauxEtude.ListAsync(cancellationToken);
+        var noteItems = await notesEvaluations.ListAsync(cancellationToken);
+        var dossierIdsAvecNotes = noteItems
+            .Select(x => x.DossierAcademiqueId)
+            .ToHashSet();
+
+        dossierItems = dossierItems
+            .Where(x => dossierIdsAvecNotes.Contains(x.Id))
+            .ToList();
 
         if (anneeAcademiqueId is not null)
         {
@@ -54,6 +67,13 @@ public class RelevesNotesService(
             dossierItems = dossierItems.Where(x => parcoursIds.Contains(x.ParcoursAcademiqueId)).ToList();
         }
 
+        if (parcoursAcademiqueId is not null)
+        {
+            dossierItems = dossierItems
+                .Where(x => x.ParcoursAcademiqueId == parcoursAcademiqueId)
+                .ToList();
+        }
+
         if (classePedagogiqueId is not null)
         {
             dossierItems = dossierItems.Where(x => x.ClassePedagogiqueId == classePedagogiqueId).ToList();
@@ -70,7 +90,9 @@ public class RelevesNotesService(
                 return new ReleveNoteEtudiantDisponibleDto
                 {
                     DossierAcademiqueId = x.Id,
-                    Matricule = etudiant?.Matricule ?? string.Empty,
+                    Matricule = dossierEtudiantItems.FirstOrDefault(d =>
+                        d.EtudiantId == x.EtudiantId
+                        && d.ParcoursAcademiqueId == x.ParcoursAcademiqueId)?.Matricule ?? string.Empty,
                     EtudiantNomComplet = etudiant is null ? string.Empty : $"{etudiant.Nom} {etudiant.Prenoms}",
                     ParcoursLibelle = parcours is null ? string.Empty : FormatCodeLibelle(parcours.Code, parcours.Libelle),
                     NiveauLibelle = niveau?.Libelle ?? string.Empty,
@@ -85,8 +107,9 @@ public class RelevesNotesService(
         long dossierAcademiqueId,
         CancellationToken cancellationToken = default)
     {
-        var dossierItems = await dossiersAcademiques.ListAsync(cancellationToken);
-        var dossier = dossierItems.FirstOrDefault(x => x.Id == dossierAcademiqueId);
+        var dossier = await dossiersAcademiques.GetByIdAsync(
+            dossierAcademiqueId,
+            cancellationToken);
 
         if (dossier is null)
         {
@@ -94,6 +117,7 @@ public class RelevesNotesService(
         }
 
         var etudiantItems = await etudiants.ListAsync(cancellationToken);
+        var dossierEtudiantItems = await dossiersEtudiants.ListAsync(cancellationToken);
         var anneeItems = await anneesAcademiques.ListAsync(cancellationToken);
         var parcoursItems = await parcoursAcademiques.ListAsync(cancellationToken);
         var cycleItems = await cyclesFormation.ListAsync(cancellationToken);
@@ -101,12 +125,21 @@ public class RelevesNotesService(
         var specialiteItems = await specialites.ListAsync(cancellationToken);
         var niveauItems = await niveauxEtude.ListAsync(cancellationToken);
         var maquetteItems = await maquettesPedagogiques.ListAsync(cancellationToken);
+        var affectationItems = await affectationsMaquettes.ListAsync(cancellationToken);
         var semestreItems = await semestresPedagogiques.ListAsync(cancellationToken);
         var ueItems = await unitesEnseignement.ListAsync(cancellationToken);
         var ecItems = await elementsConstitutifs.ListAsync(cancellationToken);
         var maquetteEcItems = await maquetteElementsConstitutifs.ListAsync(cancellationToken);
         var evaluationItems = await evaluationsAcademiques.ListAsync(cancellationToken);
         var noteItems = await notesEvaluations.ListAsync(cancellationToken);
+        var notesDossier = noteItems
+            .Where(x => x.DossierAcademiqueId == dossier.Id)
+            .ToList();
+
+        if (notesDossier.Count == 0)
+        {
+            return null;
+        }
 
         var etudiant = etudiantItems.FirstOrDefault(x => x.Id == dossier.EtudiantId)
             ?? throw new InvalidOperationException("L'etudiant du dossier academique est introuvable.");
@@ -119,7 +152,7 @@ public class RelevesNotesService(
         var specialite = specialiteItems.FirstOrDefault(x => x.Id == parcours.SpecialiteId);
         var niveau = niveauItems.FirstOrDefault(x => x.Id == parcours.NiveauEtudeId);
 
-        var maquette = ResolveMaquette(parcours, maquetteItems);
+        var maquette = ResolveMaquette(parcours, maquetteItems, affectationItems);
         if (maquette is null)
         {
             throw new InvalidOperationException("Aucune maquette pedagogique n'est rattachee au parcours de ce dossier.");
@@ -133,7 +166,9 @@ public class RelevesNotesService(
             CycleFormationCode = cycle?.Code ?? string.Empty,
             CycleFormationLibelle = cycle?.Libelle ?? string.Empty,
             EtudiantNomComplet = $"{etudiant.Nom} {etudiant.Prenoms}",
-            Matricule = etudiant.Matricule ?? string.Empty,
+            Matricule = dossierEtudiantItems.FirstOrDefault(x =>
+                x.EtudiantId == dossier.EtudiantId
+                && x.ParcoursAcademiqueId == dossier.ParcoursAcademiqueId)?.Matricule ?? string.Empty,
             DateNaissance = etudiant.DateNaissance,
             LieuNaissance = etudiant.LieuNaissance,
             FiliereLibelle = filiere?.Libelle ?? string.Empty,
@@ -144,25 +179,37 @@ public class RelevesNotesService(
 
         foreach (var numeroSemestre in numerosSemestres)
         {
-            var semestre = semestreItems
+            var semestres = semestreItems
                 .Where(x => x.MaquettePedagogiqueId == maquette.Id && x.NumeroSemestre == numeroSemestre)
-                .OrderBy(x => x.Id)
-                .FirstOrDefault();
+                .OrderBy(x => x.OrdreAffichage)
+                .ThenBy(x => x.Id)
+                .ToList();
 
-            if (semestre is null)
+            if (semestres.Count == 0)
             {
                 continue;
             }
 
-            releve.Semestres.Add(BuildSemestreDto(
+            var semestreDto = BuildSemestreDto(
                 dossier,
                 annee,
-                semestre,
+                numeroSemestre,
+                semestres,
                 ueItems,
                 ecItems,
                 maquetteEcItems,
                 evaluationItems,
-                noteItems));
+                notesDossier);
+
+            if (semestreDto.Lignes.Count > 0)
+            {
+                releve.Semestres.Add(semestreDto);
+            }
+        }
+
+        if (releve.Semestres.Count == 0)
+        {
+            return null;
         }
 
         releve.CreditsCapitalises = releve.Semestres.Sum(x => x.CreditsCapitalises);
@@ -189,32 +236,69 @@ public class RelevesNotesService(
             CreditsCapitalises = releve.CreditsCapitalises
         });
 
+        releve.QrCodeContent = BuildQrCodeContent(releve);
+        releve.QrCodeDataUrl = BuildQrCodeDataUrl(releve.QrCodeContent);
+
         return releve;
+    }
+
+    private static string BuildQrCodeContent(ReleveNoteAnnuelDto releve)
+        => string.Join(
+            Environment.NewLine,
+            "RIIS Academic",
+            "RELEVE DE NOTES ANNUEL",
+            $"Dossier: {releve.DossierAcademiqueId}",
+            $"Matricule: {releve.Matricule}",
+            $"Annee: {releve.AnneeAcademiqueLibelle}",
+            $"Decision: {releve.Decision}");
+
+    private static string BuildQrCodeDataUrl(string content)
+    {
+        using var generator = new QRCodeGenerator();
+        using var qrCodeData = generator.CreateQrCode(content, QRCodeGenerator.ECCLevel.Q);
+        var qrCode = new PngByteQRCode(qrCodeData);
+        var png = qrCode.GetGraphic(8);
+
+        return $"data:image/png;base64,{Convert.ToBase64String(png)}";
     }
 
     private ReleveNoteSemestreDto BuildSemestreDto(
         DossierAcademique dossier,
         AnneeAcademique annee,
-        SemestrePedagogique semestre,
+        byte numeroSemestre,
+        IReadOnlyCollection<SemestrePedagogique> semestres,
         IReadOnlyCollection<UniteEnseignement> ueItems,
         IReadOnlyCollection<ElementConstitutif> ecItems,
         IReadOnlyCollection<MaquetteElementConstitutif> maquetteEcItems,
         IReadOnlyCollection<EvaluationAcademique> evaluationItems,
         IReadOnlyCollection<NoteEvaluation> noteItems)
     {
+        var semestreIds = semestres.Select(x => x.Id).ToHashSet();
+        var maquetteEcsSemestre = maquetteEcItems
+            .Where(x => semestreIds.Contains(x.SemestrePedagogiqueId))
+            .OrderBy(x => x.SemestrePedagogiqueId)
+            .ThenBy(x => x.OrdreAffichage)
+            .ToList();
+
         var semestreDto = new ReleveNoteSemestreDto
         {
-            Numero = semestre.NumeroSemestre,
-            Libelle = $"SEMESTRE {semestre.NumeroSemestre}",
-            CreditsAttendus = semestre.CreditsUE
+            Numero = numeroSemestre,
+            Libelle = $"SEMESTRE {numeroSemestre}",
+            CreditsAttendus = maquetteEcsSemestre.Sum(x => x.Credits)
         };
 
-        foreach (var maquetteEc in maquetteEcItems.Where(mec => mec.SemestrePedagogiqueId == semestre.Id))
+        foreach (var maquetteEc in maquetteEcsSemestre)
         {
             var ec = ecItems.FirstOrDefault(e => e.Id == maquetteEc.ElementConstitutifId);
-            var ue = ec is null ? null : ueItems.FirstOrDefault(u => u.Id == ec.UniteEnseignementId);
+            var semestre = semestres.FirstOrDefault(x => x.Id == maquetteEc.SemestrePedagogiqueId);
+            var ue = ueItems.FirstOrDefault(u => u.Id == ec?.UniteEnseignementId);
 
-            if (ec is null || ue is null)
+            if (ec is null || ue is null || semestre is null)
+            {
+                continue;
+            }
+
+            if (!HasNoteForMaquetteElement(dossier.Id, annee.Id, maquetteEc.Id, evaluationItems, noteItems))
             {
                 continue;
             }
@@ -232,9 +316,9 @@ public class RelevesNotesService(
                 UniteEnseignementLibelle = ue.Libelle,
                 ElementConstitutifCode = ec.Code,
                 ElementConstitutifLibelle = ec.Libelle,
-                Session = moyenneSr is not null ? "SR" : $"SN{semestre.NumeroSemestre}",
+                Session = moyenneSr is not null ? "SR" : $"SN{numeroSemestre}",
                 NoteSur20 = moyenneFinale,
-                Decision = moyenneFinale >= 10m ? "V" : "NV",
+                Decision = moyenneFinale is null ? string.Empty : moyenneFinale >= 10m ? "V" : "NV",
                 CreditsCapitalises = credits,
                 Grade = GetGrade(moyenneFinale)
             });
@@ -250,14 +334,52 @@ public class RelevesNotesService(
         return semestreDto;
     }
 
+    private static bool HasNoteForMaquetteElement(
+        long dossierAcademiqueId,
+        long anneeAcademiqueId,
+        long maquetteElementConstitutifId,
+        IReadOnlyCollection<EvaluationAcademique> evaluations,
+        IReadOnlyCollection<NoteEvaluation> notes)
+    {
+        var evaluationIds = evaluations
+            .Where(x => x.AnneeAcademiqueId == anneeAcademiqueId
+                && x.MaquetteElementConstitutifId == maquetteElementConstitutifId)
+            .Select(x => x.Id)
+            .ToHashSet();
+
+        return notes.Any(x => x.DossierAcademiqueId == dossierAcademiqueId
+            && evaluationIds.Contains(x.EvaluationAcademiqueId));
+    }
+
     private static MaquettePedagogique? ResolveMaquette(
         ParcoursAcademique parcours,
-        IReadOnlyCollection<MaquettePedagogique> maquettes)
-        => maquettes
+        IReadOnlyCollection<MaquettePedagogique> maquettes,
+        IReadOnlyCollection<AffectationMaquette> affectations)
+    {
+        var affectation = affectations
+            .Where(x => x.ParcoursAcademiqueId == parcours.Id)
+            .OrderByDescending(x => x.EstActive)
+            .ThenByDescending(x => x.EstPrincipale)
+            .ThenByDescending(x => x.Id)
+            .FirstOrDefault();
+
+        if (affectation is not null)
+        {
+            var maquetteAffectee = maquettes.FirstOrDefault(x => x.Id == affectation.MaquettePedagogiqueId);
+            if (maquetteAffectee is not null)
+            {
+                return maquetteAffectee;
+            }
+        }
+
+        // Compatibilité avec les anciennes bases où la liaison était portée
+        // directement par MaquettesPedagogiques.ParcoursAcademiqueId.
+        return maquettes
             .Where(x => x.ParcoursAcademiqueId == parcours.Id)
             .OrderByDescending(x => x.Statut == StatutMaquettePedagogique.Active)
             .ThenByDescending(x => x.Version)
             .FirstOrDefault();
+    }
 
     private static decimal? CalculerMoyenneType(
         long dossierAcademiqueId,

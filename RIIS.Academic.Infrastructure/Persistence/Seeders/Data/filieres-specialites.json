@@ -1,0 +1,68 @@
+{
+  "Filieres": [
+    {
+      "Code": "GESTION",
+      "Libelle": "Gestion",
+      "Specialites": [
+        {
+          "Code": "BQF",
+          "Libelle": "Banque et finance"
+        },
+        {
+          "Code": "CGE",
+          "Libelle": "Comptabilité et gestion des entreprises"
+        },
+        {
+          "Code": "GRH",
+          "Libelle": "Gestion des ressources humaines"
+        },
+        {
+          "Code": "MEC",
+          "Libelle": "Management / Économie"
+        }
+      ]
+    },
+    {
+      "Code": "GENIE-INFORMATIQUE",
+      "Libelle": "Informatique",
+      "Specialites": [
+        {
+          "Code": "IGL",
+          "Libelle": "Génie logiciel"
+        },
+        {
+          "Code": "RES",
+          "Libelle": "Réseaux et Sécurité"
+        }
+      ]
+    },
+    {
+      "Code": "GENIE-CIVIL",
+      "Libelle": "Génie civil",
+      "Specialites": [
+        {
+          "Code": "BAT",
+          "Libelle": "Bâtiment"
+        },
+        {
+          "Code": "TPU",
+          "Libelle": "Travaux publics"
+        },
+        {
+          "Code": "GTO",
+          "Libelle": "Géomètre Topographe"
+        }
+      ]
+    },
+    {
+      "Code": "GENIE-ELECTRIQUE",
+      "Libelle": "Génie électrique",
+      "Specialites": [
+        {
+          "Code": "ELT",
+          "Libelle": "Electrotechnique"
+        }
+      ]
+    }
+  ]
+}

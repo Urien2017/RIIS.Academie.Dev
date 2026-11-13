@@ -5,7 +5,9 @@ namespace RIIS.Academic.Domain;
 public class MaquettePedagogique
 {
     public long Id { get; set; }
-    public long ParcoursAcademiqueId { get; set; }
+    // Compatibilité de transition avec les anciennes données. La relation métier
+    // active est AffectationsMaquettes; cette colonne ne porte plus de FK.
+    public long? ParcoursAcademiqueId { get; set; }
     public required string Code { get; set; }
     public required string Libelle { get; set; }
     public required string Version { get; set; }
@@ -22,6 +24,7 @@ public class MaquettePedagogique
     [NotMapped]
     public short VolumeHoraireTotal => (short)(Semestres?.Sum(s => s.VolumeHoraireUE) ?? 0);
 
-    public ParcoursAcademique ParcoursAcademique { get; set; } = null!;
+    public ICollection<AffectationMaquette> AffectationsMaquettes { get; set; } = [];
     public ICollection<SemestrePedagogique> Semestres { get; set; } = [];
+    public ICollection<UniteEnseignement> UnitesEnseignement { get; set; } = [];
 }

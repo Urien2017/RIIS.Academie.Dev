@@ -1,0 +1,2694 @@
+{
+  "programmes": [
+    {
+      "sourceDocument": "INGENIERIE GENERALISTE.docx",
+      "version": "2026-2027",
+      "anneeAcademique": {
+        "libelle": "2026-2027",
+        "anneeDebut": 2026,
+        "anneeFin": 2027
+      },
+      "cycle": {
+        "code": "PREPA",
+        "libelle": "Préparatoire",
+        "ordreAffichage": 1
+      },
+      "niveau": {
+        "numero": 1,
+        "libelle": "Niveau 1"
+      },
+      "filiere": {
+        "code": "INGENIEUR",
+        "libelle": "Ingénieur"
+      },
+      "specialite": {
+        "code": "ING-GEN",
+        "libelle": "Ingénieur Généraliste"
+      },
+      "programme": {
+        "parcoursCode": "2026-2027-PREPA-N1-ING-GEN",
+        "parcoursLibelle": "2026-2027 - PREPA Niveau 1 - Ingénieur - Ingénieur Généraliste",
+        "maquetteCode": "MAQ-PREPA1-ING-GEN-2026-2027",
+        "maquetteLibelle": "Programme officiel PREPA Niveau 1 - Ingénieur Généraliste",
+        "semestres": [
+          {
+            "numero": 1,
+            "libelle": "Semestre 1",
+            "ordreAffichage": 1,
+            "unitesEnseignement": [
+              {
+                "code": "INGG111",
+                "codeSource": "ING111",
+                "libelle": "Electricité, électronique et systèmes",
+                "ordreAffichage": 1,
+                "credits": 4,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG111-EC01",
+                    "codeSource": "ING111",
+                    "libelle": "Electricité et Electronique",
+                    "credits": 4,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG112",
+                "codeSource": "ING112",
+                "libelle": "Sciences fondamentales pour l’ingénieur",
+                "ordreAffichage": 2,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG112-EC01",
+                    "codeSource": "ING112",
+                    "libelle": "Mécanique",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG113",
+                "codeSource": "ING113",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 3,
+                "credits": 4,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG113-EC01",
+                    "codeSource": "ING113",
+                    "libelle": "Numérical data bases and application",
+                    "credits": 4,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG114",
+                "codeSource": "ING114",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 4,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG114-EC01",
+                    "codeSource": "ING114",
+                    "libelle": "Algorithme et application",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG115",
+                "codeSource": "ING115",
+                "libelle": "Mathématiques appliquées",
+                "ordreAffichage": 5,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG115-EC01",
+                    "codeSource": "ING115",
+                    "libelle": "Mathématiques appliquées pour l’ingénieur",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG116",
+                "codeSource": "ING116",
+                "libelle": "Mathématiques appliquées",
+                "ordreAffichage": 6,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG116-EC01",
+                    "codeSource": "ING116",
+                    "libelle": "Basics mathematics",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG117",
+                "codeSource": "ING117",
+                "libelle": "Sciences physiques et chimiques",
+                "ordreAffichage": 7,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG117-EC01",
+                    "codeSource": "ING117",
+                    "libelle": "Chimie Générale",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG118",
+                "codeSource": "ING118",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 8,
+                "credits": 1,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG118-EC01",
+                    "codeSource": "ING118",
+                    "libelle": "Réglémentation",
+                    "credits": 1,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG119",
+                "codeSource": "ING119",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 9,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG119-EC01",
+                    "codeSource": "ING119",
+                    "libelle": "Global ethics for contemporary societies",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG1110",
+                "codeSource": "ING1110",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 10,
+                "credits": 1,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG1110-EC01",
+                    "codeSource": "ING1110",
+                    "libelle": "Communication",
+                    "credits": 1,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG1111",
+                "codeSource": "ING1111",
+                "libelle": "Sciences physiques et traitement du signal",
+                "ordreAffichage": 11,
+                "credits": 4,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG1111-EC01",
+                    "codeSource": "ING1111",
+                    "libelle": "Physique des ondes et traitement du signal",
+                    "credits": 4,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG1112",
+                "codeSource": "ING1112",
+                "libelle": "Projet professionnel et personnel",
+                "ordreAffichage": 12,
+                "credits": 1,
+                "volumeHoraire": 15,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG1112-EC01",
+                    "codeSource": "ING1112",
+                    "libelle": "Projet professionnel et personnel",
+                    "credits": 1,
+                    "volumeHoraire": 15,
+                    "ordreAffichage": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "numero": 2,
+            "libelle": "Semestre 2",
+            "ordreAffichage": 2,
+            "unitesEnseignement": [
+              {
+                "code": "INGG121",
+                "codeSource": "ING121",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 1,
+                "credits": 3,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG121-EC01",
+                    "codeSource": "ING121",
+                    "libelle": "Travaux pratique informatique",
+                    "credits": 3,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG122",
+                "codeSource": "ING122",
+                "libelle": "Sciences physiques et chimiques",
+                "ordreAffichage": 2,
+                "credits": 4,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG122-EC01",
+                    "codeSource": "ING122",
+                    "libelle": "Physique 2",
+                    "credits": 4,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG123",
+                "codeSource": "ING123",
+                "libelle": "Méthodes et processus industriels",
+                "ordreAffichage": 3,
+                "credits": 3,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG123-EC01",
+                    "codeSource": "ING123",
+                    "libelle": "Outils et méthodes de l’ingénieur",
+                    "credits": 3,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG124",
+                "codeSource": "ING124",
+                "libelle": "Méthodes et processus industriels",
+                "ordreAffichage": 4,
+                "credits": 3,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG124-EC01",
+                    "codeSource": "ING124",
+                    "libelle": "Processus industriels",
+                    "credits": 3,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG125",
+                "codeSource": "ING125",
+                "libelle": "Mathématiques appliquées",
+                "ordreAffichage": 5,
+                "credits": 3,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG125-EC01",
+                    "codeSource": "ING125",
+                    "libelle": "Probabilités et statistiques",
+                    "credits": 3,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG126",
+                "codeSource": "ING126",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 6,
+                "credits": 1,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG126-EC01",
+                    "codeSource": "ING126",
+                    "libelle": "Réglementation 2",
+                    "credits": 1,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG127",
+                "codeSource": "ING127",
+                "libelle": "Sciences physiques et chimiques",
+                "ordreAffichage": 7,
+                "credits": 3,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG127-EC01",
+                    "codeSource": "ING127",
+                    "libelle": "Travaux pratique de physiques",
+                    "credits": 3,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG128",
+                "codeSource": "ING128",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 8,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG128-EC01",
+                    "codeSource": "ING128",
+                    "libelle": "Bases de données",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG129",
+                "codeSource": "ING129",
+                "libelle": "Electricité, électronique et systèmes",
+                "ordreAffichage": 9,
+                "credits": 4,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG129-EC01",
+                    "codeSource": "ING129",
+                    "libelle": "Circuit logique et algèbre de Boole",
+                    "credits": 4,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG1210",
+                "codeSource": "ING1210",
+                "libelle": "Mathématiques appliquées",
+                "ordreAffichage": 10,
+                "credits": 3,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG1210-EC01",
+                    "codeSource": "ING1210",
+                    "libelle": "Mathématiques appliquées pour l’ingénieur 2",
+                    "credits": 3,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG1211",
+                "codeSource": "ING1211",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 11,
+                "credits": 2,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG1211-EC01",
+                    "codeSource": "ING1211",
+                    "libelle": "Business English",
+                    "credits": 2,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG1212",
+                "codeSource": "ING1212",
+                "libelle": "Management, entrepreneuriat et organisation",
+                "ordreAffichage": 12,
+                "credits": 1,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG1212-EC01",
+                    "codeSource": "ING1212",
+                    "libelle": "Création et organisation des entreprises",
+                    "credits": 1,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "numero": 3,
+            "libelle": "Semestre 3",
+            "ordreAffichage": 3,
+            "unitesEnseignement": [
+              {
+                "code": "INGG131",
+                "codeSource": "ING131",
+                "libelle": "Sciences fondamentales pour l’ingénieur",
+                "ordreAffichage": 1,
+                "credits": 4,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG131-EC01",
+                    "codeSource": "ING131",
+                    "libelle": "Mécanique des fluides",
+                    "credits": 4,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG132",
+                "codeSource": "ING132",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 2,
+                "credits": 4,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG132-EC01",
+                    "codeSource": "ING132",
+                    "libelle": "Dessin et technologie du batiment",
+                    "credits": 4,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG133",
+                "codeSource": "ING133",
+                "libelle": "Réseaux, systèmes et architecture informatique",
+                "ordreAffichage": 3,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG133-EC01",
+                    "codeSource": "ING133",
+                    "libelle": "Procédés généraux de construction",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG134",
+                "codeSource": "ING134",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 4,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG134-EC01",
+                    "codeSource": "ING134",
+                    "libelle": "Base de données",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG135",
+                "codeSource": "ING135",
+                "libelle": "Réseaux, systèmes et architecture informatique",
+                "ordreAffichage": 5,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG135-EC01",
+                    "codeSource": "ING135",
+                    "libelle": "Architecture des systèmes informatique",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG136",
+                "codeSource": "ING136",
+                "libelle": "Données et programmation",
+                "ordreAffichage": 6,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG136-EC01",
+                    "codeSource": "ING136",
+                    "libelle": "Matériaux généraux et équipement",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG137",
+                "codeSource": "ING137",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 7,
+                "credits": 2,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG137-EC01",
+                    "codeSource": "ING137",
+                    "libelle": "Anglais",
+                    "credits": 2,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG138",
+                "codeSource": "ING138",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 8,
+                "credits": 1,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG138-EC01",
+                    "codeSource": "ING138",
+                    "libelle": "Communication",
+                    "credits": 1,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG139",
+                "codeSource": "ING139",
+                "libelle": "Projet professionnel et personnel",
+                "ordreAffichage": 9,
+                "credits": 1,
+                "volumeHoraire": 15,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG139-EC01",
+                    "codeSource": "ING139",
+                    "libelle": "Initiation au projet",
+                    "credits": 1,
+                    "volumeHoraire": 15,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG1310",
+                "codeSource": "ING1310",
+                "libelle": "Electricité, électronique et systèmes",
+                "ordreAffichage": 10,
+                "credits": 4,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG1310-EC01",
+                    "codeSource": "ING1310",
+                    "libelle": "Electrotechnique embarqué",
+                    "credits": 4,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "numero": 4,
+            "libelle": "Semestre 4",
+            "ordreAffichage": 4,
+            "unitesEnseignement": [
+              {
+                "code": "INGG141",
+                "codeSource": "ING141",
+                "libelle": "construction et géotechnique",
+                "ordreAffichage": 1,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG141-EC01",
+                    "codeSource": "ING141",
+                    "libelle": "Géotechnique",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG142",
+                "codeSource": "ING142",
+                "libelle": "programmation et résistance des matériaux",
+                "ordreAffichage": 2,
+                "credits": 4,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG142-EC01",
+                    "codeSource": "ING142",
+                    "libelle": "Résistance des matériaux (RDM)",
+                    "credits": 4,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG143",
+                "codeSource": "ING143",
+                "libelle": "Fondation et essaie",
+                "ordreAffichage": 3,
+                "credits": 5,
+                "volumeHoraire": 75,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG143-EC01",
+                    "codeSource": "ING143",
+                    "libelle": "Fondation et soutènement",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  },
+                  {
+                    "code": "INGG143-EC02",
+                    "codeSource": "ING143",
+                    "libelle": "Topographie et essaie",
+                    "credits": 2,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 2
+                  }
+                ]
+              },
+              {
+                "code": "INGG144",
+                "codeSource": "ING144",
+                "libelle": "Mathématiques appliquées",
+                "ordreAffichage": 4,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG144-EC01",
+                    "codeSource": "ING144",
+                    "libelle": "Algebre Multitechnique",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG145",
+                "codeSource": "ING145",
+                "libelle": "Méthodes et processus industriels",
+                "ordreAffichage": 5,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG145-EC01",
+                    "codeSource": "ING145",
+                    "libelle": "Initiation a la fabrication multitechnique",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG146",
+                "codeSource": "ING146",
+                "libelle": "Bureau d’études",
+                "ordreAffichage": 6,
+                "credits": 2,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG146-EC01",
+                    "codeSource": "ING146",
+                    "libelle": "OUVRAGE D’ART",
+                    "credits": 2,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG147",
+                "codeSource": "ING147",
+                "libelle": "Projet professionnel et personnel",
+                "ordreAffichage": 7,
+                "credits": 1,
+                "volumeHoraire": 15,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG147-EC01",
+                    "codeSource": "ING147",
+                    "libelle": "Developpement personnel/relation professionnelle",
+                    "credits": 1,
+                    "volumeHoraire": 15,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG148",
+                "codeSource": "ING148",
+                "libelle": "Structures beton arme",
+                "ordreAffichage": 8,
+                "credits": 2,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG148-EC01",
+                    "codeSource": "ING148",
+                    "libelle": "Beton arme",
+                    "credits": 2,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG149",
+                "codeSource": "ING149",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 9,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG149-EC01",
+                    "codeSource": "ING149",
+                    "libelle": "Ethique des technologies et du numerique",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGG1410",
+                "codeSource": "ING1410",
+                "libelle": "Stage professionnel",
+                "ordreAffichage": 10,
+                "credits": 7,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGG1410-EC01",
+                    "codeSource": "ING1410",
+                    "libelle": "STAGE",
+                    "credits": 7,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "sourceDocument": "MANAGEMENT ET ECONOMIE.docx",
+      "version": "2026-2027",
+      "anneeAcademique": {
+        "libelle": "2026-2027",
+        "anneeDebut": 2026,
+        "anneeFin": 2027
+      },
+      "cycle": {
+        "code": "PREPA",
+        "libelle": "Préparatoire",
+        "ordreAffichage": 1
+      },
+      "niveau": {
+        "numero": 1,
+        "libelle": "Niveau 1"
+      },
+      "filiere": {
+        "code": "GESTION",
+        "libelle": "Gestion"
+      },
+      "specialite": {
+        "code": "MEC",
+        "libelle": "Management / Économie"
+      },
+      "programme": {
+        "parcoursCode": "2026-2027-PREPA-N1-MEC",
+        "parcoursLibelle": "2026-2027 - PREPA Niveau 1 - Gestion - Management / Économie",
+        "maquetteCode": "MAQ-PREPA1-MEC-2026-2027",
+        "maquetteLibelle": "Programme officiel PREPA Niveau 1 - Management / Économie",
+        "semestres": [
+          {
+            "numero": 1,
+            "libelle": "Semestre 1",
+            "ordreAffichage": 1,
+            "unitesEnseignement": [
+              {
+                "code": "MEC111",
+                "codeSource": "MEC111",
+                "libelle": "Environnement économique et actualité",
+                "ordreAffichage": 1,
+                "credits": 2,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC111-EC01",
+                    "codeSource": "MEC111",
+                    "libelle": "Climate and environment/economic news",
+                    "credits": 2,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC112",
+                "codeSource": "MEC112",
+                "libelle": "Informatique et outils numériques",
+                "ordreAffichage": 2,
+                "credits": 2,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC112-EC01",
+                    "codeSource": "MEC112",
+                    "libelle": "Business computer science 1",
+                    "credits": 2,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC113",
+                "codeSource": "MEC113",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 3,
+                "credits": 1,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC113-EC01",
+                    "codeSource": "MEC113",
+                    "libelle": "Règlementation",
+                    "credits": 1,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC114",
+                "codeSource": "MEC114",
+                "libelle": "Mathématiques et techniques quantitatives",
+                "ordreAffichage": 4,
+                "credits": 3,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC114-EC01",
+                    "codeSource": "MEC114",
+                    "libelle": "Mathématiques pour l’économie et la gestion",
+                    "credits": 3,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC115",
+                "codeSource": "MEC115",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 5,
+                "credits": 2,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC115-EC01",
+                    "codeSource": "MEC115",
+                    "libelle": "Français",
+                    "credits": 2,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC116",
+                "codeSource": "MEC116",
+                "libelle": "Management, marketing et entrepreneuriat",
+                "ordreAffichage": 6,
+                "credits": 3,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC116-EC01",
+                    "codeSource": "MEC116",
+                    "libelle": "Marketing fondamentale",
+                    "credits": 3,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC117",
+                "codeSource": "MEC117",
+                "libelle": "Comptabilité, finance et gestion",
+                "ordreAffichage": 7,
+                "credits": 3,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC117-EC01",
+                    "codeSource": "MEC117",
+                    "libelle": "Comptabilités générale/général accounting",
+                    "credits": 3,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC118",
+                "codeSource": "MEC118",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 8,
+                "credits": 1,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC118-EC01",
+                    "codeSource": "MEC118",
+                    "libelle": "Applied ethics",
+                    "credits": 1,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC119",
+                "codeSource": "MEC119",
+                "libelle": "Economie générale",
+                "ordreAffichage": 9,
+                "credits": 2,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC119-EC01",
+                    "codeSource": "MEC119",
+                    "libelle": "Microéconomie",
+                    "credits": 2,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1110",
+                "codeSource": "MEC1110",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 10,
+                "credits": 2,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1110-EC01",
+                    "codeSource": "MEC1110",
+                    "libelle": "Communication interculturelle",
+                    "credits": 2,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1111",
+                "codeSource": "MEC1111",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 11,
+                "credits": 2,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1111-EC01",
+                    "codeSource": "MEC1111",
+                    "libelle": "Introduction au droit",
+                    "credits": 2,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1112",
+                "codeSource": "MEC1112",
+                "libelle": "Management, marketing et entrepreneuriat",
+                "ordreAffichage": 12,
+                "credits": 4,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1112-EC01",
+                    "codeSource": "MEC1112",
+                    "libelle": "Introduction au Management",
+                    "credits": 4,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1113",
+                "codeSource": "MEC1113",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 13,
+                "credits": 2,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1113-EC01",
+                    "codeSource": "MEC1113",
+                    "libelle": "Intermédiate English",
+                    "credits": 2,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1114",
+                "codeSource": "MEC1114",
+                "libelle": "Projet professionnel et personnel",
+                "ordreAffichage": 14,
+                "credits": 1,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1114-EC01",
+                    "codeSource": "MEC1114",
+                    "libelle": "Projet professionnel et personnel",
+                    "credits": 1,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "numero": 2,
+            "libelle": "Semestre 2",
+            "ordreAffichage": 2,
+            "unitesEnseignement": [
+              {
+                "code": "MEC121",
+                "codeSource": "MEC121",
+                "libelle": "Comptabilité, finance et gestion",
+                "ordreAffichage": 1,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC121-EC01",
+                    "codeSource": "MEC121",
+                    "libelle": "Comptabilités financière",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC122",
+                "codeSource": "MEC122",
+                "libelle": "Informatique et outils numériques",
+                "ordreAffichage": 2,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC122-EC01",
+                    "codeSource": "MEC122",
+                    "libelle": "Business computer science 2",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC123",
+                "codeSource": "MEC123",
+                "libelle": "Management, marketing et entrepreneuriat",
+                "ordreAffichage": 3,
+                "credits": 3,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC123-EC01",
+                    "codeSource": "MEC123",
+                    "libelle": "Administration",
+                    "credits": 3,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC124",
+                "codeSource": "MEC124",
+                "libelle": "Mathématiques et techniques quantitatives",
+                "ordreAffichage": 4,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC124-EC01",
+                    "codeSource": "MEC124",
+                    "libelle": "Outils d’analyse quantitative de gestion",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC125",
+                "codeSource": "MEC125",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 5,
+                "credits": 1,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC125-EC01",
+                    "codeSource": "MEC125",
+                    "libelle": "Compétence linguistique",
+                    "credits": 1,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC126",
+                "codeSource": "MEC126",
+                "libelle": "Management, marketing et entrepreneuriat",
+                "ordreAffichage": 6,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC126-EC01",
+                    "codeSource": "MEC126",
+                    "libelle": "Initiation au marketing digitale",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC127",
+                "codeSource": "MEC127",
+                "libelle": "Comptabilité, finance et gestion",
+                "ordreAffichage": 7,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC127-EC01",
+                    "codeSource": "MEC127",
+                    "libelle": "Comptabilités 2",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC128",
+                "codeSource": "MEC128",
+                "libelle": "Mathématiques et techniques quantitatives",
+                "ordreAffichage": 8,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC128-EC01",
+                    "codeSource": "MEC128",
+                    "libelle": "Statistiques descriptive et probabilité",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC129",
+                "codeSource": "MEC129",
+                "libelle": "Economie générale",
+                "ordreAffichage": 9,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC129-EC01",
+                    "codeSource": "MEC129",
+                    "libelle": "Macroéconomie",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1210",
+                "codeSource": "MEC1210",
+                "libelle": "Informatique et outils numériques",
+                "ordreAffichage": 10,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1210-EC01",
+                    "codeSource": "MEC1210",
+                    "libelle": "Identité numérique /compétences digitales",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1211",
+                "codeSource": "MEC1211",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 11,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1211-EC01",
+                    "codeSource": "MEC1211",
+                    "libelle": "Elément de droit des affaires/droit des sociétés commerciales",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1212",
+                "codeSource": "MEC1212",
+                "libelle": "Management, marketing et entrepreneuriat",
+                "ordreAffichage": 12,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1212-EC01",
+                    "codeSource": "MEC1212",
+                    "libelle": "Management des Organisations",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1213",
+                "codeSource": "MEC1213",
+                "libelle": "Environnement économique et actualité",
+                "ordreAffichage": 13,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1213-EC01",
+                    "codeSource": "MEC1213",
+                    "libelle": "Concepts et actualités économiques",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1214",
+                "codeSource": "MEC1214",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 14,
+                "credits": 1,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1214-EC01",
+                    "codeSource": "MEC1214",
+                    "libelle": "Business English",
+                    "credits": 1,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "numero": 3,
+            "libelle": "Semestre 3",
+            "ordreAffichage": 3,
+            "unitesEnseignement": [
+              {
+                "code": "MEC131",
+                "codeSource": "MEC131",
+                "libelle": "Comptabilité, finance et gestion",
+                "ordreAffichage": 1,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC131-EC01",
+                    "codeSource": "MEC131",
+                    "libelle": "Comptabilité des sociétés",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC132",
+                "codeSource": "MEC132",
+                "libelle": "Mathématiques et techniques quantitatives",
+                "ordreAffichage": 2,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC132-EC01",
+                    "codeSource": "MEC132",
+                    "libelle": "Mathématiques financières",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC133",
+                "codeSource": "MEC133",
+                "libelle": "Informatique et outils numériques",
+                "ordreAffichage": 3,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC133-EC01",
+                    "codeSource": "MEC133",
+                    "libelle": "Informatiques de gestion 2",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC134",
+                "codeSource": "MEC134",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 4,
+                "credits": 3,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC134-EC01",
+                    "codeSource": "MEC134",
+                    "libelle": "Business communication",
+                    "credits": 3,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC135",
+                "codeSource": "MEC135",
+                "libelle": "Management, marketing et entrepreneuriat",
+                "ordreAffichage": 5,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC135-EC01",
+                    "codeSource": "MEC135",
+                    "libelle": "E-marketing",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC136",
+                "codeSource": "MEC136",
+                "libelle": "Environnement économique et actualité",
+                "ordreAffichage": 6,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC136-EC01",
+                    "codeSource": "MEC136",
+                    "libelle": "International business",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC137",
+                "codeSource": "MEC137",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 7,
+                "credits": 2,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC137-EC01",
+                    "codeSource": "MEC137",
+                    "libelle": "Business law",
+                    "credits": 2,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC138",
+                "codeSource": "MEC138",
+                "libelle": "Comptabilité, finance et gestion",
+                "ordreAffichage": 8,
+                "credits": 5,
+                "volumeHoraire": 90,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC138-EC01",
+                    "codeSource": "MEC138",
+                    "libelle": "Financial analysis",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  },
+                  {
+                    "code": "MEC138-EC02",
+                    "codeSource": "MEC138",
+                    "libelle": "Comptabilité analytique",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 2
+                  }
+                ]
+              },
+              {
+                "code": "MEC139",
+                "codeSource": "MEC139",
+                "libelle": "Projet professionnel et personnel",
+                "ordreAffichage": 9,
+                "credits": 1,
+                "volumeHoraire": 15,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC139-EC01",
+                    "codeSource": "MEC139",
+                    "libelle": "Projet personnel et professionnel",
+                    "credits": 1,
+                    "volumeHoraire": 15,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1310",
+                "codeSource": "MEC1310",
+                "libelle": "Mathématiques et techniques quantitatives",
+                "ordreAffichage": 10,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1310-EC01",
+                    "codeSource": "MEC1310",
+                    "libelle": "Mathématiques pour l’économie et la gestion",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1313",
+                "codeSource": "MEC1313",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 11,
+                "credits": 1,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1313-EC01",
+                    "codeSource": "MEC1313",
+                    "libelle": "Global ethics for contemporary societies",
+                    "credits": 1,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1314",
+                "codeSource": "MEC1314",
+                "libelle": "Management, marketing et entrepreneuriat",
+                "ordreAffichage": 12,
+                "credits": 1,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1314-EC01",
+                    "codeSource": "MEC1314",
+                    "libelle": "Entrepreneurship development",
+                    "credits": 1,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "numero": 4,
+            "libelle": "Semestre 4",
+            "ordreAffichage": 4,
+            "unitesEnseignement": [
+              {
+                "code": "MEC141",
+                "codeSource": "MEC141",
+                "libelle": "Comptabilité, finance et gestion",
+                "ordreAffichage": 1,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC141-EC01",
+                    "codeSource": "MEC141",
+                    "libelle": "CONTROLE DE GESTION",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC142",
+                "codeSource": "MEC142",
+                "libelle": "Management, marketing et entrepreneuriat",
+                "ordreAffichage": 2,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC142-EC01",
+                    "codeSource": "MEC142",
+                    "libelle": "MANAGEMENT DES PROJETS",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC143",
+                "codeSource": "MEC143",
+                "libelle": "Comptabilité, finance et gestion",
+                "ordreAffichage": 3,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC143-EC01",
+                    "codeSource": "MEC143",
+                    "libelle": "FINANCE DES ENTREPRISES/DIAGNOSTIQUE FINANCIERS",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC144",
+                "codeSource": "MEC144",
+                "libelle": "Management, marketing et entrepreneuriat",
+                "ordreAffichage": 4,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC144-EC01",
+                    "codeSource": "MEC144",
+                    "libelle": "RSE/GESTION PREVISIONNELLE DES ENTREPRISES",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC145",
+                "codeSource": "MEC145",
+                "libelle": "Informatique et outils numériques",
+                "ordreAffichage": 5,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC145-EC01",
+                    "codeSource": "MEC145",
+                    "libelle": "SYSTEME D’INFORMATION",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC146",
+                "codeSource": "MEC146",
+                "libelle": "Projet professionnel et personnel",
+                "ordreAffichage": 6,
+                "credits": 1,
+                "volumeHoraire": 15,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC146-EC01",
+                    "codeSource": "MEC146",
+                    "libelle": "DEVELOPPEMENTPERSONNEL/RELATIONS PROFESSIONNELLE",
+                    "credits": 1,
+                    "volumeHoraire": 15,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC147",
+                "codeSource": "MEC147",
+                "libelle": "Mathématiques et techniques quantitatives",
+                "ordreAffichage": 7,
+                "credits": 1,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC147-EC01",
+                    "codeSource": "MEC147",
+                    "libelle": "LOGIQUE ET RAISONNEMENT",
+                    "credits": 1,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC148",
+                "codeSource": "MEC148",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 8,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC148-EC01",
+                    "codeSource": "MEC148",
+                    "libelle": "FISCALITE",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC149",
+                "codeSource": "MEC149",
+                "libelle": "Environnement économique et actualité",
+                "ordreAffichage": 9,
+                "credits": 2,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC149-EC01",
+                    "codeSource": "MEC149",
+                    "libelle": "RELATIONS INTERNATIONALES",
+                    "credits": 2,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1410",
+                "codeSource": "MEC1410",
+                "libelle": "Comptabilité, finance et gestion",
+                "ordreAffichage": 10,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1410-EC01",
+                    "codeSource": "MEC1410",
+                    "libelle": "C.A.O /GESTION DE LA PAIE/ECONOMIE D’ENTREPRISE",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "MEC1411",
+                "codeSource": "MEC1411",
+                "libelle": "Stage professionnel",
+                "ordreAffichage": 11,
+                "credits": 7,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "MEC1411-EC01",
+                    "codeSource": "MEC1411",
+                    "libelle": "STAGE",
+                    "credits": 7,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "sourceDocument": "INGENIERIE INFORMATIQUE.docx",
+      "version": "2026-2027",
+      "anneeAcademique": {
+        "libelle": "2026-2027",
+        "anneeDebut": 2026,
+        "anneeFin": 2027
+      },
+      "cycle": {
+        "code": "PREPA",
+        "libelle": "Préparatoire",
+        "ordreAffichage": 1
+      },
+      "niveau": {
+        "numero": 1,
+        "libelle": "Niveau 1"
+      },
+      "filiere": {
+        "code": "INGENIEUR",
+        "libelle": "Ingénieur"
+      },
+      "specialite": {
+        "code": "ING-INF",
+        "libelle": "Ingénieur Informatique"
+      },
+      "programme": {
+        "parcoursCode": "2026-2027-PREPA-N1-ING-INF",
+        "parcoursLibelle": "2026-2027 - PREPA Niveau 1 - Ingénieur - Ingénieur Informatique",
+        "maquetteCode": "MAQ-PREPA1-ING-INF-2026-2027",
+        "maquetteLibelle": "Programme officiel PREPA Niveau 1 - Ingénieur Informatique",
+        "semestres": [
+          {
+            "numero": 1,
+            "libelle": "Semestre 1",
+            "ordreAffichage": 1,
+            "unitesEnseignement": [
+              {
+                "code": "INGI111",
+                "codeSource": "ING111",
+                "libelle": "Electricité, électronique et systèmes",
+                "ordreAffichage": 1,
+                "credits": 4,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI111-EC01",
+                    "codeSource": "ING111",
+                    "libelle": "Electricité et Electronique",
+                    "credits": 4,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI112",
+                "codeSource": "ING112",
+                "libelle": "Sciences fondamentales pour l’ingénieur",
+                "ordreAffichage": 2,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI112-EC01",
+                    "codeSource": "ING112",
+                    "libelle": "Mécanique",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI113",
+                "codeSource": "ING113",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 3,
+                "credits": 7,
+                "volumeHoraire": 105,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI113-EC01",
+                    "codeSource": "ING113",
+                    "libelle": "Numérical data bases and application",
+                    "credits": 4,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  },
+                  {
+                    "code": "INGI113-EC02",
+                    "codeSource": "ING113",
+                    "libelle": "Algorithme et application",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 2
+                  }
+                ]
+              },
+              {
+                "code": "INGI114",
+                "codeSource": "ING114",
+                "libelle": "Mathématiques appliquées",
+                "ordreAffichage": 4,
+                "credits": 6,
+                "volumeHoraire": 90,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI114-EC01",
+                    "codeSource": "ING114",
+                    "libelle": "Mathématiques appliquées pour l’ingénieur",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  },
+                  {
+                    "code": "INGI114-EC02",
+                    "codeSource": "ING114",
+                    "libelle": "Basics mathematics",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 2
+                  }
+                ]
+              },
+              {
+                "code": "INGI115",
+                "codeSource": "ING115",
+                "libelle": "Sciences physiques et chimiques",
+                "ordreAffichage": 5,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI115-EC01",
+                    "codeSource": "ING115",
+                    "libelle": "Chimie Générale",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI116",
+                "codeSource": "ING116",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 6,
+                "credits": 3,
+                "volumeHoraire": 90,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI116-EC01",
+                    "codeSource": "ING116",
+                    "libelle": "Réglémentation",
+                    "credits": 1,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  },
+                  {
+                    "code": "INGI116-EC02",
+                    "codeSource": "ING116",
+                    "libelle": "Global ethics for contemporary societies",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 2
+                  }
+                ]
+              },
+              {
+                "code": "INGI117",
+                "codeSource": "ING117",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 7,
+                "credits": 1,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI117-EC01",
+                    "codeSource": "ING117",
+                    "libelle": "Communication",
+                    "credits": 1,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI118",
+                "codeSource": "ING118",
+                "libelle": "Sciences physiques et traitement du signal",
+                "ordreAffichage": 8,
+                "credits": 4,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI118-EC01",
+                    "codeSource": "ING118",
+                    "libelle": "Physique des ondes et traitement du signal",
+                    "credits": 4,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI119",
+                "codeSource": "ING119",
+                "libelle": "Projet professionnel et personnel",
+                "ordreAffichage": 9,
+                "credits": 1,
+                "volumeHoraire": 15,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI119-EC01",
+                    "codeSource": "ING119",
+                    "libelle": "Projet professionnel et personnel",
+                    "credits": 1,
+                    "volumeHoraire": 15,
+                    "ordreAffichage": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "numero": 2,
+            "libelle": "Semestre 2",
+            "ordreAffichage": 2,
+            "unitesEnseignement": [
+              {
+                "code": "INGI120",
+                "codeSource": "ING120",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 1,
+                "credits": 3,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI120-EC01",
+                    "codeSource": "ING120",
+                    "libelle": "Travaux pratique informatique",
+                    "credits": 3,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI121",
+                "codeSource": "ING121",
+                "libelle": "Sciences physiques et chimiques",
+                "ordreAffichage": 2,
+                "credits": 4,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI121-EC01",
+                    "codeSource": "ING121",
+                    "libelle": "Physique 2",
+                    "credits": 4,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI122",
+                "codeSource": "ING122",
+                "libelle": "Méthodes et processus industriels",
+                "ordreAffichage": 3,
+                "credits": 6,
+                "volumeHoraire": 120,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI122-EC01",
+                    "codeSource": "ING122",
+                    "libelle": "Outils et méthodes de l’ingénieur",
+                    "credits": 3,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  },
+                  {
+                    "code": "INGI122-EC02",
+                    "codeSource": "ING122",
+                    "libelle": "Processus industriels",
+                    "credits": 3,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 2
+                  }
+                ]
+              },
+              {
+                "code": "INGI123",
+                "codeSource": "ING123",
+                "libelle": "Mathématiques appliquées",
+                "ordreAffichage": 4,
+                "credits": 3,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI123-EC01",
+                    "codeSource": "ING123",
+                    "libelle": "Probabilités et statistiques",
+                    "credits": 3,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI124",
+                "codeSource": "ING124",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 5,
+                "credits": 1,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI124-EC01",
+                    "codeSource": "ING124",
+                    "libelle": "Réglementation 2",
+                    "credits": 1,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI125",
+                "codeSource": "ING125",
+                "libelle": "Sciences physiques et chimiques",
+                "ordreAffichage": 6,
+                "credits": 3,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI125-EC01",
+                    "codeSource": "ING125",
+                    "libelle": "Travaux pratique de physiques",
+                    "credits": 3,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI126",
+                "codeSource": "ING126",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 7,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI126-EC01",
+                    "codeSource": "ING126",
+                    "libelle": "Bases de données",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI127",
+                "codeSource": "ING127",
+                "libelle": "Electricité, électronique et systèmes",
+                "ordreAffichage": 8,
+                "credits": 4,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI127-EC01",
+                    "codeSource": "ING127",
+                    "libelle": "Circuit logique et algèbre de Boole",
+                    "credits": 4,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI128",
+                "codeSource": "ING128",
+                "libelle": "Mathématiques appliquées",
+                "ordreAffichage": 9,
+                "credits": 3,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI128-EC01",
+                    "codeSource": "ING128",
+                    "libelle": "Mathématiques appliquées pour l’ingénieur 2",
+                    "credits": 3,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI129",
+                "codeSource": "ING129",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 10,
+                "credits": 2,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI129-EC01",
+                    "codeSource": "ING129",
+                    "libelle": "Business English",
+                    "credits": 2,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI130",
+                "codeSource": "ING130",
+                "libelle": "Management, entrepreneuriat et organisation",
+                "ordreAffichage": 11,
+                "credits": 1,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI130-EC01",
+                    "codeSource": "ING130",
+                    "libelle": "Création et organisation des entreprises",
+                    "credits": 1,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "numero": 3,
+            "libelle": "Semestre 3",
+            "ordreAffichage": 3,
+            "unitesEnseignement": [
+              {
+                "code": "INGI131",
+                "codeSource": "ING131",
+                "libelle": "Sciences fondamentales pour l’ingénieur",
+                "ordreAffichage": 1,
+                "credits": 4,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI131-EC01",
+                    "codeSource": "ING131",
+                    "libelle": "Mécanique des fluides",
+                    "credits": 4,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI132",
+                "codeSource": "ING132",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 2,
+                "credits": 4,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI132-EC01",
+                    "codeSource": "ING132",
+                    "libelle": "Base en programmation /Programmation orientée objet",
+                    "credits": 4,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI133",
+                "codeSource": "ING133",
+                "libelle": "Réseaux, systèmes et architecture informatique",
+                "ordreAffichage": 3,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI133-EC01",
+                    "codeSource": "ING133",
+                    "libelle": "Architecture du Réseau local",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI134",
+                "codeSource": "ING134",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 4,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI134-EC01",
+                    "codeSource": "ING134",
+                    "libelle": "Base de données",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI135",
+                "codeSource": "ING135",
+                "libelle": "Réseaux, systèmes et architecture informatique",
+                "ordreAffichage": 5,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI135-EC01",
+                    "codeSource": "ING135",
+                    "libelle": "Architecture des systèmes informatique",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI136",
+                "codeSource": "ING136",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 6,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI136-EC01",
+                    "codeSource": "ING136",
+                    "libelle": "Initiation au génie logiciel",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI137",
+                "codeSource": "ING137",
+                "libelle": "Formation bilingue et communication",
+                "ordreAffichage": 7,
+                "credits": 3,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI137-EC01",
+                    "codeSource": "ING137",
+                    "libelle": "Anglais",
+                    "credits": 2,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  },
+                  {
+                    "code": "INGI137-EC02",
+                    "codeSource": "ING137",
+                    "libelle": "Communication",
+                    "credits": 1,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 2
+                  }
+                ]
+              },
+              {
+                "code": "INGI139",
+                "codeSource": "ING139",
+                "libelle": "Projet professionnel et personnel",
+                "ordreAffichage": 8,
+                "credits": 1,
+                "volumeHoraire": 15,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI139-EC01",
+                    "codeSource": "ING139",
+                    "libelle": "Initiation au projet",
+                    "credits": 1,
+                    "volumeHoraire": 15,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI1310",
+                "codeSource": "ING1310",
+                "libelle": "Electricité, électronique et systèmes",
+                "ordreAffichage": 9,
+                "credits": 4,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI1310-EC01",
+                    "codeSource": "ING1310",
+                    "libelle": "Electrotechnique embarqué",
+                    "credits": 4,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI1311",
+                "codeSource": "ING1311",
+                "libelle": "Informatique, données et programmation",
+                "ordreAffichage": 10,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI1311-EC01",
+                    "codeSource": "ING1311",
+                    "libelle": "Algorithme et langage",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "numero": 4,
+            "libelle": "Semestre 4",
+            "ordreAffichage": 4,
+            "unitesEnseignement": [
+              {
+                "code": "INGI141",
+                "codeSource": "ING141",
+                "libelle": "Architecture, construction",
+                "ordreAffichage": 1,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI141-EC01",
+                    "codeSource": "ING141",
+                    "libelle": "ARCHITECTURE DISTRIBUEES",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI142",
+                "codeSource": "ING142",
+                "libelle": "Informatique, programmation et résistance des matériaux",
+                "ordreAffichage": 2,
+                "credits": 4,
+                "volumeHoraire": 60,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI142-EC01",
+                    "codeSource": "ING142",
+                    "libelle": "PROGRAMMATION WEB",
+                    "credits": 4,
+                    "volumeHoraire": 60,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI143",
+                "codeSource": "ING143",
+                "libelle": "Réseaux, systèmes et cybersécurité",
+                "ordreAffichage": 3,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI143-EC01",
+                    "codeSource": "ING143",
+                    "libelle": "SYSTEME LINUX/Réseau et administration système",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI144",
+                "codeSource": "ING144",
+                "libelle": "Réseaux, systèmes et cybersécurité",
+                "ordreAffichage": 4,
+                "credits": 2,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI144-EC01",
+                    "codeSource": "ING144",
+                    "libelle": "CYBERSECURITE",
+                    "credits": 2,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI145",
+                "codeSource": "ING145",
+                "libelle": "Mathématiques appliquées",
+                "ordreAffichage": 5,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI145-EC01",
+                    "codeSource": "ING145",
+                    "libelle": "ALGEBRE MULTITECHNIQUE",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI146",
+                "codeSource": "ING146",
+                "libelle": "Méthodes et processus industriels",
+                "ordreAffichage": 6,
+                "credits": 3,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI146-EC01",
+                    "codeSource": "ING146",
+                    "libelle": "INITIATION A LA FABRICATION MULTITECHNIQUE",
+                    "credits": 3,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI147",
+                "codeSource": "ING147",
+                "libelle": "Conception, DAO/CAO",
+                "ordreAffichage": 7,
+                "credits": 2,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI147-EC01",
+                    "codeSource": "ING147",
+                    "libelle": "PROJET DAO-CAO",
+                    "credits": 2,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI148",
+                "codeSource": "ING148",
+                "libelle": "Projet professionnel et personnel",
+                "ordreAffichage": 8,
+                "credits": 1,
+                "volumeHoraire": 15,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI148-EC01",
+                    "codeSource": "ING148",
+                    "libelle": "DEVELOPPEMENT PERSONNEL/RELATION PROFESSIONNELLE",
+                    "credits": 1,
+                    "volumeHoraire": 15,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI149",
+                "codeSource": "ING149",
+                "libelle": "Technologies mobiles, UML",
+                "ordreAffichage": 9,
+                "credits": 2,
+                "volumeHoraire": 30,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI149-EC01",
+                    "codeSource": "ING149",
+                    "libelle": "TERMINAUX MOBILE /UML",
+                    "credits": 2,
+                    "volumeHoraire": 30,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI1410",
+                "codeSource": "ING1410",
+                "libelle": "Droit, réglementation et éthique",
+                "ordreAffichage": 10,
+                "credits": 2,
+                "volumeHoraire": 45,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI1410-EC01",
+                    "codeSource": "ING1410",
+                    "libelle": "ETHIQUE DES TECHNOLOGIES ET DU NUMERIQUE",
+                    "credits": 2,
+                    "volumeHoraire": 45,
+                    "ordreAffichage": 1
+                  }
+                ]
+              },
+              {
+                "code": "INGI1411",
+                "codeSource": "ING1411",
+                "libelle": "Stage professionnel",
+                "ordreAffichage": 11,
+                "credits": 7,
+                "volumeHoraire": 0,
+                "elementsConstitutifs": [
+                  {
+                    "code": "INGI1411-EC01",
+                    "codeSource": "ING1411",
+                    "libelle": "STAGE",
+                    "credits": 7,
+                    "volumeHoraire": 0,
+                    "ordreAffichage": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

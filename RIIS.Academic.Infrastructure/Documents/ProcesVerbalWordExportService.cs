@@ -47,24 +47,32 @@ public class ProcesVerbalWordExportService(IProcesVerbauxService procesVerbauxSe
     private static string BuildDocumentXml(ProcesVerbalDto procesVerbal)
     {
         var body = new StringBuilder();
-        var ecHeaders = BuildEcHeaders(procesVerbal);
+        var ecHeaders = ProcesVerbalExportProjection.BuildEcHeaders(procesVerbal);
+        var headerLabels = ProcesVerbalExportProjection.GetHeaderLabels(procesVerbal);
 
         body.Append(Paragraph("RIIS ACADEMIC", "CenterSmall"));
         body.Append(Paragraph("GESTION DES NOTES, PV ET RELEVÉS", "CenterSmall"));
-        body.Append(Paragraph(procesVerbal.Titre, "Title"));
+        body.Append(Paragraph(ProcesVerbalExportProjection.BuildCompactTitle(procesVerbal), "Title"));
         body.Append(Paragraph($"{procesVerbal.TypeLibelle} - {procesVerbal.SemestrePedagogiqueLibelle}", "Subtitle"));
         body.Append(Paragraph(string.Empty, "Normal"));
 
-        body.Append(InfoTable([
+        var infoItems = new List<(string Label, string Value)>
+        {
             ("Cycle", procesVerbal.CycleFormationLibelle),
-            ("Parcours", procesVerbal.ParcoursLibelle),
-            ("Classe", procesVerbal.ClassePedagogiqueLibelle),
+            ("Parcours", headerLabels.Parcours),
             ("Année académique", procesVerbal.AnneeAcademiqueLibelle),
             ("Session", procesVerbal.CodeSession ?? string.Empty),
             ("Statut", procesVerbal.StatutLibelle),
             ("Étudiants", procesVerbal.NombreLignes.ToString(CultureInfo.InvariantCulture)),
             ("Décisions", $"Validés : {procesVerbal.NombreValides} | Rattrapage : {procesVerbal.NombreRattrapage} | Non délibérés : {procesVerbal.NombreNonDeliberes}")
-        ]));
+        };
+
+        if (!string.IsNullOrWhiteSpace(headerLabels.Classe))
+        {
+            infoItems.Insert(2, ("Classe", headerLabels.Classe));
+        }
+
+        body.Append(InfoTable(infoItems));
 
         body.Append(Paragraph(string.Empty, "Normal"));
         body.Append(ecHeaders.Count == 0
@@ -90,9 +98,9 @@ public class ProcesVerbalWordExportService(IProcesVerbauxService procesVerbauxSe
 
     private static string DetailsTable(
         ProcesVerbalDto procesVerbal,
-        IReadOnlyCollection<ProcesVerbalElementConstitutifLigneDto> ecHeaders)
+        IReadOnlyCollection<ProcesVerbalExportProjection.EcHeader> ecHeaders)
     {
-        var columnWidths = BuildDetailsColumnWidths(ecHeaders.Count);
+        var columnWidths = BuildDetailsColumnWidths(ecHeaders);
         var table = new StringBuilder();
 
         table.Append(TableStart(columnWidths));
@@ -105,7 +113,7 @@ public class ProcesVerbalWordExportService(IProcesVerbauxService procesVerbauxSe
 
         foreach (var ec in ecHeaders)
         {
-            firstHeaderCells.Add(Cell(ec.ElementConstitutifLibelle, true, gridSpan: 4));
+            firstHeaderCells.Add(Cell(ec.Label, true, gridSpan: ec.Columns.Count));
         }
 
         firstHeaderCells.Add(Cell("Crédits", true));
@@ -120,12 +128,12 @@ public class ProcesVerbalWordExportService(IProcesVerbauxService procesVerbauxSe
             Cell(string.Empty)
         };
 
-        foreach (var _ in ecHeaders)
+        foreach (var ec in ecHeaders)
         {
-            secondHeaderCells.Add(Cell("CCON", true));
-            secondHeaderCells.Add(Cell("CC", true));
-            secondHeaderCells.Add(Cell("SN", true));
-            secondHeaderCells.Add(Cell("MOY", true));
+            foreach (var column in ec.Columns)
+            {
+                secondHeaderCells.Add(Cell(column, true));
+            }
         }
 
         secondHeaderCells.Add(Cell(string.Empty));
@@ -147,10 +155,16 @@ public class ProcesVerbalWordExportService(IProcesVerbauxService procesVerbauxSe
             foreach (var ec in ecHeaders)
             {
                 var detail = ligne.ElementsConstitutifs.FirstOrDefault(x => x.Key == ec.Key);
-                cells.Add(Cell(FormatNote(detail?.MoyenneCcon)));
-                cells.Add(Cell(FormatNote(detail?.MoyenneCc)));
-                cells.Add(Cell(FormatNote(detail?.MoyenneSn)));
-                cells.Add(Cell(FormatNote(detail?.MoyenneFinale), bold: true, textColor: GetNoteColor(detail?.MoyenneFinale)));
+                foreach (var column in ec.Columns)
+                {
+                    var value = column == "MOY"
+                        ? detail?.MoyenneFinale
+                        : ProcesVerbalExportProjection.GetEvaluationAverage(detail, column);
+                    cells.Add(Cell(
+                        FormatNote(value),
+                        bold: column == "MOY",
+                        textColor: column == "MOY" ? GetNoteColor(value) : null));
+                }
             }
 
             cells.Add(Cell(FormatCredit(ligne.CreditsAcquis), true));
@@ -239,20 +253,14 @@ public class ProcesVerbalWordExportService(IProcesVerbauxService procesVerbauxSe
         return table.ToString();
     }
 
-    private static List<ProcesVerbalElementConstitutifLigneDto> BuildEcHeaders(ProcesVerbalDto procesVerbal)
-        => procesVerbal.Lignes
-            .SelectMany(x => x.ElementsConstitutifs)
-            .GroupBy(x => x.Key)
-            .Select(x => x.First())
-            .ToList();
-
-    private static int[] BuildDetailsColumnWidths(int ecCount)
+    private static int[] BuildDetailsColumnWidths(
+        IReadOnlyCollection<ProcesVerbalExportProjection.EcHeader> ecHeaders)
     {
         var widths = new List<int> { 1100, 3300 };
 
-        for (var i = 0; i < ecCount; i++)
+        foreach (var ec in ecHeaders)
         {
-            widths.AddRange([640, 640, 640, 700]);
+            widths.AddRange(ec.Columns.Select(column => column == "MOY" ? 700 : 640));
         }
 
         widths.AddRange([850, 850, 700, 1300]);
@@ -439,7 +447,13 @@ public class ProcesVerbalWordExportService(IProcesVerbauxService procesVerbauxSe
     {
         var name = string.Join(
             "-",
-            new[] { "pv", procesVerbal.AnneeAcademiqueLibelle, procesVerbal.CodeSession, procesVerbal.ClassePedagogiqueLibelle }
+            new[]
+            {
+                "pv",
+                procesVerbal.AnneeAcademiqueLibelle,
+                procesVerbal.CodeSession,
+                ProcesVerbalExportProjection.GetHeaderLabels(procesVerbal).Parcours
+            }
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .Select(x => x!)
                 .Select(Slug));

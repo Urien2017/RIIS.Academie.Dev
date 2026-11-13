@@ -9,6 +9,7 @@ public interface IRelevesNotesService
         long? cycleFormationId = null,
         long? niveauEtudeId = null,
         long? classePedagogiqueId = null,
+        long? parcoursAcademiqueId = null,
         CancellationToken cancellationToken = default);
 
     Task<ReleveNoteAnnuelDto?> GenererReleveAnnuelAsync(

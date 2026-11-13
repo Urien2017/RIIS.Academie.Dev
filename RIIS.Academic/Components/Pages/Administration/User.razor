@@ -1,0 +1,256 @@
+@page "/administration/users"
+@using Microsoft.AspNetCore.Authorization
+@using RIIS.Academic.Application.Authorization.Dtos
+@using RIIS.Academic.Application.Authorization.Services
+@attribute [Authorize(Roles = "Admin")]
+@inject NotificationService NotificationService
+@inject IUtilisateursService UtilisateursService
+@inject IRolesService RolesService
+
+<PageTitle>Utilisateurs | RIIS Academic</PageTitle>
+
+<RadzenStack Gap="1.5rem">
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal"
+                     AlignItems="AlignItems.Center"
+                     JustifyContent="JustifyContent.SpaceBetween"
+                     Wrap="FlexWrap.Wrap"
+                     Gap="1rem">
+            <RadzenStack Gap="0.25rem">
+                <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" Text="Utilisateurs" />
+                <RadzenText TextStyle="TextStyle.Body2" Text="Gérez les comptes et leur rôle dans l'application." />
+            </RadzenStack>
+            <RadzenButton Text="Ajouter un utilisateur"
+                          Icon="person_add"
+                          ButtonStyle="ButtonStyle.Primary"
+                          Click="@BeginAdd" />
+        </RadzenStack>
+    </RadzenCard>
+
+    @if (showForm)
+    {
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
+            <RadzenTemplateForm TItem="UserForm" Data="@form" Submit="@Save">
+                <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" class="riis-modal-title rz-m-0"
+                                TagName="TagName.H2"
+                                Text="@(editingUser is null ? "Nouvel utilisateur" : "Modifier l'utilisateur")" />
+
+                    <RadzenRow Gap="1rem">
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenFormField Text="Utilisateur" Style="width:100%">
+                                <RadzenTextBox @bind-Value="@form.Username"
+                                               Name="Username"
+                                               Style="width:100%"
+                                               AutoComplete="username" />
+                            </RadzenFormField>
+                            <RadzenRequiredValidator Component="Username"
+                                                     Text="L'utilisateur est obligatoire." />
+                        </RadzenColumn>
+
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenFormField Text="Mot de passe" Style="width:100%">
+                                <RadzenPassword @bind-Value="@form.Password"
+                                                Name="Password"
+                                                Style="width:100%"
+                                                AutoComplete="new-password" />
+                            </RadzenFormField>
+                            @if (editingUser is null)
+                            {
+                                <RadzenRequiredValidator Component="Password"
+                                                         Text="Le mot de passe est obligatoire." />
+                            }
+                        </RadzenColumn>
+
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenFormField Text="Rôle" Style="width:100%">
+                                <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@availableRoles"
+                                                TextProperty="Libelle"
+                                                ValueProperty="Id"
+                                                TValue="long"
+                                                @bind-Value="@form.RoleId"
+                                                Name="Role"
+                                                Style="width:100%" />
+                            </RadzenFormField>
+                            <RadzenRequiredValidator Component="Role"
+                                                     Text="Le rôle est obligatoire." />
+                        </RadzenColumn>
+                    </RadzenRow>
+
+                    <RadzenStack Orientation="Orientation.Horizontal"
+                                 JustifyContent="JustifyContent.End"
+                                 Gap="0.5rem">
+                        <RadzenButton Text="Annuler"
+                                      Icon="close"
+                                      ButtonStyle="ButtonStyle.Light"
+                                      Click="@Cancel" />
+                        <RadzenButton Text="Enregistrer"
+                                      Icon="save"
+                                      ButtonType="ButtonType.Submit"
+                                      ButtonStyle="ButtonStyle.Primary" />
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenTemplateForm>
+            </RadzenCard>
+        </div>
+    }
+
+    <RadzenCard>
+    <RadzenDataGrid @ref="usersGrid" Data="@users"
+                        TItem="UtilisateurDto"
+                        AllowPaging="true"
+                        AllowSorting="true"
+                        AllowFiltering="true"
+                        AllowColumnResize="true"
+                        PageSize="10">
+            <Columns>
+                <RadzenDataGridColumn TItem="UtilisateurDto"
+                                      Property="NomUtilisateur"
+                                      Title="Utilisateur" />
+                <RadzenDataGridColumn TItem="UtilisateurDto"
+                                      Property="RoleLibelle"
+                                      Title="Rôle" />
+                <RadzenDataGridColumn TItem="UtilisateurDto"
+                                      Title="Mot de passe"
+                                      Sortable="false"
+                                      Filterable="false"
+                                      Width="160px">
+                    <Template Context="user">••••••••</Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="UtilisateurDto"
+                                      Title="Actions"
+                                      Width="150px"
+                                      Sortable="false"
+                                      Filterable="false">
+                    <Template Context="user">
+                        <RadzenButton Icon="edit"
+                                      Size="ButtonSize.Small"
+                                      ButtonStyle="ButtonStyle.Light"
+                                      title="Modifier"
+                                      Click="@(() => BeginEdit(user))" />
+                        <RadzenButton Icon="delete"
+                                      Size="ButtonSize.Small"
+                                      ButtonStyle="ButtonStyle.Danger"
+                                      Variant="Variant.Flat"
+                                      title="Supprimer"
+                                      Disabled="@(user.NomUtilisateur == "admin")"
+                                      Click="@(() => Delete(user))"
+                                      class="rz-ml-1" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    private List<RoleDto> availableRoles = [];
+    private List<UtilisateurDto> users = [];
+    private RadzenDataGrid<UtilisateurDto>? usersGrid;
+    private UtilisateurDto? editingUser;
+    private UserForm form = new();
+    private bool showForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        availableRoles = await RolesService.GetRolesAsync();
+        users = await UtilisateursService.GetUtilisateursAsync();
+        await ReloadUsersGridAsync();
+    }
+
+    private void BeginAdd()
+    {
+        editingUser = null;
+        form = new() { RoleId = availableRoles.FirstOrDefault()?.Id ?? 0 };
+        showForm = true;
+    }
+
+    private void BeginEdit(UtilisateurDto user)
+    {
+        editingUser = user;
+        form = new()
+        {
+            Username = user.NomUtilisateur,
+            RoleId = user.RoleId
+        };
+        showForm = true;
+    }
+
+    private void Cancel() => showForm = false;
+
+    private async Task Save()
+    {
+        var username = form.Username.Trim();
+        if (string.IsNullOrWhiteSpace(username)
+            || form.RoleId <= 0
+            || (editingUser is null && string.IsNullOrWhiteSpace(form.Password)))
+        {
+            return;
+        }
+
+        if (users.Any(x => string.Equals(x.NomUtilisateur, username, StringComparison.OrdinalIgnoreCase)
+            && !ReferenceEquals(x, editingUser)))
+        {
+            NotificationService.Notify(NotificationSeverity.Warning,
+                "Utilisateur existant",
+                "Un utilisateur porte déjà ce nom.");
+            return;
+        }
+
+        var dto = new UtilisateurDto
+        {
+            Id = editingUser?.Id ?? 0,
+            NomUtilisateur = username,
+            MotDePasse = form.Password,
+            RoleId = form.RoleId
+        };
+
+        try
+        {
+            await UtilisateursService.SaveUtilisateurAsync(dto);
+            users = await UtilisateursService.GetUtilisateursAsync();
+            await ReloadUsersGridAsync();
+            showForm = false;
+            NotificationService.Notify(NotificationSeverity.Success,
+                "Utilisateur enregistré",
+                $"L'utilisateur {username} a été enregistré.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Enregistrement impossible", ex.Message);
+        }
+    }
+
+    private async Task Delete(UtilisateurDto user)
+    {
+        if (user.NomUtilisateur == "admin")
+        {
+            return;
+        }
+
+        try
+        {
+            await UtilisateursService.DeleteUtilisateurAsync(user.Id);
+            users.Remove(user);
+            await ReloadUsersGridAsync();
+            NotificationService.Notify(NotificationSeverity.Success,
+                "Utilisateur supprimé",
+                $"L'utilisateur {user.NomUtilisateur} a été supprimé.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Suppression impossible", ex.Message);
+        }
+    }
+
+    private Task ReloadUsersGridAsync()
+        => usersGrid is null ? Task.CompletedTask : usersGrid.Reload();
+
+    private sealed class UserForm
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public long RoleId { get; set; }
+    }
+}

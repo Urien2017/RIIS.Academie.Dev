@@ -18,7 +18,8 @@ public class DossierAdministratifDto
         DossierAdministratif entity,
         Etudiant? etudiant = null,
         ParcoursAcademique? parcours = null,
-        AnneeAcademique? annee = null)
+        AnneeAcademique? annee = null,
+        string? matricule = null)
         => new()
         {
             Id = entity.Id,
@@ -26,7 +27,7 @@ public class DossierAdministratifDto
             ParcoursAcademiqueId = entity.ParcoursAcademiqueId,
             Statut = entity.Statut,
             CreeLeUtc = entity.CreeLeUtc,
-            EtudiantMatricule = etudiant?.Matricule ?? string.Empty,
+            EtudiantMatricule = matricule ?? string.Empty,
             EtudiantNomComplet = etudiant is null ? string.Empty : $"{etudiant.Nom} {etudiant.Prenoms}".Trim(),
             ParcoursLibelle = parcours?.Libelle ?? string.Empty,
             AnneeAcademiqueLibelle = annee?.Libelle ?? string.Empty

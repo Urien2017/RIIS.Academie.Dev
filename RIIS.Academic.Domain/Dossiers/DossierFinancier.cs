@@ -5,6 +5,7 @@ public class DossierFinancier
     public long Id { get; set; }
     public long EtudiantId { get; set; }
     public long ParcoursAcademiqueId { get; set; }
+    public long? DossierEtudiantId { get; set; }
     public StatutDossierScolarite StatutAdministratif { get; set; } = StatutDossierScolarite.EnPreparation;
     public StatutDossierScolarite StatutFinancier { get; set; } = StatutDossierScolarite.EnPreparation;
     public StatutDossierScolarite StatutGlobal { get; set; } = StatutDossierScolarite.EnPreparation;
@@ -15,6 +16,7 @@ public class DossierFinancier
 
     public Etudiant Etudiant { get; set; } = null!;
     public ParcoursAcademique ParcoursAcademique { get; set; } = null!;
+    public DossierEtudiant? DossierEtudiant { get; set; }
     public ICollection<ElementScolariteEtudiant> ElementsScolarite { get; set; } = [];
     public ICollection<PaiementScolarite> Paiements { get; set; } = [];
     public ICollection<NotificationScolarite> Notifications { get; set; } = [];

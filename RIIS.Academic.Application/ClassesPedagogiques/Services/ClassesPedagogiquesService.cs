@@ -63,24 +63,20 @@ public class ClassesPedagogiquesService(
         }
 
         var existingClasses = await classesPedagogiques.ListAsync(cancellationToken);
-        var duplicate = existingClasses.Any(x =>
+        var duplicate = existingClasses.FirstOrDefault(x =>
             x.Id != dto.Id
-            && x.ParcoursAcademiqueId == dto.ParcoursAcademiqueId
-            && string.Equals(x.Libelle, dto.Libelle, StringComparison.OrdinalIgnoreCase));
+            && x.ParcoursAcademiqueId == dto.ParcoursAcademiqueId);
 
-        if (duplicate)
+        if (duplicate is not null)
         {
-            throw new InvalidOperationException("Une classe avec le même libellé existe déjà pour ce parcours.");
+            throw new InvalidOperationException(
+                "Ce programme académique possède déjà une classe pédagogique. Modifiez la classe existante au lieu d'en créer une seconde.");
         }
 
         if (dto.Id == 0)
         {
-            await classesPedagogiques.AddAsync(new ClassePedagogique
-            {
-                ParcoursAcademiqueId = dto.ParcoursAcademiqueId,
-                Libelle = dto.Libelle,
-                Effectif = dto.Effectif
-            }, cancellationToken);
+            throw new InvalidOperationException(
+                "Les classes pédagogiques sont créées automatiquement avec leur programme académique.");
         }
         else
         {
@@ -95,10 +91,43 @@ public class ClassesPedagogiquesService(
         await classesPedagogiques.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task EnsureClassesForParcoursAsync(CancellationToken cancellationToken = default)
+    {
+        var parcours = await parcoursAcademiques.ListAsync(cancellationToken);
+        var classes = await classesPedagogiques.ListAsync(cancellationToken);
+        var classesParParcours = classes
+            .GroupBy(x => x.ParcoursAcademiqueId)
+            .ToDictionary(x => x.Key, x => x.First());
+
+        var changements = false;
+
+        foreach (var programme in parcours)
+        {
+            if (classesParParcours.ContainsKey(programme.Id))
+            {
+                continue;
+            }
+
+            await classesPedagogiques.AddAsync(new ClassePedagogique
+            {
+                ParcoursAcademiqueId = programme.Id,
+                Libelle = BuildClasseLibelle(programme),
+                Effectif = 0
+            }, cancellationToken);
+
+            changements = true;
+        }
+
+        if (changements)
+        {
+            await classesPedagogiques.SaveChangesAsync(cancellationToken);
+        }
+    }
+
     public async Task DeleteClassePedagogiqueAsync(long id, CancellationToken cancellationToken = default)
     {
-        await classesPedagogiques.DeleteByIdAsync(id, cancellationToken);
-        await classesPedagogiques.SaveChangesAsync(cancellationToken);
+        throw new InvalidOperationException(
+            "Une classe pédagogique est automatiquement liée à son programme académique et ne peut pas être supprimée seule.");
     }
 
     public async Task<List<LookupDto>> GetParcoursAcademiquesLookupAsync(CancellationToken cancellationToken = default)
@@ -132,6 +161,15 @@ public class ClassesPedagogiquesService(
 
     private static string FormatCodeLibelle(string code, string libelle)
         => string.IsNullOrWhiteSpace(code) ? libelle : $"{code} - {libelle}";
+
+    private static string BuildClasseLibelle(ParcoursAcademique programme)
+    {
+        var libelle = string.IsNullOrWhiteSpace(programme.Libelle)
+            ? programme.Code
+            : programme.Libelle;
+
+        return libelle.Length <= 200 ? libelle : libelle[..200];
+    }
 
     private static string RequireText(string? value, string errorMessage)
     {

@@ -8,3 +8,160 @@ body {
     outline: none;
     box-shadow: none;
 }
+
+.riis-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(24, 31, 43, 0.52);
+    overflow-y: auto;
+}
+
+.riis-modal-backdrop > .riis-modal {
+    flex: 0 1 920px;
+    width: min(100%, 920px);
+    max-height: calc(100vh - 2rem);
+    margin: 0;
+    overflow-y: auto;
+}
+
+.riis-modal-title {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(24, 31, 43, 0.14);
+}
+
+.riis-semestre-ue-select .rz-dropdown-chips-wrapper {
+    max-height: 6rem;
+    overflow-y: auto;
+    flex-wrap: wrap;
+}
+
+.riis-file-picker {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.riis-note-editor {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    width: 100%;
+}
+
+.riis-note-editor .riis-note-input {
+    min-width: 0;
+    flex: 1 1 auto;
+    width: 4.5rem;
+    text-align: center;
+}
+
+.riis-note-editor .rz-button {
+    flex: 0 0 2rem;
+    min-width: 2rem;
+    padding-inline: 0;
+}
+
+.riis-file-picker-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.riis-file-picker-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+    padding: 0.625rem 1rem;
+    border: 1px solid var(--rz-primary);
+    border-radius: var(--rz-border-radius);
+    background: var(--rz-primary);
+    color: var(--rz-on-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 120ms ease, box-shadow 120ms ease;
+}
+
+.riis-file-picker-button:hover {
+    filter: brightness(0.94);
+}
+
+.riis-file-picker-input:focus-visible + .riis-file-picker-button {
+    outline: 2px solid var(--rz-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px var(--rz-primary-lighter);
+}
+
+.riis-file-picker-name {
+    color: var(--rz-text-color);
+    overflow-wrap: anywhere;
+}
+
+.riis-data-loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 5.5rem 1rem 1rem;
+    background: rgba(24, 31, 43, 0.18);
+    pointer-events: all;
+}
+
+.riis-data-loading-panel {
+    width: min(31rem, 100%);
+    padding: 1rem 1.15rem;
+    border: 1px solid rgba(24, 31, 43, 0.14);
+    border-radius: 0.5rem;
+    background: var(--rz-base-background-color);
+    box-shadow: 0 0.75rem 2rem rgba(24, 31, 43, 0.2);
+}
+
+.riis-data-loading-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--rz-text-color);
+}
+
+.riis-data-loading-heading > span {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--rz-primary);
+}
+
+.riis-data-loading-progress {
+    width: 100%;
+    margin-top: 0.75rem;
+}
+
+.riis-data-loading-message {
+    margin-top: 0.5rem;
+    color: var(--rz-text-secondary-color);
+    font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+    .riis-modal-backdrop {
+        align-items: flex-start;
+        padding: 0.5rem;
+    }
+
+    .riis-modal-backdrop > .riis-modal {
+        max-height: calc(100vh - 1rem);
+    }
+}

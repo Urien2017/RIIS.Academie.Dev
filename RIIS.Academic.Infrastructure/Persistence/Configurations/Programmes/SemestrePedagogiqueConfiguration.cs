@@ -8,18 +8,19 @@ public class SemestrePedagogiqueConfiguration : IEntityTypeConfiguration<Semestr
     public void Configure(EntityTypeBuilder<SemestrePedagogique> builder)
     {
         builder.ToTable("SemestresPedagogiques", table =>
-            table.HasCheckConstraint("CK_SemestresPedagogiques_NumeroSemestre", "[NumeroSemestre] BETWEEN 1 AND 10"));
+            table.HasCheckConstraint("CK_SemestresPedagogiques_NumeroSemestre", "[NumeroSemestre] BETWEEN 1 AND 8"));
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Libelle).HasMaxLength(50).IsRequired();
-        builder.HasIndex(x => new { x.MaquettePedagogiqueId, x.NumeroSemestre, x.UniteEnseignementId }).IsUnique();
+        builder.HasIndex(x => new { x.MaquettePedagogiqueId, x.NumeroSemestre }).IsUnique();
 
         builder.HasOne(x => x.MaquettePedagogique)
             .WithMany(x => x.Semestres)
             .HasForeignKey(x => x.MaquettePedagogiqueId)
             .OnDelete(DeleteBehavior.Cascade);
-        builder.HasOne(x => x.UniteEnseignement)
-            .WithMany()
-            .HasForeignKey(x => x.UniteEnseignementId)
+
+        builder.HasOne(x => x.NiveauEtude)
+            .WithMany(x => x.SemestresPedagogiques)
+            .HasForeignKey(x => x.NiveauEtudeId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

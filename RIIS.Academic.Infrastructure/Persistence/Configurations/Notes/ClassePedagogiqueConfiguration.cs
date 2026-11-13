@@ -10,6 +10,6 @@ public class ClassePedagogiqueConfiguration : IEntityTypeConfiguration<ClassePed
         builder.ToTable("ClassesPedagogiques");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Libelle).HasMaxLength(200).IsRequired();
-        builder.HasIndex(x => new { x.ParcoursAcademiqueId, x.Libelle }).IsUnique();
+        builder.HasIndex(x => x.ParcoursAcademiqueId).IsUnique();
     }
 }

@@ -6,28 +6,89 @@ namespace RIIS.Academic.Infrastructure.Persistence.Repositories;
 public class EfRepository<TEntity>(RiisAcademicDbContext context) : IRepository<TEntity>
     where TEntity : class
 {
-    public Task<List<TEntity>> ListAsync(CancellationToken cancellationToken = default)
-        => context.Set<TEntity>()
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
+    private readonly SemaphoreSlim operationGate = new(1, 1);
+
+    public async Task<List<TEntity>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        await operationGate.WaitAsync(cancellationToken);
+        try
+        {
+            return await context.Set<TEntity>()
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+        finally
+        {
+            operationGate.Release();
+        }
+    }
 
     public async Task<TEntity?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-        => await context.Set<TEntity>().FindAsync([id], cancellationToken);
+    {
+        await operationGate.WaitAsync(cancellationToken);
+        try
+        {
+            return await context.Set<TEntity>().FindAsync([id], cancellationToken);
+        }
+        finally
+        {
+            operationGate.Release();
+        }
+    }
 
     public async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default)
-        => await context.Set<TEntity>().AddAsync(entity, cancellationToken);
+    {
+        await operationGate.WaitAsync(cancellationToken);
+        try
+        {
+            await context.Set<TEntity>().AddAsync(entity, cancellationToken);
+        }
+        finally
+        {
+            operationGate.Release();
+        }
+    }
 
     public void Delete(TEntity entity)
-        => context.Set<TEntity>().Remove(entity);
+    {
+        operationGate.Wait();
+        try
+        {
+            context.Set<TEntity>().Remove(entity);
+        }
+        finally
+        {
+            operationGate.Release();
+        }
+    }
 
     public async Task DeleteByIdAsync(long id, CancellationToken cancellationToken = default)
     {
-        var entity = await GetByIdAsync(id, cancellationToken);
-        if (entity is null) return;
-
-        Delete(entity);
+        await operationGate.WaitAsync(cancellationToken);
+        try
+        {
+            var entity = await context.Set<TEntity>().FindAsync([id], cancellationToken);
+            if (entity is not null)
+            {
+                context.Set<TEntity>().Remove(entity);
+            }
+        }
+        finally
+        {
+            operationGate.Release();
+        }
     }
 
-    public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        => context.SaveChangesAsync(cancellationToken);
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        await operationGate.WaitAsync(cancellationToken);
+        try
+        {
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+        finally
+        {
+            operationGate.Release();
+        }
+    }
 }

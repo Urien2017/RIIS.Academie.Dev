@@ -1,6 +1,106 @@
-<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DashboardLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-</Router>
+@using RIIS.Academic.Components.Pages
+@implements IDisposable
+@inject NavigationManager Navigation
+@inject IDataLoadingState LoadingState
+
+<RiisDataLoadingOverlay />
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+        <Found Context="routeData">
+            @if (routeData.PageType == typeof(Pages.Login))
+            {
+                <RouteView RouteData="routeData" />
+            }
+            else
+            {
+                <AuthorizeView>
+                    <Authorized>
+                        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DashboardLayout)" />
+                    </Authorized>
+                    <NotAuthorized>
+                        <RedirectToLogin />
+                    </NotAuthorized>
+                </AuthorizeView>
+            }
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+    </Router>
+</CascadingAuthenticationState>
+
+@code {
+    private static readonly TimeSpan NavigationFallbackDelay = TimeSpan.FromSeconds(8);
+    private IDisposable? navigationLoadingLease;
+    private bool navigationRenderPending;
+    private CancellationTokenSource? navigationTimeoutCancellation;
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+        navigationRenderPending = true;
+        StartNavigationLoading("Initialisation de la page...");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender || navigationRenderPending)
+        {
+            await InvokeAsync(CompleteNavigationLoading);
+        }
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        StartNavigationLoading("Chargement de la page...");
+        navigationRenderPending = true;
+
+        // LocationChanged is raised outside the normal component event pipeline.
+        // Requesting a render guarantees that OnAfterRenderAsync can release the
+        // navigation lease once the new route has been rendered.
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void StartNavigationLoading(string message)
+    {
+        navigationLoadingLease?.Dispose();
+        navigationTimeoutCancellation?.Cancel();
+        navigationTimeoutCancellation?.Dispose();
+
+        navigationLoadingLease = LoadingState.Begin(message);
+        navigationTimeoutCancellation = new CancellationTokenSource();
+        _ = CompleteNavigationAfterTimeoutAsync(navigationTimeoutCancellation.Token);
+    }
+
+    private async Task CompleteNavigationAfterTimeoutAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            // A circuit reconnection or a render exception must not leave the
+            // global page overlay visible forever.
+            await Task.Delay(NavigationFallbackDelay, cancellationToken);
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                await InvokeAsync(CompleteNavigationLoading);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private void CompleteNavigationLoading()
+    {
+        navigationRenderPending = false;
+        navigationLoadingLease?.Dispose();
+        navigationLoadingLease = null;
+        navigationTimeoutCancellation?.Cancel();
+        navigationTimeoutCancellation?.Dispose();
+        navigationTimeoutCancellation = null;
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        CompleteNavigationLoading();
+    }
+}

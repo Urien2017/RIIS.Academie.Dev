@@ -1,4 +1,5 @@
 using RIIS.Academic.Application.Abstractions.Persistence;
+using RIIS.Academic.Application.Etudiants.Services;
 using RIIS.Academic.Application.Scolarite.Dtos;
 using RIIS.Academic.Domain;
 
@@ -6,6 +7,7 @@ namespace RIIS.Academic.Application.Scolarite.Services;
 
 public class FinancesScolariteService(
     IRepository<DossierFinancier> dossiersFinanciers,
+    IRepository<DossierEtudiant> dossiersEtudiants,
     IRepository<Etudiant> etudiants,
     IRepository<ParcoursAcademique> parcoursAcademiques,
     IRepository<TypeElementScolarite> typesElementsScolarite,
@@ -14,7 +16,8 @@ public class FinancesScolariteService(
     IRepository<PaiementScolarite> paiementsScolarite,
     IRepository<ModePaiementScolarite> modesPaiementScolarite,
     IRepository<AffectationPaiementEcheance> affectationsPaiementsEcheances,
-    ITarifsScolariteService tarifsScolariteService) : IFinancesScolariteService
+    ITarifsScolariteService tarifsScolariteService,
+    IMatriculeGenerator matriculeGenerator) : IFinancesScolariteService
 {
     public async Task<FinanceDossierScolariteDto?> GetFinanceDossierScolariteAsync(
         long dossierScolariteId,
@@ -186,8 +189,16 @@ public class FinancesScolariteService(
     {
         if (dto.DossierFinancierId > 0)
         {
-            return await dossiersFinanciers.GetByIdAsync(dto.DossierFinancierId, cancellationToken)
+            var dossierExistant = await dossiersFinanciers.GetByIdAsync(dto.DossierFinancierId, cancellationToken)
                 ?? throw new InvalidOperationException("Le dossier financier selectionne est introuvable.");
+
+            var dossierEtudiantExistant = await EnsureDossierEtudiantAsync(
+                dossierExistant.EtudiantId,
+                dossierExistant.ParcoursAcademiqueId,
+                cancellationToken);
+            dossierExistant.DossierEtudiantId = dossierEtudiantExistant.Id;
+            await dossiersFinanciers.SaveChangesAsync(cancellationToken);
+            return dossierExistant;
         }
 
         if (dto.EtudiantId <= 0)
@@ -216,14 +227,25 @@ public class FinancesScolariteService(
 
         if (existing is not null)
         {
+            var dossierEtudiantExistant = await EnsureDossierEtudiantAsync(
+                existing.EtudiantId,
+                existing.ParcoursAcademiqueId,
+                cancellationToken);
+            existing.DossierEtudiantId = dossierEtudiantExistant.Id;
+            await dossiersFinanciers.SaveChangesAsync(cancellationToken);
             return existing;
         }
 
+        var dossierEtudiant = await EnsureDossierEtudiantAsync(
+            dto.EtudiantId,
+            dto.ParcoursAcademiqueId,
+            cancellationToken);
         var now = DateTime.UtcNow;
         var dossier = new DossierFinancier
         {
             EtudiantId = dto.EtudiantId,
             ParcoursAcademiqueId = dto.ParcoursAcademiqueId,
+            DossierEtudiantId = dossierEtudiant.Id,
             StatutAdministratif = StatutDossierScolarite.EnPreparation,
             StatutFinancier = StatutDossierScolarite.EnPreparation,
             StatutGlobal = StatutDossierScolarite.EnPreparation,
@@ -233,6 +255,37 @@ public class FinancesScolariteService(
 
         await dossiersFinanciers.AddAsync(dossier, cancellationToken);
         await dossiersFinanciers.SaveChangesAsync(cancellationToken);
+
+        return dossier;
+    }
+
+    private async Task<DossierEtudiant> EnsureDossierEtudiantAsync(
+        long etudiantId,
+        long parcoursAcademiqueId,
+        CancellationToken cancellationToken)
+    {
+        var dossier = (await dossiersEtudiants.ListAsync(cancellationToken))
+            .FirstOrDefault(x => x.EtudiantId == etudiantId && x.ParcoursAcademiqueId == parcoursAcademiqueId);
+
+        if (dossier is not null)
+        {
+            return dossier;
+        }
+
+        var parcours = await parcoursAcademiques.GetByIdAsync(parcoursAcademiqueId, cancellationToken)
+            ?? throw new InvalidOperationException("Le parcours academique selectionne est introuvable.");
+
+        dossier = new DossierEtudiant
+        {
+            EtudiantId = etudiantId,
+            ParcoursAcademiqueId = parcoursAcademiqueId,
+            Matricule = await matriculeGenerator.GenerateMatriculeAsync(
+                parcours.AnneeAcademiqueId,
+                cancellationToken)
+        };
+
+        await dossiersEtudiants.AddAsync(dossier, cancellationToken);
+        await dossiersEtudiants.SaveChangesAsync(cancellationToken);
 
         return dossier;
     }

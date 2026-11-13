@@ -6,6 +6,7 @@ namespace RIIS.Academic.Application.Dossiers.Services;
 
 public class DossierAdministratifService(
     IRepository<DossierAdministratif> dossiersAdministratifs,
+    IRepository<DossierEtudiant> dossiersEtudiants,
     IRepository<Etudiant> etudiants,
     IRepository<ParcoursAcademique> parcoursAcademiques,
     IRepository<AnneeAcademique> anneesAcademiques) : IDossierAdministratifService
@@ -58,8 +59,10 @@ public class DossierAdministratifService(
         var etudiant = await etudiants.GetByIdAsync(entity.EtudiantId, cancellationToken);
         var parcours = await parcoursAcademiques.GetByIdAsync(entity.ParcoursAcademiqueId, cancellationToken);
         var annee = parcours is null ? null : await anneesAcademiques.GetByIdAsync(parcours.AnneeAcademiqueId, cancellationToken);
+        var dossierEtudiant = (await dossiersEtudiants.ListAsync(cancellationToken))
+            .FirstOrDefault(x => x.EtudiantId == entity.EtudiantId && x.ParcoursAcademiqueId == entity.ParcoursAcademiqueId);
 
-        return DossierAdministratifDto.FromEntity(entity, etudiant, parcours, annee);
+        return DossierAdministratifDto.FromEntity(entity, etudiant, parcours, annee, dossierEtudiant?.Matricule);
     }
 
     private async Task EnsureReferencesAsync(long etudiantId, long parcoursAcademiqueId, CancellationToken cancellationToken)

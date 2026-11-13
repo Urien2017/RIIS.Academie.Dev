@@ -25,9 +25,11 @@
 
     @if (showForm)
     {
-        <RadzenCard>
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
             <RadzenTemplateForm TItem="TypeElementScolariteDto" Data="@model" Submit="@Save">
                 <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="riis-modal-title rz-m-0">@(model.Id == 0 ? "Nouveau type d'élément" : "Modifier le type d'élément")</RadzenText>
                     <RadzenRow>
                         <RadzenColumn Size="12" SizeMD="2">
                             <RadzenFormField Text="Code" Style="width:100%">
@@ -45,7 +47,7 @@
 
                         <RadzenColumn Size="12" SizeMD="3">
                             <RadzenFormField Text="Catégorie" Style="width:100%">
-                                <RadzenDropDown Data="@categorieOptions"
+                                <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@categorieOptions"
                                                 @bind-Value="@model.Categorie"
                                                 TextProperty="Text"
                                                 ValueProperty="Value"
@@ -91,11 +93,12 @@
                     </RadzenStack>
                 </RadzenStack>
             </RadzenTemplateForm>
-        </RadzenCard>
+            </RadzenCard>
+        </div>
     }
 
     <RadzenCard>
-        <RadzenDataGrid Data="@items" TItem="TypeElementScolariteDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+        <RadzenDataGrid @ref="typesElementsGrid" Data="@items" TItem="TypeElementScolariteDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
             <Columns>
                 <RadzenDataGridColumn TItem="TypeElementScolariteDto" Property="Code" Title="Code" Width="120px" />
                 <RadzenDataGridColumn TItem="TypeElementScolariteDto" Property="Libelle" Title="Libellé" />
@@ -151,6 +154,7 @@
     ];
 
     private List<TypeElementScolariteDto> items = [];
+    private RadzenDataGrid<TypeElementScolariteDto>? typesElementsGrid;
     private TypeElementScolariteDto model = new();
     private bool inclureInactifs;
     private bool showForm;
@@ -160,6 +164,7 @@
     private async Task Load()
     {
         items = await TypesElementsScolariteService.GetTypesElementsScolariteAsync(inclureInactifs);
+        if (typesElementsGrid is not null) await typesElementsGrid.Reload();
     }
 
     private void Create()

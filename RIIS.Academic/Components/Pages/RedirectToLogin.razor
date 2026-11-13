@@ -1,0 +1,10 @@
+@inject NavigationManager Navigation
+
+<RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="min-height:40vh">
+    <RadzenProgressBarCircular Mode="ProgressBarMode.Indeterminate" />
+</RadzenStack>
+
+@code {
+    protected override void OnInitialized()
+        => Navigation.NavigateTo("/login");
+}

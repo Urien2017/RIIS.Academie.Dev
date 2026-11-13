@@ -5,8 +5,8 @@ namespace RIIS.Academic.Application.Programmes.Dtos;
 public class MaquettePedagogiqueHierarchyDto
 {
     public long Id { get; set; }
-    public long ParcoursAcademiqueId { get; set; }
-    public string ParcoursAcademiqueLibelle { get; set; } = string.Empty;
+    public string ParcoursAcademiquesLibelle { get; set; } = string.Empty;
+    public int NombreAffectations { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Libelle { get; set; } = string.Empty;
     public string Version { get; set; } = string.Empty;

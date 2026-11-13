@@ -13,13 +13,14 @@ public interface IEvaluationsService
         long? uniteEnseignementId = null,
         long? elementConstitutifId = null,
         TypeEvaluation? type = null,
+        long? parcoursAcademiqueId = null,
         CancellationToken cancellationToken = default);
 
     Task<EvaluationAcademiqueDto?> GetEvaluationAsync(long id, CancellationToken cancellationToken = default);
 
     Task<EvaluationAcademiqueDto> CreateDefaultEvaluationAsync(
-        long? anneeAcademiqueId = null,
-        long? elementConstitutifId = null,
+        long? parcoursAcademiqueId = null,
+        long? maquetteElementConstitutifId = null,
         TypeEvaluation type = TypeEvaluation.ControleContinu,
         CancellationToken cancellationToken = default);
 
@@ -28,6 +29,12 @@ public interface IEvaluationsService
 
     Task<List<LookupDto>> GetAnneesAcademiquesLookupAsync(CancellationToken cancellationToken = default);
     Task<List<LookupDto>> GetCyclesFormationLookupAsync(CancellationToken cancellationToken = default);
+    Task<List<LookupDto>> GetParcoursAcademiquesLookupAsync(CancellationToken cancellationToken = default);
+    Task<List<LookupDto>> GetUnitesEnseignementForParcoursLookupAsync(long parcoursAcademiqueId, CancellationToken cancellationToken = default);
+    Task<List<LookupDto>> GetElementsConstitutifsForParcoursLookupAsync(
+        long parcoursAcademiqueId,
+        long? uniteEnseignementId = null,
+        CancellationToken cancellationToken = default);
     Task<List<LookupDto>> GetSemestresLookupAsync(
         long? anneeAcademiqueId = null,
         long? cycleFormationId = null,

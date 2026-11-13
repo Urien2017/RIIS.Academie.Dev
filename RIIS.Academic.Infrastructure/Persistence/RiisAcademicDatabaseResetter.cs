@@ -50,6 +50,7 @@ public static class RiisAcademicDatabaseResetter
         await ExecuteAsync(context, "DELETE FROM ElementsConstitutifs", cancellationToken);
         await ExecuteAsync(context, "DELETE FROM UnitesEnseignement", cancellationToken);
         await ExecuteAsync(context, "DELETE FROM SemestresPedagogiques", cancellationToken);
+        await ExecuteAsync(context, "DELETE FROM AffectationsMaquettes", cancellationToken);
         await ExecuteAsync(context, "DELETE FROM MaquettesPedagogiques", cancellationToken);
 
         if (includeTarifsScolarite)

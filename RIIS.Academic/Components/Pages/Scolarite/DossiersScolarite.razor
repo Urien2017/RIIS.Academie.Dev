@@ -23,7 +23,16 @@
             <RadzenRow>
                 <RadzenColumn Size="12" SizeMD="4">
                     <RadzenFormField Text="Matricule" Style="width:100%">
-                        <RadzenTextBox @bind-Value="@matricule" Style="width:100%" />
+                        <RadzenDropDown Data="@matriculeOptions"
+                                        @bind-Value="@matricule"
+                                        TextProperty="Libelle"
+                                        ValueProperty="Matricule"
+                                        TValue="string"
+                                        AllowClear="true"
+                                        AllowFiltering="true"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        Placeholder="Matricule + nom complet"
+                                        Style="width:100%" />
                     </RadzenFormField>
                 </RadzenColumn>
 
@@ -48,7 +57,7 @@
                     </RadzenStack>
                 </RadzenColumn>
             </RadzenRow>
-            <RadzenDataGrid Data="@items" TItem="DossierScolariteDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+            <RadzenDataGrid @ref="dossiersScolariteGrid" Data="@items" TItem="DossierScolariteDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
                 <Columns>
                     <RadzenDataGridColumn TItem="DossierScolariteDto" Property="EtudiantNomComplet" Title="Étudiant" />
                     <RadzenDataGridColumn TItem="DossierScolariteDto" Property="EtudiantMatricule" Title="Matricule" Width="140px" />
@@ -157,7 +166,7 @@
                             </RadzenColumn>
                         </RadzenRow>
 
-                        <RadzenDataGrid Data="@administration.Documents" TItem="DocumentAdministratifDossierDto" AllowPaging="true" PageSize="5">
+                        <RadzenDataGrid @ref="documentsAdministratifsGrid" Data="@administration.Documents" TItem="DocumentAdministratifDossierDto" AllowPaging="true" AllowColumnResize="true" PageSize="5">
                             <Columns>
                                 <RadzenDataGridColumn TItem="DocumentAdministratifDossierDto" Title="Piece">
                                     <Template Context="item">
@@ -173,7 +182,7 @@
                                     <Template Context="item">
                                         @if (item.EstDocumentaire)
                                         {
-                                            <RadzenDropDown Data="@documentStatuts"
+                                            <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@documentStatuts"
                                                             @bind-Value="@item.DocumentStatut"
                                                             TValue="StatutDocumentScolarite"
                                                             Style="width:100%" />
@@ -189,7 +198,7 @@
                                     <Template Context="item">
                                         @if (item.EstSoumisValidation)
                                         {
-                                            <RadzenDropDown Data="@validationStatuts"
+                                            <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@validationStatuts"
                                                             @bind-Value="@item.ValidationStatut"
                                                             TValue="StatutValidationScolarite"
                                                             Style="width:100%" />
@@ -274,7 +283,7 @@
                         <RadzenTabs>
                             <Tabs>
                                 <RadzenTabsItem Text="Types d'éléments">
-                                    <RadzenDataGrid Data="@finance.Elements" TItem="ElementFinancierDossierDto" AllowPaging="true" PageSize="5">
+                                    <RadzenDataGrid @ref="elementsFinanciersGrid" Data="@finance.Elements" TItem="ElementFinancierDossierDto" AllowPaging="true" AllowColumnResize="true" PageSize="5">
                                         <Columns>
                                             <RadzenDataGridColumn TItem="ElementFinancierDossierDto" Property="Libelle" Title="Type" />
                                             <RadzenDataGridColumn TItem="ElementFinancierDossierDto" Title="Attendu" Width="130px">
@@ -294,7 +303,7 @@
                                 </RadzenTabsItem>
 
                                 <RadzenTabsItem Text="Échéances">
-                                    <RadzenDataGrid Data="@finance.Echeances" TItem="EcheanceFinanciereDossierDto" AllowPaging="true" PageSize="5">
+                                    <RadzenDataGrid @ref="echeancesFinancieresGrid" Data="@finance.Echeances" TItem="EcheanceFinanciereDossierDto" AllowPaging="true" AllowColumnResize="true" PageSize="5">
                                         <Columns>
                                             <RadzenDataGridColumn TItem="EcheanceFinanciereDossierDto" Property="ElementLibelle" Title="Type" />
                                             <RadzenDataGridColumn TItem="EcheanceFinanciereDossierDto" Property="Libelle" Title="Échéance" />
@@ -315,7 +324,7 @@
                                 </RadzenTabsItem>
 
                                 <RadzenTabsItem Text="Paiements">
-                                    <RadzenDataGrid Data="@finance.Paiements" TItem="PaiementLibreDossierDto" AllowPaging="true" PageSize="5">
+                                    <RadzenDataGrid @ref="paiementsFinanciersGrid" Data="@finance.Paiements" TItem="PaiementLibreDossierDto" AllowPaging="true" AllowColumnResize="true" PageSize="5">
                                         <Columns>
                                             <RadzenDataGridColumn TItem="PaiementLibreDossierDto" Title="Date" Width="120px">
                                                 <Template Context="item">@item.DatePaiement.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)</Template>
@@ -351,13 +360,14 @@
 
                         @if (paiementEnEdition is not null)
                         {
-                            <RadzenCard>
+                            <div class="riis-modal-backdrop">
+                                <RadzenCard class="riis-modal">
                                 <RadzenStack Gap="0.75rem">
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Correction du paiement" />
+                                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="riis-modal-title rz-m-0" Text="Correction du paiement" />
                                     <RadzenRow>
                                         <RadzenColumn Size="12" SizeMD="4">
                                             <RadzenFormField Text="Type d'élément / tarif" Style="width:100%">
-                                                <RadzenDropDown Data="@optionsPaiement"
+                                                <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@optionsPaiement"
                                                                 @bind-Value="@editionOptionPaiementTarifId"
                                                                 TextProperty="Libelle"
                                                                 ValueProperty="TarifScolariteId"
@@ -378,7 +388,7 @@
                                         </RadzenColumn>
                                         <RadzenColumn Size="12" SizeMD="4">
                                             <RadzenFormField Text="Mode de paiement" Style="width:100%">
-                                                <RadzenDropDown Data="@modesPaiement"
+                                                <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@modesPaiement"
                                                                 @bind-Value="@editionModePaiementScolariteId"
                                                                 TextProperty="Libelle"
                                                                 ValueProperty="Id"
@@ -408,8 +418,9 @@
                                                       Disabled="@(editionOptionPaiementTarifId is null || editionModePaiementScolariteId is null)"
                                                       Click="@EnregistrerCorrectionPaiement" />
                                     </RadzenStack>
-                                </RadzenStack>
-                            </RadzenCard>
+                                    </RadzenStack>
+                                </RadzenCard>
+                            </div>
                         }
                     }
                 </RadzenStack>
@@ -419,8 +430,14 @@
 </RadzenStack>
 
 @code {
+    private RadzenDataGrid<DossierScolariteDto>? dossiersScolariteGrid;
+    private RadzenDataGrid<DocumentAdministratifDossierDto>? documentsAdministratifsGrid;
+    private RadzenDataGrid<ElementFinancierDossierDto>? elementsFinanciersGrid;
+    private RadzenDataGrid<EcheanceFinanciereDossierDto>? echeancesFinancieresGrid;
+    private RadzenDataGrid<PaiementLibreDossierDto>? paiementsFinanciersGrid;
     private List<ParcoursAcademiqueDto> parcoursAcademiques = [];
     private List<DossierScolariteDto> items = [];
+    private List<MatriculeOption> matriculeOptions = [];
     private readonly List<StatutDocumentScolarite> documentStatuts = Enum.GetValues<StatutDocumentScolarite>().ToList();
     private readonly List<StatutValidationScolarite> validationStatuts = Enum.GetValues<StatutValidationScolarite>().ToList();
     private DossierScolariteDto? selectedDossier;
@@ -448,10 +465,12 @@
 
     private async Task Load()
     {
+        await LoadMatriculeOptions();
         items = await DossiersScolariteService.GetDossiersScolariteAsync(
             inclureInscriptionsSansDossier: inclureTousLesDossiers,
             matricule: matricule,
             parcoursAcademiqueId: filtreParcoursAcademiqueId);
+        await ReloadDossiersScolariteGridAsync();
 
         if (selectedDossier is not null)
         {
@@ -470,6 +489,65 @@
                 ClearFinanceEdition();
                 finance = null;
             }
+        }
+
+        await ReloadDetailGridsAsync();
+    }
+
+    private async Task ReloadDetailGridsAsync()
+    {
+        if (documentsAdministratifsGrid is not null)
+        {
+            await documentsAdministratifsGrid.Reload();
+        }
+
+        if (elementsFinanciersGrid is not null)
+        {
+            await elementsFinanciersGrid.Reload();
+        }
+
+        if (echeancesFinancieresGrid is not null)
+        {
+            await echeancesFinancieresGrid.Reload();
+        }
+
+        if (paiementsFinanciersGrid is not null)
+        {
+            await paiementsFinanciersGrid.Reload();
+        }
+    }
+
+    private Task ReloadDossiersScolariteGridAsync()
+        => dossiersScolariteGrid is null ? Task.CompletedTask : dossiersScolariteGrid.Reload();
+
+    private async Task LoadMatriculeOptions()
+    {
+        var dossiers = await DossiersScolariteService.GetDossiersScolariteAsync(
+            inclureInscriptionsSansDossier: false,
+            parcoursAcademiqueId: filtreParcoursAcademiqueId);
+        var options = new List<MatriculeOption>();
+
+        foreach (var dossier in dossiers.Where(x => !string.IsNullOrWhiteSpace(x.EtudiantMatricule)))
+        {
+            var finance = await FinancesScolariteService.GetFinanceDossierScolariteAsync(dossier.DossierFinancierId);
+            if (finance?.TotalPaiements > 0)
+            {
+                options.Add(new MatriculeOption(
+                    dossier.EtudiantMatricule,
+                    FormatCodeLibelle(dossier.EtudiantMatricule, dossier.EtudiantNomComplet)));
+            }
+        }
+
+        matriculeOptions = options
+            .GroupBy(x => x.Matricule, StringComparer.OrdinalIgnoreCase)
+            .Select(x => x.First())
+            .OrderBy(x => x.Libelle)
+            .ToList();
+
+        if (!string.IsNullOrWhiteSpace(matricule)
+            && matriculeOptions.All(x => !string.Equals(x.Matricule, matricule, StringComparison.OrdinalIgnoreCase)))
+        {
+            matricule = null;
         }
     }
 
@@ -749,4 +827,5 @@
     private void NotifySuccess(string message) => NotificationService.Notify(NotificationSeverity.Success, "Succès", message);
     private void NotifyError(string message) => NotificationService.Notify(NotificationSeverity.Error, "Erreur", message);
 
+    private sealed record MatriculeOption(string Matricule, string Libelle);
 }

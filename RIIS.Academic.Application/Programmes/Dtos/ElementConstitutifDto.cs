@@ -10,4 +10,6 @@ public class ElementConstitutifDto
     public string? Code { get; set; }
     public string Libelle { get; set; } = string.Empty;
     public TypeElementConstitutif Type { get; set; } = TypeElementConstitutif.CoursMagistraux;
+    public decimal Credits { get; set; }
+    public short VolumeHoraire { get; set; }
 }

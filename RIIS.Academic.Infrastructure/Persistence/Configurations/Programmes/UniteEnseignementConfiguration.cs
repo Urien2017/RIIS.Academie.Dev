@@ -13,5 +13,10 @@ public class UniteEnseignementConfiguration : IEntityTypeConfiguration<UniteEnse
         builder.Property(x => x.Libelle).HasMaxLength(200).IsRequired();
         builder.Property(x => x.Type).HasConversion<string>().HasMaxLength(20);
         builder.HasIndex(x => x.Code).IsUnique();
+
+        builder.HasOne(x => x.MaquettePedagogique)
+            .WithMany(x => x.UnitesEnseignement)
+            .HasForeignKey(x => x.MaquettePedagogiqueId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

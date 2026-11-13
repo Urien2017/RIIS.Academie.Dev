@@ -43,7 +43,7 @@
             <RadzenRow>
                 <RadzenColumn Size="12" SizeMD="4" SizeXL="2">
                     <RadzenFormField Text="Année académique" Style="width:100%">
-                        <RadzenDropDown Data="@anneesAcademiques"
+                        <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@anneesAcademiques"
                                         TextProperty="Libelle"
                                         ValueProperty="Id"
                                         @bind-Value="@selectedAnneeAcademiqueId"
@@ -55,7 +55,7 @@
                 </RadzenColumn>
                 <RadzenColumn Size="12" SizeMD="4" SizeXL="2">
                     <RadzenFormField Text="Cycle" Style="width:100%">
-                        <RadzenDropDown Data="@cycles"
+                        <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@cycles"
                                         TextProperty="Libelle"
                                         ValueProperty="Id"
                                         @bind-Value="@selectedCycleFormationId"
@@ -67,7 +67,7 @@
                 </RadzenColumn>
                 <RadzenColumn Size="12" SizeMD="4" SizeXL="2">
                     <RadzenFormField Text="Niveau" Style="width:100%">
-                        <RadzenDropDown Data="@niveaux"
+                        <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@niveaux"
                                         TextProperty="Libelle"
                                         ValueProperty="Id"
                                         @bind-Value="@selectedNiveauEtudeId"
@@ -79,7 +79,7 @@
                 </RadzenColumn>
                 <RadzenColumn Size="12" SizeMD="6" SizeXL="3">
                     <RadzenFormField Text="Filière / spécialité" Style="width:100%">
-                        <RadzenDropDown Data="@parcours"
+                        <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@parcours"
                                         TextProperty="Libelle"
                                         ValueProperty="Key"
                                         @bind-Value="@selectedParcoursKey"
@@ -91,7 +91,7 @@
                 </RadzenColumn>
                 <RadzenColumn Size="12" SizeMD="6" SizeXL="3">
                     <RadzenFormField Text="Semestre" Style="width:100%">
-                        <RadzenDropDown Data="@semestres"
+                        <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@semestres"
                                         TextProperty="Libelle"
                                         ValueProperty="Id"
                                         @bind-Value="@selectedSemestrePedagogiqueId"
@@ -130,11 +130,14 @@
                                 <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2">Inscrits</RadzenText>
                                 <RadzenText TextStyle="TextStyle.H2" TagName="TagName.P" class="rz-color-info rz-m-0">@kpi.NombreInscrits</RadzenText>
                             </RadzenStack>
-                            <RadzenSparkline Style="width: 100%; height: 80px;">
-                                <RadzenColumnSeries FillMode="FillMode.Gradient" Data="@inscriptionsParMois" ValueProperty="Nombre" CategoryProperty="Mois" Title="Dossiers" Fill="var(--rz-info)" />
-                                <RadzenColumnOptions Margin="0" />
-                                <RadzenCategoryAxis Padding="20" Visible="false" />
-                            </RadzenSparkline>
+                            @if (inscriptionsParMois.Count > 0)
+                            {
+                                <RadzenSparkline Style="width: 100%; height: 80px;">
+                                    <RadzenColumnSeries FillMode="FillMode.Gradient" Data="@inscriptionsParMois" ValueProperty="Nombre" CategoryProperty="Mois" Title="Dossiers" Fill="var(--rz-info)" />
+                                    <RadzenColumnOptions Margin="0" />
+                                    <RadzenCategoryAxis Padding="20" Visible="false" />
+                                </RadzenSparkline>
+                            }
                         </RadzenStack>
                     </RadzenCard>
                 </RadzenColumn>
@@ -146,11 +149,14 @@
                                 <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2">Notes saisies</RadzenText>
                                 <RadzenText TextStyle="TextStyle.H2" TagName="TagName.P" class="rz-color-warning rz-m-0">@($"{Math.Round(kpi.TauxNotesSaisies)}%")</RadzenText>
                             </RadzenStack>
-                            <RadzenSparkline Style="width: 100%; height: 80px;">
-                                <RadzenColumnSeries FillMode="FillMode.Gradient" Data="@progressionNotes" ValueProperty="Taux" CategoryProperty="Libelle" Title="Notes" Fill="var(--rz-warning)" />
-                                <RadzenColumnOptions Margin="0" />
-                                <RadzenCategoryAxis Padding="20" Visible="false" />
-                            </RadzenSparkline>
+                            @if (progressionNotes.Count > 0)
+                            {
+                                <RadzenSparkline Style="width: 100%; height: 80px;">
+                                    <RadzenColumnSeries FillMode="FillMode.Gradient" Data="@progressionNotes" ValueProperty="Taux" CategoryProperty="Libelle" Title="Notes" Fill="var(--rz-warning)" />
+                                    <RadzenColumnOptions Margin="0" />
+                                    <RadzenCategoryAxis Padding="20" Visible="false" />
+                                </RadzenSparkline>
+                            }
                         </RadzenStack>
                     </RadzenCard>
                 </RadzenColumn>
@@ -183,22 +189,28 @@
                         <RadzenText TextStyle="TextStyle.H2" TagName="TagName.P" class="rz-m-0">@($"{Math.Round(kpi.TauxNotesSaisies)}%")</RadzenText>
                     </RadzenStack>
 
-                    <RadzenChart Style="width: 100%; height: 340px;">
-                        <RadzenAreaSeries FillMode="FillMode.Gradient" Data="@evolutionSaisieNotes" ValueProperty="Ccon" CategoryProperty="Periode" Title="CCON" Smooth="true" Stroke="var(--rz-info)" Fill="var(--rz-info-lighter)">
-                            <RadzenMarkers Visible="true" MarkerType="MarkerType.Circle" />
-                        </RadzenAreaSeries>
-                        <RadzenAreaSeries FillMode="FillMode.Gradient" Data="@evolutionSaisieNotes" ValueProperty="Cc" CategoryProperty="Periode" Title="CC" Smooth="true" Stroke="var(--rz-success)" Fill="var(--rz-success-lighter)">
-                            <RadzenMarkers Visible="true" MarkerType="MarkerType.Circle" />
-                        </RadzenAreaSeries>
-                        <RadzenAreaSeries FillMode="FillMode.Gradient" Data="@evolutionSaisieNotes" ValueProperty="Sn" CategoryProperty="Periode" Title="SN" Smooth="true" Stroke="var(--rz-warning)" Fill="var(--rz-warning-lighter)">
-                            <RadzenMarkers Visible="true" MarkerType="MarkerType.Circle" />
-                        </RadzenAreaSeries>
-                        <RadzenValueAxis Min="0" Max="100">
-                            <RadzenGridLines Visible="true" />
-                        </RadzenValueAxis>
-                        <RadzenCategoryAxis Padding="30" />
-                        <RadzenLegend Visible="true" Position="LegendPosition.Bottom" />
-                    </RadzenChart>
+                    @if (evolutionSaisieNotes.Count > 0)
+                    {
+                        <RadzenChart Style="width: 100%; height: 340px;">
+                            <RadzenAreaSeries FillMode="FillMode.Gradient" Data="@evolutionSaisieNotes" ValueProperty="Ccon" CategoryProperty="Periode" Title="CCON" Smooth="true" Stroke="var(--rz-info)" Fill="var(--rz-info-lighter)">
+                                <RadzenMarkers Visible="true" MarkerType="MarkerType.Circle" />
+                            </RadzenAreaSeries>
+                            <RadzenAreaSeries FillMode="FillMode.Gradient" Data="@evolutionSaisieNotes" ValueProperty="Cc" CategoryProperty="Periode" Title="CC" Smooth="true" Stroke="var(--rz-success)" Fill="var(--rz-success-lighter)">
+                                <RadzenMarkers Visible="true" MarkerType="MarkerType.Circle" />
+                            </RadzenAreaSeries>
+                            <RadzenAreaSeries FillMode="FillMode.Gradient" Data="@evolutionSaisieNotes" ValueProperty="Sn" CategoryProperty="Periode" Title="SN" Smooth="true" Stroke="var(--rz-warning)" Fill="var(--rz-warning-lighter)">
+                                <RadzenMarkers Visible="true" MarkerType="MarkerType.Circle" />
+                            </RadzenAreaSeries>
+                            <RadzenAreaSeries FillMode="FillMode.Gradient" Data="@evolutionSaisieNotes" ValueProperty="Sr" CategoryProperty="Periode" Title="SR" Smooth="true" Stroke="var(--rz-danger)" Fill="var(--rz-danger-lighter)">
+                                <RadzenMarkers Visible="true" MarkerType="MarkerType.Circle" />
+                            </RadzenAreaSeries>
+                            <RadzenValueAxis Min="0" Max="100">
+                                <RadzenGridLines Visible="true" />
+                            </RadzenValueAxis>
+                            <RadzenCategoryAxis Padding="30" />
+                            <RadzenLegend Visible="true" Position="LegendPosition.Bottom" />
+                        </RadzenChart>
+                    }
                 </RadzenStack>
             </RadzenCard>
         </RadzenColumn>
@@ -208,20 +220,26 @@
                 <RadzenTabs Style="height: 100%; min-height: 390px">
                     <Tabs>
                         <RadzenTabsItem Text="Résultats">
-                            <RadzenChart Style="width: 100%; height: 350px;">
-                                <RadzenDonutSeries FillMode="FillMode.Gradient" Data="@repartitionResultats" CategoryProperty="Libelle" ValueProperty="Nombre" Fills="@resultatColors" />
-                            </RadzenChart>
+                            @if (repartitionResultats.Count > 0)
+                            {
+                                <RadzenChart Style="width: 100%; height: 350px;">
+                                    <RadzenDonutSeries FillMode="FillMode.Gradient" Data="@repartitionResultats" CategoryProperty="Libelle" ValueProperty="Nombre" Fills="@resultatColors" />
+                                </RadzenChart>
+                            }
                         </RadzenTabsItem>
 
                         <RadzenTabsItem Text="Taux par cycle">
-                            <RadzenChart Style="width: 100%; height: 350px;">
-                                <RadzenColumnSeries FillMode="FillMode.Gradient" Data="@tauxParCycle" CategoryProperty="Libelle" ValueProperty="Taux" Fill="var(--rz-success)" />
-                                <RadzenValueAxis Min="0" Max="100">
-                                    <RadzenGridLines Visible="true" />
-                                </RadzenValueAxis>
-                                <RadzenCategoryAxis Padding="20" />
-                                <RadzenLegend Visible="false" />
-                            </RadzenChart>
+                            @if (tauxParCycle.Count > 0)
+                            {
+                                <RadzenChart Style="width: 100%; height: 350px;">
+                                    <RadzenColumnSeries FillMode="FillMode.Gradient" Data="@tauxParCycle" CategoryProperty="Libelle" ValueProperty="Taux" Fill="var(--rz-success)" />
+                                    <RadzenValueAxis Min="0" Max="100">
+                                        <RadzenGridLines Visible="true" />
+                                    </RadzenValueAxis>
+                                    <RadzenCategoryAxis Padding="20" />
+                                    <RadzenLegend Visible="false" />
+                                </RadzenChart>
+                            }
                         </RadzenTabsItem>
 
                         <RadzenTabsItem Text="EC à risque">
@@ -257,7 +275,7 @@
 
     <RadzenRow>
         <RadzenColumn Size="12">
-            <RadzenDataGrid Data="@classesSynthese" TItem="ClasseSyntheseDashboard" Style="min-height: 520px" AllowFiltering="true" FilterPopupRenderMode="PopupRenderMode.OnDemand" AllowSorting="true" AllowPaging="true" PageSize="8">
+<RadzenDataGrid @ref="classesSyntheseGrid" Data="@classesSynthese" TItem="ClasseSyntheseDashboard" Style="min-height: 520px" AllowFiltering="true" FilterPopupRenderMode="PopupRenderMode.OnDemand" AllowSorting="true" AllowColumnResize="true" AllowPaging="true" PageSize="8">
                 <HeaderTemplate>
                     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem" class="rz-py-2">
                         <RadzenStack Gap="0">
@@ -294,7 +312,7 @@
                         <Template Context="classe">
                             <RadzenStack Orientation="Orientation.Horizontal" Gap="0.35rem">
                                 <RadzenBadge Text="@($"{classe.PvGeneres} PV")" BadgeStyle="BadgeStyle.Info" Variant="Variant.Flat" Shade="Shade.Light" />
-                                <RadzenBadge Text="@($"{classe.RelevesDisponibles} relevés")" BadgeStyle="BadgeStyle.Success" Variant="Variant.Flat" Shade="Shade.Light" />
+                                <RadzenBadge Text="@($"{classe.RelevesDisponibles} résultats")" BadgeStyle="BadgeStyle.Success" Variant="Variant.Flat" Shade="Shade.Light" />
                             </RadzenStack>
                         </Template>
                     </RadzenDataGridColumn>
@@ -324,6 +342,7 @@
 </style>
 
 @code {
+    private RadzenDataGrid<ClasseSyntheseDashboard>? classesSyntheseGrid;
     private DashboardAcademiqueDto dashboard = new();
 
     private List<DashboardFilterOption> anneesAcademiques = [];
@@ -381,6 +400,7 @@
 
             dashboard = await DashboardAcademiqueService.GetDashboardAcademiqueAsync(BuildFilter(), CancellationToken.None);
             MapDashboardToView(dashboard);
+            await ReloadClassesSyntheseGridAsync();
         }
         catch (Exception ex)
         {
@@ -399,6 +419,9 @@
             isLoading = false;
         }
     }
+
+    private Task ReloadClassesSyntheseGridAsync()
+        => classesSyntheseGrid is null ? Task.CompletedTask : classesSyntheseGrid.Reload();
 
     private DashboardAcademiqueFilterDto BuildFilter()
     {

@@ -4,15 +4,32 @@ namespace RIIS.Academic.Infrastructure.Persistence;
 
 public static class ConnectionStringHelper
 {
-    public static string GetRiisConnectionString(IConfiguration configuration)
-    {
-        var env = configuration["envval"];
+    private const string ProductionEnvironment = "prod";
 
-        var connectionName = string.Equals(env, "dev", StringComparison.OrdinalIgnoreCase)
-            ? "RiisSqlServer"
-            : "OtherConnection";
+    public static string GetRiisConnectionString(IConfiguration configuration)
+        => GetRiisConnectionString(configuration, RiisDatabaseProvider.Resolve(configuration));
+
+    public static string GetRiisConnectionString(IConfiguration configuration, string provider)
+    {
+        var connectionName = ResolveConnectionName(configuration, provider);
 
         return configuration.GetConnectionString(connectionName)
-            ?? throw new InvalidOperationException($"Connection string '{connectionName}' not found.");
+            ?? throw new InvalidOperationException(
+                $"La chaine de connexion '{connectionName}' est introuvable pour le provider '{provider}'.");
+    }
+
+    private static string ResolveConnectionName(IConfiguration configuration, string provider)
+    {
+        if (string.Equals(provider, RiisDatabaseProvider.Sqlite, StringComparison.OrdinalIgnoreCase)) 
+        {
+            return "RiisSqlite";
+        }
+
+        return string.Equals(
+            configuration["envval"],
+            ProductionEnvironment,
+            StringComparison.OrdinalIgnoreCase)
+            ? "RiisOnlineConnection"
+            : "RiisSqlServer";
     }
 }

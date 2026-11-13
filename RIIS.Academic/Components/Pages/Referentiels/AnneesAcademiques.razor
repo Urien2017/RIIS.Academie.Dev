@@ -15,9 +15,11 @@
 
     @if (showForm)
     {
-        <RadzenCard>
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
             <RadzenTemplateForm TItem="AnneeAcademiqueDto" Data="@model" Submit="@Save">
                 <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="riis-modal-title rz-m-0">@(model.Id == 0 ? "Nouvelle année académique" : "Modifier l'année académique")</RadzenText>
                     <RadzenRow>
                         <RadzenColumn Size="12" SizeMD="4">
                             <RadzenFormField Text="Libellé" Style="width:100%">
@@ -49,11 +51,12 @@
                     </RadzenStack>
                 </RadzenStack>
             </RadzenTemplateForm>
-        </RadzenCard>
+            </RadzenCard>
+        </div>
     }
 
     <RadzenCard>
-        <RadzenDataGrid Data="@items" TItem="AnneeAcademiqueDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+        <RadzenDataGrid @ref="anneesGrid" Data="@items" TItem="AnneeAcademiqueDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
             <Columns>
                 <RadzenDataGridColumn TItem="AnneeAcademiqueDto" Property="Libelle" Title="Libellé" />
                 <RadzenDataGridColumn TItem="AnneeAcademiqueDto" Property="AnneeDebut" Title="Début" />
@@ -76,6 +79,7 @@
 
 @code {
     private List<AnneeAcademiqueDto> items = [];
+    private RadzenDataGrid<AnneeAcademiqueDto>? anneesGrid;
     private AnneeAcademiqueDto model = new();
     private bool showForm;
 
@@ -84,6 +88,7 @@
     private async Task Load()
     {
         items = await ReferentielsService.GetAnneesAcademiquesAsync();
+        if (anneesGrid is not null) await anneesGrid.Reload();
     }
 
     private void Create()

@@ -1,0 +1,125 @@
+@inject IProcesVerbauxService ProcesVerbauxService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<RadzenTemplateForm Data="@request" TItem="GenererProcesVerbalRequestDto" Submit="@Submit">
+    <RadzenStack Gap="1rem">
+        <RadzenText Text="Choisissez le parcours et la période du PV. Les notes saisies en ligne ou importées depuis Excel seront utilisées." />
+
+        <RadzenFormField Text="Parcours académique" Style="width:100%">
+            <RadzenDropDown Data="@parcoursAcademiques"
+                            TextProperty="Libelle"
+                            ValueProperty="Id"
+                            @bind-Value="@request.ParcoursAcademiqueId"
+                            Change="@OnParcoursChanged"
+                            AllowFiltering="true"
+                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                            Placeholder="Sélectionner un parcours"
+                            Style="width:100%" />
+        </RadzenFormField>
+
+        <RadzenFormField Text="Période du PV" Style="width:100%">
+            <RadzenDropDown Data="@periodes"
+                            TextProperty="Libelle"
+                            ValueProperty="Id"
+                            @bind-Value="@periodeSelectionnee"
+                            Change="@OnPeriodeChanged"
+                            Style="width:100%" />
+        </RadzenFormField>
+
+        <RadzenFormField Text="Semestre pédagogique" Style="width:100%">
+            <RadzenDropDown Data="@semestres"
+                            TextProperty="Libelle"
+                            ValueProperty="Id"
+                            @bind-Value="@request.SemestrePedagogiqueId"
+                            AllowFiltering="true"
+                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                            Placeholder="Sélectionner un semestre"
+                            Disabled="@IsAnnee"
+                            Style="width:100%" />
+        </RadzenFormField>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
+            <RadzenButton Text="Annuler" ButtonStyle="ButtonStyle.Light" Click="@Cancel" ButtonType="ButtonType.Button" />
+            <RadzenButton Text="Générer le PV" Icon="article" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" Disabled="@isBusy" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    private readonly GenererProcesVerbalRequestDto request = new();
+    private readonly List<LookupDto> periodes =
+    [
+        new() { Id = 0, Libelle = "Année entière" },
+        new() { Id = 1, Libelle = "Semestre" }
+    ];
+    private List<LookupDto> parcoursAcademiques = [];
+    private List<LookupDto> semestres = [];
+    private long periodeSelectionnee;
+    private bool isBusy;
+    private bool IsAnnee => periodeSelectionnee == 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        parcoursAcademiques = await ProcesVerbauxService.GetParcoursAcademiquesLookupAsync();
+    }
+
+    private async Task OnParcoursChanged(object? _)
+    {
+        request.SemestrePedagogiqueId = null;
+        semestres = [];
+
+        if (request.ParcoursAcademiqueId == 0)
+        {
+            return;
+        }
+
+        semestres = await ProcesVerbauxService.GetSemestresForParcoursLookupAsync(
+            request.ParcoursAcademiqueId);
+    }
+
+    private void OnPeriodeChanged(object? _)
+    {
+        if (IsAnnee)
+        {
+            request.SemestrePedagogiqueId = null;
+        }
+    }
+
+    private async Task Submit(GenererProcesVerbalRequestDto _)
+    {
+        if (request.ParcoursAcademiqueId == 0)
+        {
+            NotifyError("Le parcours académique est obligatoire.");
+            return;
+        }
+
+        if (!IsAnnee && request.SemestrePedagogiqueId is null)
+        {
+            NotifyError("Sélectionnez un semestre pour générer un PV semestriel.");
+            return;
+        }
+
+        isBusy = true;
+
+        try
+        {
+            await ProcesVerbauxService.GenererProcesVerbalAsync(request);
+            DialogService.Close(true);
+        }
+        catch (Exception ex)
+        {
+            NotifyError(ex.Message);
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private void Cancel() => DialogService.Close(false);
+
+    private void NotifyError(string message)
+        => NotificationService.Notify(NotificationSeverity.Error, "Génération impossible", message);
+
+}

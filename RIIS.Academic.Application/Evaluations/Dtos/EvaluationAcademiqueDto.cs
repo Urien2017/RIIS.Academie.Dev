@@ -7,6 +7,8 @@ public class EvaluationAcademiqueDto
     public long Id { get; set; }
     public long AnneeAcademiqueId { get; set; }
     public string AnneeAcademiqueLibelle { get; set; } = string.Empty;
+    public long ParcoursAcademiqueId { get; set; }
+    public string ParcoursAcademiqueLibelle { get; set; } = string.Empty;
     public long MaquetteElementConstitutifId { get; set; }
     public string ElementConstitutifLibelle { get; set; } = string.Empty;
     public long UniteEnseignementId { get; set; }
@@ -26,4 +28,5 @@ public class EvaluationAcademiqueDto
     public long? EvaluationRemplaceeId { get; set; }
     public string? EvaluationRemplaceeLibelle { get; set; }
     public string? Observation { get; set; }
+    public int NombreNotes { get; set; }
 }

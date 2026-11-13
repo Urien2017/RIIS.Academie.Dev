@@ -1,0 +1,38 @@
+@implements IDisposable
+@inject IDataLoadingState LoadingState
+
+@if (LoadingState.IsLoading)
+{
+    <div class="riis-data-loading-overlay" role="status" aria-live="polite" aria-label="Chargement des données">
+        <div class="riis-data-loading-panel">
+            <div class="riis-data-loading-heading">
+                <RadzenIcon Icon="cloud_sync" />
+                <strong>@LoadingTitle</strong>
+                <span>@LoadingState.ProgressPercentage%</span>
+            </div>
+            <RadzenProgressBar Value="@LoadingState.ProgressPercentage" Max="100" ShowValue="false" class="riis-data-loading-progress" />
+            <div class="riis-data-loading-message">@LoadingState.Message</div>
+        </div>
+    </div>
+}
+
+@code {
+    private string LoadingTitle => LoadingState.Message.Contains("page", StringComparison.OrdinalIgnoreCase)
+        ? "Chargement de la page"
+        : "Chargement des données";
+
+    protected override void OnInitialized()
+    {
+        LoadingState.Changed += OnLoadingStateChanged;
+    }
+
+    private void OnLoadingStateChanged(object? sender, EventArgs args)
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        LoadingState.Changed -= OnLoadingStateChanged;
+    }
+}

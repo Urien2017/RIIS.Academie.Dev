@@ -15,49 +15,37 @@
 
     @if (showForm)
     {
-        <RadzenCard>
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
             <RadzenTemplateForm TItem="SpecialiteDto" Data="@model" Submit="@Save">
                 <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="riis-modal-title rz-m-0">@(model.Id == 0 ? "Nouvelle spécialité" : "Modifier la spécialité")</RadzenText>
                     <RadzenRow>
-                        <RadzenColumn Size="12" SizeMD="3">
-                            <RadzenFormField Text="Cycle" Style="width:100%">
-                                <RadzenDropDown Data="@cycles"
-                                                TextProperty="Libelle"
-                                                ValueProperty="Id"
-                                                @bind-Value="@ModelCycleFormationId"
-                                                TValue="long?"
-                                                Name="CycleFormationId"
-                                                Style="width:100%" />
-                            </RadzenFormField>
-                            <RadzenRequiredValidator Component="CycleFormationId" Text="Cycle obligatoire." />
-                        </RadzenColumn>
-                        <RadzenColumn Size="12" SizeMD="3">
+                        <RadzenColumn Size="12" SizeMD="4">
                             <RadzenFormField Text="Filière" Style="width:100%">
-                                <RadzenDropDown Data="@FormFilieres"
+                                <RadzenDropDown Data="@filieres"
                                                 TextProperty="Libelle"
                                                 ValueProperty="Id"
                                                 @bind-Value="@model.FiliereId"
                                                 TValue="long"
                                                 Name="FiliereId"
-                                                Disabled="@(!selectedFormCycleId.HasValue)"
+                                                AllowFiltering="true"
+                                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                Placeholder="Sélectionner une filière"
                                                 Style="width:100%" />
                             </RadzenFormField>
                             <RadzenRequiredValidator Component="FiliereId" Text="Filière obligatoire." />
                         </RadzenColumn>
-                        <RadzenColumn Size="12" SizeMD="2">
+                        <RadzenColumn Size="12" SizeMD="3">
                             <RadzenFormField Text="Code" Style="width:100%">
                                 <RadzenTextBox @bind-Value="@model.Code" Name="Code" ReadOnly="true" />
                             </RadzenFormField>
                         </RadzenColumn>
-                        <RadzenColumn Size="12" SizeMD="3">
+                        <RadzenColumn Size="12" SizeMD="5">
                             <RadzenFormField Text="Libellé" Style="width:100%">
-                                <RadzenTextBox @bind-Value="@ModelLibelle" Name="Libelle" Change="@OnModelLibelleChanged" />
+                                <RadzenTextBox @bind-Value="@model.Libelle" Name="Libelle" @oninput="@OnLibelleInput" />
                             </RadzenFormField>
                             <RadzenRequiredValidator Component="Libelle" Text="Libellé obligatoire." />
-                        </RadzenColumn>
-                        <RadzenColumn Size="12" SizeMD="1">
-                            <RadzenLabel Text="Active" />
-                            <RadzenCheckBox @bind-Value="@model.EstActive" />
                         </RadzenColumn>
                     </RadzenRow>
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
@@ -66,31 +54,21 @@
                     </RadzenStack>
                 </RadzenStack>
             </RadzenTemplateForm>
-        </RadzenCard>
+            </RadzenCard>
+        </div>
     }
 
     <RadzenCard>
         <RadzenStack Gap="1rem">
             <RadzenRow>
                 <RadzenColumn Size="12" SizeMD="4">
-                    <RadzenFormField Text="Filtrer par cycle" Style="width:100%">
-                        <RadzenDropDown Data="@cycles"
-                                        TextProperty="Libelle"
-                                        ValueProperty="Id"
-                                        @bind-Value="@FilterCycleFormationId"
-                                        TValue="long?"
-                                        AllowClear="true"
-                                        Placeholder="Tous les cycles"
-                                        Style="width:100%" />
-                    </RadzenFormField>
-                </RadzenColumn>
-                <RadzenColumn Size="12" SizeMD="4">
                     <RadzenFormField Text="Filtrer par filière" Style="width:100%">
-                        <RadzenDropDown Data="@FilterFilieres"
+                        <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@filieres"
                                         TextProperty="Libelle"
                                         ValueProperty="Id"
                                         @bind-Value="@selectedFiliereId"
                                         TValue="long?"
+                                        Change="@OnFiliereFilterChanged"
                                         AllowClear="true"
                                         Placeholder="Toutes les filières"
                                         Style="width:100%" />
@@ -101,7 +79,7 @@
     </RadzenCard>
 
     <RadzenCard>
-        <RadzenDataGrid Data="@FilteredItems" TItem="SpecialiteDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+        <RadzenDataGrid @ref="specialitesGrid" Data="@FilteredItems" TItem="SpecialiteDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
             <Columns>
                 <RadzenDataGridColumn TItem="SpecialiteDto" Property="FiliereLibelle" Title="Filière" />
                 <RadzenDataGridColumn TItem="SpecialiteDto" Property="Code" Title="Code" />
@@ -121,13 +99,10 @@
 </RadzenStack>
 
 @code {
-    private List<CycleFormationDto> cycles = [];
-    private List<ParcoursFormationDto> parcoursFormation = [];
     private List<SpecialiteDto> items = [];
+    private RadzenDataGrid<SpecialiteDto>? specialitesGrid;
     private List<FiliereLookupDto> filieres = [];
     private SpecialiteDto model = new();
-    private long? selectedFilterCycleId;
-    private long? selectedFormCycleId;
     private long? selectedFiliereId;
     private bool showForm;
 
@@ -136,12 +111,6 @@
         get
         {
             var query = items.AsEnumerable();
-
-            if (selectedFilterCycleId.HasValue)
-            {
-                var filiereIds = GetFiliereIdsForCycle(selectedFilterCycleId.Value);
-                query = query.Where(item => filiereIds.Contains(item.FiliereId));
-            }
 
             if (selectedFiliereId.HasValue)
             {
@@ -152,85 +121,40 @@
         }
     }
 
-    private IEnumerable<FiliereLookupDto> FilterFilieres
-        => selectedFilterCycleId is null
-            ? filieres
-            : filieres.Where(filiere => GetFiliereIdsForCycle(selectedFilterCycleId.Value).Contains(filiere.Id));
-
-    private IEnumerable<FiliereLookupDto> FormFilieres
-        => selectedFormCycleId is null
-            ? Enumerable.Empty<FiliereLookupDto>()
-            : filieres.Where(filiere => GetFiliereIdsForCycle(selectedFormCycleId.Value).Contains(filiere.Id));
-
-    private long? FilterCycleFormationId
+    private async Task OnLibelleInput(ChangeEventArgs args)
     {
-        get => selectedFilterCycleId;
-        set
-        {
-            selectedFilterCycleId = value;
-
-            if (selectedFiliereId.HasValue && !FilterFilieres.Any(filiere => filiere.Id == selectedFiliereId.Value))
-            {
-                selectedFiliereId = null;
-            }
-        }
-    }
-
-    private long? ModelCycleFormationId
-    {
-        get => model.CycleFormationId ?? selectedFormCycleId;
-        set
-        {
-            selectedFormCycleId = value;
-            model.CycleFormationId = value;
-
-            if (model.FiliereId > 0 && !FormFilieres.Any(filiere => filiere.Id == model.FiliereId))
-            {
-                model.FiliereId = 0;
-            }
-        }
-    }
-
-    private string ModelLibelle
-    {
-        get => model.Libelle;
-        set => model.Libelle = value ?? string.Empty;
-    }
-
-    private async Task OnModelLibelleChanged(string? value)
-    {
-        model.Libelle = value ?? string.Empty;
-
-        if (model.Id == 0)
-        {
-            model.Code = await ReferentielsService.GenerateSpecialiteCodeAsync(model.Libelle);
-        }
+        model.Libelle = args.Value?.ToString() ?? string.Empty;
+        model.Code = await ReferentielsService.GenerateSpecialiteCodeAsync(model.Libelle, model.Id);
     }
 
     protected override async Task OnInitializedAsync() => await Load();
 
     private async Task Load()
     {
-        cycles = await ReferentielsService.GetCyclesFormationAsync();
-        parcoursFormation = await ReferentielsService.GetParcoursFormationAsync(inclureInactifs: true);
         filieres = await ReferentielsService.GetFilieresActivesLookupAsync();
         items = await ReferentielsService.GetSpecialitesAsync();
+        if (specialitesGrid is not null) await specialitesGrid.Reload();
+    }
+
+    private async Task OnFiliereFilterChanged(object? _)
+    {
+        if (specialitesGrid is not null)
+        {
+            await specialitesGrid.Reload();
+        }
     }
 
     private void Create()
     {
-        selectedFormCycleId = selectedFilterCycleId ?? cycles.FirstOrDefault()?.Id;
-        model = ReferentielsService.CreateDefaultSpecialite(FormFilieres.FirstOrDefault()?.Id, selectedFormCycleId);
+        model = ReferentielsService.CreateDefaultSpecialite();
         showForm = true;
     }
 
     private void Edit(SpecialiteDto item)
     {
-        selectedFormCycleId = ResolveCycleForFiliere(item.FiliereId);
         model = new SpecialiteDto
         {
             Id = item.Id,
-            CycleFormationId = selectedFormCycleId,
             FiliereId = item.FiliereId,
             FiliereLibelle = item.FiliereLibelle,
             Code = item.Code,
@@ -244,12 +168,6 @@
     {
         try
         {
-            if (!selectedFormCycleId.HasValue)
-            {
-                throw new InvalidOperationException("Le cycle est obligatoire pour choisir une filière.");
-            }
-
-            model.CycleFormationId = selectedFormCycleId;
             await ReferentielsService.SaveSpecialiteAsync(model);
             NotifySuccess();
             showForm = false;
@@ -275,22 +193,6 @@
     }
 
     private void Cancel() => showForm = false;
-
-    private HashSet<long> GetFiliereIdsForCycle(long cycleId)
-        => parcoursFormation
-            .Where(parcours => parcours.CycleFormationId == cycleId)
-            .Select(parcours => parcours.FiliereId)
-            .ToHashSet();
-
-    private long? ResolveCycleForFiliere(long filiereId)
-    {
-        if (selectedFilterCycleId.HasValue && GetFiliereIdsForCycle(selectedFilterCycleId.Value).Contains(filiereId))
-        {
-            return selectedFilterCycleId;
-        }
-
-        return parcoursFormation.FirstOrDefault(parcours => parcours.FiliereId == filiereId)?.CycleFormationId;
-    }
 
     private void NotifySuccess() => NotificationService.Notify(NotificationSeverity.Success, "Succès", "Données enregistrées.");
     private void NotifyError(string message) => NotificationService.Notify(NotificationSeverity.Error, "Erreur", message);

@@ -7,8 +7,8 @@
     <RadzenCard>
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
             <RadzenStack Gap="0">
-                <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-m-0" Text="Aperçu du procès-verbal" />
-                <RadzenText Text="Affichage détaillé du PV dans une page dédiée." />
+                <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-m-0" Text="Détails du procès-verbal" />
+                <RadzenText Text="Résultats calculés à partir des notes saisies ou importées pour le semestre ou l'année sélectionnée." />
             </RadzenStack>
 
             <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
@@ -22,6 +22,10 @@
                                   Icon="table_view"
                                   ButtonStyle="ButtonStyle.Success"
                                   Click="@ExportExcel" />
+                    <RadzenButton Text="Exporter PDF"
+                                  Icon="picture_as_pdf"
+                                  ButtonStyle="ButtonStyle.Danger"
+                                  Click="@ExportPdf" />
                     <RadzenButton Text="Word Modèle"
                                   Icon="article"
                                   ButtonStyle="ButtonStyle.Secondary"
@@ -108,7 +112,7 @@
                         Ce PV ne contient pas encore de détails EC dans les lignes. Seules les moyennes générales peuvent être affichées.
                     </RadzenAlert>
 
-                    <RadzenDataGrid Data="@procesVerbal.Lignes" TItem="ProcesVerbalLigneDto" AllowPaging="true" AllowSorting="true" PageSize="20">
+                    <RadzenDataGrid @ref="procesVerbalLignesGrid" Data="@procesVerbal.Lignes" TItem="ProcesVerbalLigneDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" PageSize="20">
                         <Columns>
                             <RadzenDataGridColumn TItem="ProcesVerbalLigneDto" Property="Rang" Title="Rang" Width="90px" />
                             <RadzenDataGridColumn TItem="ProcesVerbalLigneDto" Property="Matricule" Title="Matricule" Width="150px" />
@@ -133,7 +137,7 @@
                                     <th rowspan="2">Noms et prénoms</th>
                                     @foreach (var ec in ecHeaders)
                                     {
-                                        <th colspan="4">@ec.ElementConstitutifLibelle</th>
+                                        <th colspan="@ec.Columns.Count">@ec.Label</th>
                                     }
                                     <th rowspan="2">Crédits</th>
                                     <th rowspan="2">Moy Gle</th>
@@ -141,12 +145,12 @@
                                     <th rowspan="2">Décision</th>
                                 </tr>
                                 <tr>
-                                    @foreach (var _ in ecHeaders)
+                                    @foreach (var ec in ecHeaders)
                                     {
-                                        <th>CCON</th>
-                                        <th>CC</th>
-                                        <th>SN</th>
-                                        <th>MOY</th>
+                                        @foreach (var column in ec.Columns)
+                                        {
+                                            <th>@column</th>
+                                        }
                                     }
                                 </tr>
                             </thead>
@@ -159,10 +163,13 @@
                                         @foreach (var ec in ecHeaders)
                                         {
                                             var detail = GetDetail(ligne, ec);
-                                            <td>@FormatNote(detail?.MoyenneCcon)</td>
-                                            <td>@FormatNote(detail?.MoyenneCc)</td>
-                                            <td>@FormatNote(detail?.MoyenneSn)</td>
-                                            <td class="@GetNoteCssClass(detail?.MoyenneFinale)">@FormatNote(detail?.MoyenneFinale)</td>
+                                            @foreach (var column in ec.Columns)
+                                            {
+                                                var value = column == "MOY"
+                                                    ? detail?.MoyenneFinale
+                                                    : GetEvaluationAverage(detail, column);
+                                                <td class="@(column == "MOY" ? GetNoteCssClass(value) : string.Empty)">@FormatNote(value)</td>
+                                            }
                                         }
                                         <td>@FormatCredit(ligne.CreditsAcquis)</td>
                                         <td class="@GetNoteCssClass(ligne.MoyenneGenerale)">@FormatNote(ligne.MoyenneGenerale)</td>
@@ -320,7 +327,8 @@
     public long ProcesVerbalId { get; set; }
 
     private ProcesVerbalDto? procesVerbal;
-    private List<ProcesVerbalElementConstitutifLigneDto> ecHeaders = [];
+    private List<EcHeader> ecHeaders = [];
+    private RadzenDataGrid<ProcesVerbalLigneDto>? procesVerbalLignesGrid;
     private bool isLoading = true;
 
     protected override async Task OnParametersSetAsync()
@@ -331,6 +339,10 @@
         {
             procesVerbal = await ProcesVerbauxService.GetProcesVerbalAsync(ProcesVerbalId);
             ecHeaders = BuildEcHeaders(procesVerbal);
+            if (procesVerbalLignesGrid is not null)
+            {
+                await procesVerbalLignesGrid.Reload();
+            }
         }
         catch (Exception ex)
         {
@@ -342,7 +354,12 @@
         }
     }
 
-    private static List<ProcesVerbalElementConstitutifLigneDto> BuildEcHeaders(ProcesVerbalDto? pv)
+    private sealed record EcHeader(
+        string Key,
+        string Label,
+        IReadOnlyList<string> Columns);
+
+    private static List<EcHeader> BuildEcHeaders(ProcesVerbalDto? pv)
     {
         if (pv is null)
         {
@@ -352,14 +369,39 @@
         return pv.Lignes
             .SelectMany(x => x.ElementsConstitutifs)
             .GroupBy(x => x.Key)
-            .Select(x => x.First())
+            .Select(group =>
+            {
+                var first = group.First();
+                var columns = new List<string>();
+                if (group.Any(x => x.HasCconNotes)) columns.Add("CCON");
+                if (group.Any(x => x.HasCcNotes)) columns.Add("CC");
+                if (group.Any(x => x.HasSnNotes)) columns.Add("SN");
+                if (group.Any(x => x.HasSrNotes)) columns.Add("SR");
+                if (columns.Count == 0) return null;
+                columns.Add("MOY");
+                return new EcHeader(first.Key, first.ElementConstitutifLibelle, columns);
+            })
+            .Where(x => x is not null)
+            .Cast<EcHeader>()
             .ToList();
     }
 
     private static ProcesVerbalElementConstitutifLigneDto? GetDetail(
         ProcesVerbalLigneDto ligne,
-        ProcesVerbalElementConstitutifLigneDto ec)
+        EcHeader ec)
         => ligne.ElementsConstitutifs.FirstOrDefault(x => x.Key == ec.Key);
+
+    private static decimal? GetEvaluationAverage(
+        ProcesVerbalElementConstitutifLigneDto? detail,
+        string column)
+        => column switch
+        {
+            "CCON" => detail?.MoyenneCcon,
+            "CC" => detail?.MoyenneCc,
+            "SN" => detail?.MoyenneSn,
+            "SR" => detail?.MoyenneSr,
+            _ => null
+        };
 
     private void BackToList()
         => Navigation.NavigateTo("/pv");
@@ -369,6 +411,9 @@
 
     private void ExportExcel()
         => Navigation.NavigateTo($"/exports/pv/{ProcesVerbalId}.xlsx", forceLoad: true);
+
+    private void ExportPdf()
+        => Navigation.NavigateTo($"/exports/pv/{ProcesVerbalId}.pdf", forceLoad: true);
 
     private void ExportTemplateWord()
         => Navigation.NavigateTo($"/exports/pv/{ProcesVerbalId}.modele.docx", forceLoad: true);

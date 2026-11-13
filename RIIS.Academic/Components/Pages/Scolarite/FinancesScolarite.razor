@@ -64,7 +64,7 @@
     </RadzenCard>
 
     <RadzenCard>
-        <RadzenDataGrid Data="@items" TItem="DossierFinanceCaisseDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+        <RadzenDataGrid @ref="financesGrid" Data="@items" TItem="DossierFinanceCaisseDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
             <Columns>
                 <RadzenDataGridColumn TItem="DossierFinanceCaisseDto" Property="EtudiantNomComplet" Title="Étudiant" />
                 <RadzenDataGridColumn TItem="DossierFinanceCaisseDto" Property="EtudiantMatricule" Title="Matricule" Width="140px" />
@@ -150,7 +150,7 @@
                     <RadzenRow>
                         <RadzenColumn Size="12" SizeMD="4">
                             <RadzenFormField Text="Type d'élément / tarif" Style="width:100%">
-                                <RadzenDropDown Data="@optionsPaiement"
+                                <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@optionsPaiement"
                                                 @bind-Value="@optionPaiementTarifId"
                                                 TextProperty="Libelle"
                                                 ValueProperty="TarifScolariteId"
@@ -171,7 +171,7 @@
                         </RadzenColumn>
                         <RadzenColumn Size="12" SizeMD="4">
                             <RadzenFormField Text="Mode de paiement" Style="width:100%">
-                                <RadzenDropDown Data="@modesPaiement"
+                                <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@modesPaiement"
                                                 @bind-Value="@modePaiementScolariteId"
                                                 TextProperty="Libelle"
                                                 ValueProperty="Id"
@@ -209,14 +209,14 @@
                     <RadzenRow>
                         <RadzenColumn Size="12" SizeMD="6">
                             <RadzenText TextStyle="TextStyle.Subtitle1" Text="Échéances" />
-                            <RadzenDataGrid Data="@finance.Echeances" TItem="EcheanceFinanciereDossierDto" AllowPaging="true" PageSize="5">
+                            <RadzenDataGrid @ref="financesEcheancesGrid" Data="@finance.Echeances" TItem="EcheanceFinanciereDossierDto" AllowPaging="true" AllowColumnResize="true" PageSize="5">
                                 <Columns>
                                     <RadzenDataGridColumn TItem="EcheanceFinanciereDossierDto" Property="Libelle" Title="Échéance" />
                                     <RadzenDataGridColumn TItem="EcheanceFinanciereDossierDto" Title="Date">
                                         <Template Context="item">@item.DateExigibilite.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)</Template>
                                     </RadzenDataGridColumn>
                                     <RadzenDataGridColumn TItem="EcheanceFinanciereDossierDto" Title="Restant">
-                                        <Template Context="item">@FormatMoney(item.MontantRestant)</Template>
+                                        <Template Context="item">@FormatMoney(CalculerRestantPourCaisse(finance, item))</Template>
                                     </RadzenDataGridColumn>
                                 </Columns>
                             </RadzenDataGrid>
@@ -224,7 +224,7 @@
 
                         <RadzenColumn Size="12" SizeMD="6">
                             <RadzenText TextStyle="TextStyle.Subtitle1" Text="Paiements" />
-                            <RadzenDataGrid Data="@finance.Paiements" TItem="PaiementLibreDossierDto" AllowPaging="true" PageSize="5">
+                            <RadzenDataGrid @ref="financesPaiementsGrid" Data="@finance.Paiements" TItem="PaiementLibreDossierDto" AllowPaging="true" AllowColumnResize="true" PageSize="5">
                                 <Columns>
                                     <RadzenDataGridColumn TItem="PaiementLibreDossierDto" Title="Date">
                                         <Template Context="item">@item.DatePaiement.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)</Template>
@@ -248,6 +248,9 @@
 </RadzenStack>
 
 @code {
+    private RadzenDataGrid<DossierFinanceCaisseDto>? financesGrid;
+    private RadzenDataGrid<EcheanceFinanciereDossierDto>? financesEcheancesGrid;
+    private RadzenDataGrid<PaiementLibreDossierDto>? financesPaiementsGrid;
     private List<ParcoursAcademiqueDto> parcoursAcademiques = [];
     private List<MatriculeOption> matriculeOptions = [];
     private List<DossierFinanceCaisseDto> allItems = [];
@@ -280,6 +283,7 @@
             .ToList();
         matriculeOptions = BuildMatriculeOptions(allItems);
         ApplyFilters();
+        await ReloadFinancesGridAsync();
 
         if (selectedDossier is not null)
         {
@@ -297,11 +301,12 @@
         }
     }
 
-    private void OnFiltersChanged(object? _)
+    private async Task OnFiltersChanged(object? _)
     {
         selectedDossier = null;
         finance = null;
         ApplyFilters();
+        await ReloadFinancesGridAsync();
     }
 
     private void ApplyFilters()
@@ -321,8 +326,12 @@
         selectedDossier = null;
         finance = null;
         ApplyFilters();
+        await ReloadFinancesGridAsync();
         await InvokeAsync(StateHasChanged);
     }
+
+    private Task ReloadFinancesGridAsync()
+        => financesGrid is null ? Task.CompletedTask : financesGrid.Reload();
 
     private async Task SelectDossier(DossierFinanceCaisseDto item)
     {
@@ -343,6 +352,20 @@
             ? await FinancesScolariteService.GetFinanceDossierScolariteAsync(selectedDossier.DossierFinancierId)
             : null;
         RefreshFinanceDefaults();
+        await ReloadFinanceDetailGridsAsync();
+    }
+
+    private async Task ReloadFinanceDetailGridsAsync()
+    {
+        if (financesEcheancesGrid is not null)
+        {
+            await financesEcheancesGrid.Reload();
+        }
+
+        if (financesPaiementsGrid is not null)
+        {
+            await financesPaiementsGrid.Reload();
+        }
     }
 
     private async Task LoadFinanceLookups()
@@ -459,7 +482,51 @@
         => finance.Elements.Sum(x => x.MontantAttendu);
 
     private static decimal SoldeRestant(FinanceDossierScolariteDto finance)
-        => finance.Elements.Sum(x => x.MontantRestant);
+        => Math.Max(0m, TotalAttendu(finance) - finance.TotalPaiements);
+
+    private static decimal CalculerRestantPourCaisse(
+        FinanceDossierScolariteDto? finance,
+        EcheanceFinanciereDossierDto echeance)
+    {
+        if (finance is null)
+        {
+            return echeance.MontantRestant;
+        }
+
+        var element = finance.Elements.FirstOrDefault(x => x.Id == echeance.ElementScolariteEtudiantId);
+        if (element is null)
+        {
+            return echeance.MontantRestant;
+        }
+
+        var montantPayePourLeType = finance.Paiements
+            .Where(x => x.Statut != StatutPaiementScolarite.Annule
+                && x.TypeElementScolariteId == element.TypeElementScolariteId)
+            .Sum(x => x.Montant);
+
+        var echeancesDuType = finance.Echeances
+            .Where(x => finance.Elements.Any(elementItem =>
+                elementItem.Id == x.ElementScolariteEtudiantId
+                && elementItem.TypeElementScolariteId == element.TypeElementScolariteId))
+            .OrderBy(x => x.DateExigibilite)
+            .ThenBy(x => x.Numero)
+            .ThenBy(x => x.Id)
+            .ToList();
+
+        var montantDisponible = montantPayePourLeType;
+        foreach (var echeanceDuType in echeancesDuType)
+        {
+            var montantImputePourAffichage = Math.Min(montantDisponible, echeanceDuType.MontantAttendu);
+            if (echeanceDuType.Id == echeance.Id)
+            {
+                return Math.Max(0m, echeanceDuType.MontantAttendu - montantImputePourAffichage);
+            }
+
+            montantDisponible -= montantImputePourAffichage;
+        }
+
+        return echeance.MontantRestant;
+    }
 
     private DossierFinanceCaisseDto MapDossierFinance(DossierEtudiantAnnuelDto dossier)
     {
@@ -469,7 +536,7 @@
             dossier.EtudiantId,
             dossier.ParcoursAcademiqueId,
             dossier.Financier?.Id ?? 0,
-            dossier.Etudiant?.Matricule
+            dossier.Dossier?.Matricule
                 ?? dossier.Academique?.EtudiantMatricule
                 ?? dossier.Administratif?.EtudiantMatricule
                 ?? dossier.Financier?.EtudiantMatricule

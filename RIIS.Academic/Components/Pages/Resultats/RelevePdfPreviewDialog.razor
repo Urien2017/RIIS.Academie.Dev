@@ -1,0 +1,20 @@
+<RadzenStack Gap="0.75rem" Style="height:100%;">
+    <iframe src="@PdfUrl"
+            title="Aperçu PDF du relevé de notes"
+            style="display:block; width:100%; height:calc(100vh - 12rem); min-height:32rem; border:1px solid var(--rz-border-color);">
+    </iframe>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+        <RadzenButton Text="Fermer" Icon="close" ButtonStyle="ButtonStyle.Light" Click="@Close" />
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    [Parameter, EditorRequired]
+    public string PdfUrl { get; set; } = string.Empty;
+
+    [Inject]
+    private DialogService DialogService { get; set; } = null!;
+
+    private void Close() => DialogService.Close();
+}

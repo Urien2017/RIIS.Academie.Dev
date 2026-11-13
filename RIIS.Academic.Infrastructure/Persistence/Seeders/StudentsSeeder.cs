@@ -354,23 +354,15 @@ public static class StudentsSeeder
         StudentSeedData studentData,
         CancellationToken cancellationToken)
     {
-        var matricule = NormalizeNullable(studentData.Matricule);
         var (nom, prenoms) = SplitNomPrenoms(studentData.NomPrenoms);
         var dateNaissance = ParseDateOrDefault(studentData.DateNaissance, DefaultDateNaissance);
         var lieuNaissance = NormalizeNullable(studentData.LieuNaissance) ?? "Non renseigné";
 
         Etudiant? etudiant = null;
 
-        if (matricule is not null)
-        {
-            etudiant = await context.Etudiants
-                .FirstOrDefaultAsync(x => x.Matricule == matricule, cancellationToken);
-        }
-
         etudiant ??= await context.Etudiants
             .FirstOrDefaultAsync(
-                x => x.Matricule == null
-                    && x.Nom == nom
+                x => x.Nom == nom
                     && x.Prenoms == prenoms
                     && x.DateNaissance == dateNaissance,
                 cancellationToken);
@@ -379,7 +371,6 @@ public static class StudentsSeeder
         {
             etudiant = new Etudiant
             {
-                Matricule = matricule,
                 Nom = nom,
                 Prenoms = prenoms,
                 DateNaissance = dateNaissance,
@@ -396,7 +387,6 @@ public static class StudentsSeeder
             return etudiant;
         }
 
-        etudiant.Matricule ??= matricule;
         etudiant.Nom = nom;
         etudiant.Prenoms = prenoms;
         etudiant.DateNaissance = dateNaissance;

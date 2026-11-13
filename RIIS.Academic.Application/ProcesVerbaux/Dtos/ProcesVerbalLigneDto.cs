@@ -7,11 +7,6 @@ public class ProcesVerbalLigneDto
     public long Id { get; set; }
     public long ProcesVerbalId { get; set; }
     public long DossierAcademiqueId { get; set; }
-    public long InscriptionId
-    {
-        get => DossierAcademiqueId;
-        set => DossierAcademiqueId = value;
-    }
     public string Matricule { get; set; } = string.Empty;
     public string EtudiantNomComplet { get; set; } = string.Empty;
     public decimal? MoyenneGenerale { get; set; }

@@ -7,6 +7,7 @@ namespace RIIS.Academic.Application.Scolarite.Services;
 public class DossiersScolariteService(
     IRepository<DossierFinancier> dossiersFinanciers,
     IRepository<DossierAdministratif> dossiersAdministratifs,
+    IRepository<DossierEtudiant> dossiersEtudiants,
     IRepository<Etudiant> etudiants,
     IRepository<ParcoursAcademique> parcoursAcademiques,
     IRepository<AnneeAcademique> anneesAcademiques,
@@ -42,7 +43,11 @@ public class DossiersScolariteService(
                 var etudiant = context.Etudiants.FirstOrDefault(e => e.Id == x.EtudiantId);
                 var value = recherche.Trim();
 
-                return Contains(etudiant?.Matricule, value)
+                var matriculeDossier = context.DossiersEtudiants.FirstOrDefault(d =>
+                    d.EtudiantId == x.EtudiantId
+                    && d.ParcoursAcademiqueId == x.ParcoursAcademiqueId)?.Matricule;
+
+                return Contains(matriculeDossier, value)
                     || Contains(etudiant?.Nom, value)
                     || Contains(etudiant?.Prenoms, value);
             });
@@ -55,7 +60,11 @@ public class DossiersScolariteService(
                 var etudiant = context.Etudiants.FirstOrDefault(e => e.Id == x.EtudiantId);
                 var value = matricule.Trim();
 
-                return Contains(etudiant?.Matricule, value);
+                var matriculeDossier = context.DossiersEtudiants.FirstOrDefault(d =>
+                    d.EtudiantId == x.EtudiantId
+                    && d.ParcoursAcademiqueId == x.ParcoursAcademiqueId)?.Matricule;
+
+                return Contains(matriculeDossier, value);
             });
         }
 
@@ -283,6 +292,7 @@ public class DossiersScolariteService(
         => new(
             await dossiersFinanciers.ListAsync(cancellationToken),
             await dossiersAdministratifs.ListAsync(cancellationToken),
+            await dossiersEtudiants.ListAsync(cancellationToken),
             await etudiants.ListAsync(cancellationToken),
             await parcoursAcademiques.ListAsync(cancellationToken),
             await anneesAcademiques.ListAsync(cancellationToken),
@@ -294,6 +304,9 @@ public class DossiersScolariteService(
     private static DossierScolariteDto ToDto(DossierFinancier dossier, DossierScolariteContext context)
     {
         var etudiant = context.Etudiants.FirstOrDefault(x => x.Id == dossier.EtudiantId);
+        var dossierEtudiant = context.DossiersEtudiants.FirstOrDefault(x =>
+            x.EtudiantId == dossier.EtudiantId
+            && x.ParcoursAcademiqueId == dossier.ParcoursAcademiqueId);
         var parcours = context.Parcours.FirstOrDefault(x => x.Id == dossier.ParcoursAcademiqueId);
         var administratif = context.DossiersAdministratifs.FirstOrDefault(x =>
             x.EtudiantId == dossier.EtudiantId && x.ParcoursAcademiqueId == dossier.ParcoursAcademiqueId);
@@ -308,7 +321,7 @@ public class DossiersScolariteService(
             Id = dossier.Id,
             InscriptionId = dossier.Id,
             ParcoursAcademiqueId = dossier.ParcoursAcademiqueId,
-            EtudiantMatricule = etudiant?.Matricule ?? string.Empty,
+            EtudiantMatricule = dossierEtudiant?.Matricule ?? string.Empty,
             EtudiantNomComplet = etudiant is null ? string.Empty : $"{etudiant.Nom} {etudiant.Prenoms}".Trim(),
             DateInscription = DateOnly.FromDateTime(dossier.CreeLeUtc),
             AnneeAcademiqueCode = annee?.Libelle ?? string.Empty,
@@ -386,6 +399,7 @@ public class DossiersScolariteService(
     private sealed record DossierScolariteContext(
         List<DossierFinancier> DossiersFinanciers,
         List<DossierAdministratif> DossiersAdministratifs,
+        List<DossierEtudiant> DossiersEtudiants,
         List<Etudiant> Etudiants,
         List<ParcoursAcademique> Parcours,
         List<AnneeAcademique> Annees,

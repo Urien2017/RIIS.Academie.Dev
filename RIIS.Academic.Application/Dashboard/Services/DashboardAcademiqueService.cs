@@ -14,6 +14,7 @@ public class DashboardAcademiqueService(
     IRepository<ClassePedagogique> classesPedagogiques,
     IRepository<DossierAcademique> dossiersAcademiques,
     IRepository<MaquettePedagogique> maquettesPedagogiques,
+    IRepository<AffectationMaquette> affectationsMaquettes,
     IRepository<SemestrePedagogique> semestresPedagogiques,
     IRepository<UniteEnseignement> unitesEnseignement,
     IRepository<ElementConstitutif> elementsConstitutifs,
@@ -45,16 +46,16 @@ public class DashboardAcademiqueService(
         return new DashboardAcademiqueDto
         {
             Filtres = filter,
-            Kpi = BuildKpi(data, filteredDossiers, filteredClasses, filteredEvaluations, filteredNotes),
+            Kpi = BuildKpi(data, filter, filteredDossiers, filteredClasses, filteredEvaluations, filteredNotes),
             InscriptionsParPeriode = BuildInscriptionsParPeriode(filteredDossiers),
             ProgressionNotesParType = BuildProgressionNotesParType(filteredEvaluations, filteredNotes, filteredDossiers, data),
             EvolutionSaisieNotes = BuildEvolutionSaisieNotes(filteredEvaluations, filteredNotes, filteredDossiers, data),
-            RepartitionResultats = BuildRepartitionResultats(data, filteredDossiers),
-            TauxReussiteParCycle = BuildTauxReussiteParGroupe(data, filteredDossiers, GroupeDashboard.Cycle),
-            TauxReussiteParNiveau = BuildTauxReussiteParGroupe(data, filteredDossiers, GroupeDashboard.Niveau),
-            TauxReussiteParParcours = BuildTauxReussiteParGroupe(data, filteredDossiers, GroupeDashboard.Parcours),
+            RepartitionResultats = BuildRepartitionResultats(data, filter, filteredDossiers),
+            TauxReussiteParCycle = BuildTauxReussiteParGroupe(data, filter, filteredDossiers, GroupeDashboard.Cycle),
+            TauxReussiteParNiveau = BuildTauxReussiteParGroupe(data, filter, filteredDossiers, GroupeDashboard.Niveau),
+            TauxReussiteParParcours = BuildTauxReussiteParGroupe(data, filter, filteredDossiers, GroupeDashboard.Parcours),
             ElementsConstitutifsARisque = BuildElementsConstitutifsARisque(data, filteredDossiers, filter),
-            Classes = BuildClassesSynthese(data, filteredClasses, filteredDossiers)
+            Classes = BuildClassesSynthese(data, filter, filteredClasses, filteredDossiers)
         };
     }
 
@@ -69,6 +70,7 @@ public class DashboardAcademiqueService(
             await classesPedagogiques.ListAsync(cancellationToken),
             await dossiersAcademiques.ListAsync(cancellationToken),
             await maquettesPedagogiques.ListAsync(cancellationToken),
+            await affectationsMaquettes.ListAsync(cancellationToken),
             await semestresPedagogiques.ListAsync(cancellationToken),
             await unitesEnseignement.ListAsync(cancellationToken),
             await elementsConstitutifs.ListAsync(cancellationToken),
@@ -136,20 +138,17 @@ public class DashboardAcademiqueService(
 
         if (filter.MaquettePedagogiqueId is not null)
         {
-            var maquette = data.Maquettes.FirstOrDefault(x => x.Id == filter.MaquettePedagogiqueId);
-            if (maquette is not null)
-            {
-                query = query.Where(x => x.ParcoursAcademiqueId == maquette.ParcoursAcademiqueId);
-            }
+            var parcoursIds = ResolveParcoursIdsForMaquette(data, filter.MaquettePedagogiqueId.Value);
+            query = query.Where(x => parcoursIds.Contains(x.ParcoursAcademiqueId));
         }
 
         if (filter.SemestrePedagogiqueId is not null)
         {
             var semestre = data.Semestres.FirstOrDefault(x => x.Id == filter.SemestrePedagogiqueId);
-            var maquette = semestre is null ? null : data.Maquettes.FirstOrDefault(x => x.Id == semestre.MaquettePedagogiqueId);
-            if (maquette is not null)
+            if (semestre is not null)
             {
-                query = query.Where(x => x.ParcoursAcademiqueId == maquette.ParcoursAcademiqueId);
+                var parcoursIds = ResolveParcoursIdsForMaquette(data, semestre.MaquettePedagogiqueId);
+                query = query.Where(x => parcoursIds.Contains(x.ParcoursAcademiqueId));
             }
         }
 
@@ -192,9 +191,9 @@ public class DashboardAcademiqueService(
             .Where(evaluation =>
             {
                 var semestre = ResolveSemestre(data, evaluation.MaquetteElementConstitutifId);
-                var maquette = semestre is null ? null : data.Maquettes.FirstOrDefault(x => x.Id == semestre.MaquettePedagogiqueId);
-
-                return maquette is not null && parcoursIds.Contains(maquette.ParcoursAcademiqueId);
+                return semestre is not null
+                    && ResolveParcoursIdsForMaquette(data, semestre.MaquettePedagogiqueId)
+                        .Overlaps(parcoursIds);
             });
 
         if (filter.SemestrePedagogiqueId is not null)
@@ -212,17 +211,19 @@ public class DashboardAcademiqueService(
 
     private static DashboardKpiDto BuildKpi(
         DashboardData data,
+        DashboardAcademiqueFilterDto filter,
         IReadOnlyCollection<DossierAcademique> dossiers,
         IReadOnlyCollection<ClassePedagogique> classes,
         IReadOnlyCollection<EvaluationAcademique> evaluations,
         IReadOnlyCollection<NoteEvaluation> notes)
     {
         var dossierIds = dossiers.Select(x => x.Id).ToHashSet();
-        var resultats = data.ResultatsAnnuels.Where(x => dossierIds.Contains(x.DossierAcademiqueId)).ToList();
+        var resultats = ResolveResultats(data, dossierIds, filter.SemestrePedagogiqueId);
         var nombreAdmis = resultats.Count(x => IsAdmis(x.DecisionJury, x.StatutValidation));
         var nombreRattrapage = resultats.Count(x => IsRattrapage(x.DecisionJury, x.StatutValidation));
         var nombreEchec = resultats.Count(x => IsEchec(x.DecisionJury, x.StatutValidation));
-        var nombreNonCalcules = Math.Max(0, dossiers.Count - nombreAdmis - nombreRattrapage - nombreEchec);
+        var nombreNonCalcules = dossiers.Count - resultats.Count
+            + resultats.Count(x => !IsClassified(x.DecisionJury, x.StatutValidation));
         var notesAttendues = CountNotesAttendues(data, evaluations, dossiers);
         var notesSaisies = notes.Count(x => x.Valeur is not null);
 
@@ -238,11 +239,11 @@ public class DashboardAcademiqueService(
             NombreRattrapage = nombreRattrapage,
             NombreEchec = nombreEchec,
             NombreNonCalcules = nombreNonCalcules,
-            TauxReussite = Percent(nombreAdmis, dossiers.Count),
-            TauxRattrapage = Percent(nombreRattrapage, dossiers.Count),
-            MoyenneGenerale = Average(resultats.Select(x => x.MoyenneAnnuelle)),
+            TauxReussite = Percent(nombreAdmis, nombreAdmis + nombreRattrapage + nombreEchec),
+            TauxRattrapage = Percent(nombreRattrapage, nombreAdmis + nombreRattrapage + nombreEchec),
+            MoyenneGenerale = Average(resultats.Select(x => x.Moyenne)),
             CreditsMoyensCapitalises = resultats.Count == 0 ? 0 : Math.Round(resultats.Average(x => x.CreditsAcquis), 2),
-            NombreProcesVerbauxGeneres = data.ProcesVerbaux.Count(pv => classes.Any(classe => classe.Id == pv.ClassePedagogiqueId)),
+            NombreProcesVerbauxGeneres = data.ProcesVerbaux.Count(pv => IsProcesVerbalInScope(data, pv, filter, dossiers, classes)),
             NombreRelevesDisponibles = resultats.Select(x => x.DossierAcademiqueId).Distinct().Count()
         };
     }
@@ -314,14 +315,16 @@ public class DashboardAcademiqueService(
 
     private static List<DashboardResultatRepartitionDto> BuildRepartitionResultats(
         DashboardData data,
+        DashboardAcademiqueFilterDto filter,
         IReadOnlyCollection<DossierAcademique> dossiers)
     {
         var dossierIds = dossiers.Select(x => x.Id).ToHashSet();
-        var resultats = data.ResultatsAnnuels.Where(x => dossierIds.Contains(x.DossierAcademiqueId)).ToList();
+        var resultats = ResolveResultats(data, dossierIds, filter.SemestrePedagogiqueId);
         var nombreAdmis = resultats.Count(x => IsAdmis(x.DecisionJury, x.StatutValidation));
         var nombreRattrapage = resultats.Count(x => IsRattrapage(x.DecisionJury, x.StatutValidation));
         var nombreEchec = resultats.Count(x => IsEchec(x.DecisionJury, x.StatutValidation));
-        var nombreNonCalcules = Math.Max(0, dossiers.Count - nombreAdmis - nombreRattrapage - nombreEchec);
+        var nombreNonCalcules = dossiers.Count - resultats.Count
+            + resultats.Count(x => !IsClassified(x.DecisionJury, x.StatutValidation));
 
         return
         [
@@ -334,6 +337,7 @@ public class DashboardAcademiqueService(
 
     private static List<DashboardTauxReussiteParGroupeDto> BuildTauxReussiteParGroupe(
         DashboardData data,
+        DashboardAcademiqueFilterDto filter,
         IReadOnlyCollection<DossierAcademique> dossiers,
         GroupeDashboard groupe)
         => dossiers
@@ -342,7 +346,7 @@ public class DashboardAcademiqueService(
             .Select(group =>
             {
                 var dossierIds = group.Select(x => x.Id).ToHashSet();
-                var resultats = data.ResultatsAnnuels.Where(x => dossierIds.Contains(x.DossierAcademiqueId)).ToList();
+                var resultats = ResolveResultats(data, dossierIds, filter.SemestrePedagogiqueId);
                 var nombreAdmis = resultats.Count(x => IsAdmis(x.DecisionJury, x.StatutValidation));
                 var nombreRattrapage = resultats.Count(x => IsRattrapage(x.DecisionJury, x.StatutValidation));
                 var nombreEchec = resultats.Count(x => IsEchec(x.DecisionJury, x.StatutValidation));
@@ -357,7 +361,7 @@ public class DashboardAcademiqueService(
                     NombreAdmis = nombreAdmis,
                     NombreRattrapage = nombreRattrapage,
                     NombreEchec = nombreEchec,
-                    TauxReussite = Percent(nombreAdmis, group.Count())
+                    TauxReussite = Percent(nombreAdmis, nombreAdmis + nombreRattrapage + nombreEchec)
                 };
             })
             .OrderByDescending(x => x.TauxReussite)
@@ -406,6 +410,7 @@ public class DashboardAcademiqueService(
 
     private static List<DashboardClasseSyntheseDto> BuildClassesSynthese(
         DashboardData data,
+        DashboardAcademiqueFilterDto filter,
         IReadOnlyCollection<ClassePedagogique> classes,
         IReadOnlyCollection<DossierAcademique> dossiers)
         => classes
@@ -414,14 +419,14 @@ public class DashboardAcademiqueService(
             {
                 var classeDossiers = dossiers.Where(x => x.ClassePedagogiqueId == classe.Id).ToList();
                 var dossierIds = classeDossiers.Select(x => x.Id).ToHashSet();
-                var resultats = data.ResultatsAnnuels.Where(x => dossierIds.Contains(x.DossierAcademiqueId)).ToList();
+                var resultats = ResolveResultats(data, dossierIds, filter.SemestrePedagogiqueId);
                 var parcours = data.Parcours.FirstOrDefault(x => x.Id == classe.ParcoursAcademiqueId);
                 var cycle = parcours is null ? null : data.Cycles.FirstOrDefault(x => x.Id == parcours.CycleFormationId);
                 var filiere = parcours is null ? null : data.Filieres.FirstOrDefault(x => x.Id == parcours.FiliereId);
                 var specialite = parcours is null ? null : data.Specialites.FirstOrDefault(x => x.Id == parcours.SpecialiteId);
                 var niveau = parcours is null ? null : data.Niveaux.FirstOrDefault(x => x.Id == parcours.NiveauEtudeId);
                 var annee = parcours is null ? null : data.Annees.FirstOrDefault(x => x.Id == parcours.AnneeAcademiqueId);
-                var evaluations = ResolveEvaluationsForClasse(data, classe);
+                var evaluations = ResolveEvaluationsForClasse(data, classe, filter.SemestrePedagogiqueId);
                 var evaluationIds = evaluations.Select(x => x.Id).ToHashSet();
                 var notes = data.Notes
                     .Where(x => dossierIds.Contains(x.DossierAcademiqueId))
@@ -450,19 +455,24 @@ public class DashboardAcademiqueService(
                     NombreNotesAttendues = attendues,
                     NombreNotesSaisies = saisies,
                     TauxNotesSaisies = Percent(saisies, attendues),
-                    MoyenneClasse = Average(resultats.Select(x => x.MoyenneAnnuelle)),
+                    MoyenneClasse = Average(resultats.Select(x => x.Moyenne)),
                     CreditsMoyensCapitalises = resultats.Count == 0 ? 0 : Math.Round(resultats.Average(x => x.CreditsAcquis), 2),
                     NombreAdmis = resultats.Count(x => IsAdmis(x.DecisionJury, x.StatutValidation)),
                     NombreRattrapage = resultats.Count(x => IsRattrapage(x.DecisionJury, x.StatutValidation)),
                     NombreEchec = resultats.Count(x => IsEchec(x.DecisionJury, x.StatutValidation)),
-                    NombreNonCalcules = Math.Max(0, classeDossiers.Count - resultats.Count),
-                    NombreProcesVerbauxGeneres = data.ProcesVerbaux.Count(x => x.ClassePedagogiqueId == classe.Id),
+                    NombreNonCalcules = classeDossiers.Count - resultats.Count
+                        + resultats.Count(x => !IsClassified(x.DecisionJury, x.StatutValidation)),
+                    NombreProcesVerbauxGeneres = data.ProcesVerbaux.Count(x =>
+                        IsProcesVerbalInScope(data, x, filter, classeDossiers, [classe])),
                     NombreRelevesDisponibles = resultats.Select(x => x.DossierAcademiqueId).Distinct().Count()
                 };
             })
             .ToList();
 
-    private static List<EvaluationAcademique> ResolveEvaluationsForClasse(DashboardData data, ClassePedagogique classe)
+    private static List<EvaluationAcademique> ResolveEvaluationsForClasse(
+        DashboardData data,
+        ClassePedagogique classe,
+        long? semestrePedagogiqueId = null)
     {
         var parcours = data.Parcours.FirstOrDefault(x => x.Id == classe.ParcoursAcademiqueId);
 
@@ -471,9 +481,10 @@ public class DashboardAcademiqueService(
             .Where(evaluation =>
             {
                 var semestre = ResolveSemestre(data, evaluation.MaquetteElementConstitutifId);
-                var maquette = semestre is null ? null : data.Maquettes.FirstOrDefault(x => x.Id == semestre.MaquettePedagogiqueId);
-
-                return maquette is not null && maquette.ParcoursAcademiqueId == classe.ParcoursAcademiqueId;
+                return semestre is not null
+                    && (semestrePedagogiqueId is null || semestre.Id == semestrePedagogiqueId)
+                    && ResolveParcoursIdsForMaquette(data, semestre.MaquettePedagogiqueId)
+                        .Contains(classe.ParcoursAcademiqueId);
             })
             .ToList();
     }
@@ -485,11 +496,12 @@ public class DashboardAcademiqueService(
         => evaluations.Sum(evaluation =>
         {
             var semestre = ResolveSemestre(data, evaluation.MaquetteElementConstitutifId);
-            var maquette = semestre is null ? null : data.Maquettes.FirstOrDefault(x => x.Id == semestre.MaquettePedagogiqueId);
-            if (maquette is null)
+            if (semestre is null)
             {
                 return 0;
             }
+
+            var parcoursIds = ResolveParcoursIdsForMaquette(data, semestre.MaquettePedagogiqueId);
 
             return dossiers.Count(dossier =>
             {
@@ -497,7 +509,7 @@ public class DashboardAcademiqueService(
 
                 return parcours is not null
                     && parcours.AnneeAcademiqueId == evaluation.AnneeAcademiqueId
-                    && maquette.ParcoursAcademiqueId == parcours.Id;
+                    && parcoursIds.Contains(parcours.Id);
             });
         });
 
@@ -555,13 +567,106 @@ public class DashboardAcademiqueService(
     }
 
     private static bool IsAdmis(DecisionAcademique decision, StatutValidationAcademique statut)
-        => decision == DecisionAcademique.Valide || statut == StatutValidationAcademique.Valide;
+        => decision != DecisionAcademique.NonDeliberee
+            ? decision == DecisionAcademique.Valide
+            : statut == StatutValidationAcademique.Valide;
 
     private static bool IsRattrapage(DecisionAcademique decision, StatutValidationAcademique statut)
-        => decision == DecisionAcademique.AutoriseRattrapage || statut == StatutValidationAcademique.Rattrapage;
+        => decision != DecisionAcademique.NonDeliberee
+            ? decision == DecisionAcademique.AutoriseRattrapage
+            : statut == StatutValidationAcademique.Rattrapage;
 
     private static bool IsEchec(DecisionAcademique decision, StatutValidationAcademique statut)
-        => decision == DecisionAcademique.Ajoune || statut == StatutValidationAcademique.NonValide;
+        => decision != DecisionAcademique.NonDeliberee
+            ? decision == DecisionAcademique.Ajoune
+            : statut == StatutValidationAcademique.NonValide;
+
+    private static bool IsClassified(DecisionAcademique decision, StatutValidationAcademique statut)
+        => IsAdmis(decision, statut) || IsRattrapage(decision, statut) || IsEchec(decision, statut);
+
+    private static List<DashboardResultat> ResolveResultats(
+        DashboardData data,
+        IReadOnlySet<long> dossierIds,
+        long? semestrePedagogiqueId)
+    {
+        if (semestrePedagogiqueId is long semestreId)
+        {
+            return data.ResultatsSemestres
+                .Where(x => x.SemestrePedagogiqueId == semestreId && dossierIds.Contains(x.DossierAcademiqueId))
+                .GroupBy(x => x.DossierAcademiqueId)
+                .Select(x => x.OrderByDescending(resultat => resultat.CalculeLeUtc)
+                    .ThenByDescending(resultat => resultat.Id)
+                    .Select(resultat => new DashboardResultat(
+                        resultat.DossierAcademiqueId,
+                        resultat.MoyenneSemestrielle,
+                        resultat.CreditsAcquis,
+                        resultat.DecisionJury,
+                        resultat.StatutValidation,
+                        resultat.CalculeLeUtc))
+                    .First())
+                .ToList();
+        }
+
+        return data.ResultatsAnnuels
+            .Where(x => dossierIds.Contains(x.DossierAcademiqueId))
+            .GroupBy(x => x.DossierAcademiqueId)
+            .Select(x => x.OrderByDescending(resultat => resultat.CalculeLeUtc)
+                .ThenByDescending(resultat => resultat.Id)
+                .Select(resultat => new DashboardResultat(
+                    resultat.DossierAcademiqueId,
+                    resultat.MoyenneAnnuelle,
+                    resultat.CreditsAcquis,
+                    resultat.DecisionJury,
+                    resultat.StatutValidation,
+                    resultat.CalculeLeUtc))
+                .First())
+            .ToList();
+    }
+
+    private static HashSet<long> ResolveParcoursIdsForMaquette(DashboardData data, long maquetteId)
+    {
+        var parcoursIds = data.AffectationsMaquettes
+            .Where(x => x.MaquettePedagogiqueId == maquetteId && x.EstActive)
+            .Select(x => x.ParcoursAcademiqueId)
+            .ToHashSet();
+
+        // Compatibilité temporaire avec les anciennes lignes non migrées.
+        if (parcoursIds.Count == 0)
+        {
+            var maquette = data.Maquettes.FirstOrDefault(x => x.Id == maquetteId);
+            if (maquette?.ParcoursAcademiqueId is long parcoursId)
+            {
+                parcoursIds.Add(parcoursId);
+            }
+        }
+
+        return parcoursIds;
+    }
+
+    private static bool IsProcesVerbalInScope(
+        DashboardData data,
+        ProcesVerbal procesVerbal,
+        DashboardAcademiqueFilterDto filter,
+        IReadOnlyCollection<DossierAcademique> dossiers,
+        IReadOnlyCollection<ClassePedagogique> classes)
+    {
+        var parcoursIds = dossiers.Select(x => x.ParcoursAcademiqueId).ToHashSet();
+        var classeIds = classes.Select(x => x.Id).ToHashSet();
+
+        return parcoursIds.Contains(procesVerbal.ParcoursAcademiqueId)
+            && classeIds.Contains(procesVerbal.ClassePedagogiqueId)
+            && (filter.AnneeAcademiqueId is null || procesVerbal.AnneeAcademiqueId == filter.AnneeAcademiqueId)
+            && (filter.SemestrePedagogiqueId is null
+                || procesVerbal.SemestrePedagogiqueId == filter.SemestrePedagogiqueId);
+    }
+
+    private sealed record DashboardResultat(
+        long DossierAcademiqueId,
+        decimal? Moyenne,
+        decimal CreditsAcquis,
+        DecisionAcademique DecisionJury,
+        StatutValidationAcademique StatutValidation,
+        DateTime CalculeLeUtc);
 
     private static decimal Average(IEnumerable<decimal?> values)
     {
@@ -602,6 +707,7 @@ public class DashboardAcademiqueService(
         List<ClassePedagogique> Classes,
         List<DossierAcademique> DossiersAcademiques,
         List<MaquettePedagogique> Maquettes,
+        List<AffectationMaquette> AffectationsMaquettes,
         List<SemestrePedagogique> Semestres,
         List<UniteEnseignement> UnitesEnseignement,
         List<ElementConstitutif> ElementsConstitutifs,

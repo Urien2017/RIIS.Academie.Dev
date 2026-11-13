@@ -1,4 +1,6 @@
 @inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
 
 <RadzenLayout>
     <RadzenHeader>
@@ -8,6 +10,9 @@
                 <RadzenText TextStyle="TextStyle.H6" class="rz-m-0" Text="RIIS Academic" />
                 <RadzenText TextStyle="TextStyle.Caption" Text="Gestion des inscriptions, notes, PV et relevés" />
             </RadzenStack>
+            <div style="flex:1"></div>
+            <RadzenText Text="@currentUsername" TextStyle="TextStyle.Caption" />
+            <RadzenButton Icon="logout" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Click="@Logout" />
         </RadzenStack>
     </RadzenHeader>
 
@@ -18,11 +23,27 @@
     </RadzenBody>
 </RadzenLayout>
 
+<RadzenNotification />
+<RadzenDialog />
+
 @code {
     private bool sidebarExpanded = true;
+    private string currentUsername = "admin";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        currentUsername = state.User.Identity?.Name ?? "admin";
+    }
 
     private void ToggleSidebar()
     {
         sidebarExpanded = !sidebarExpanded;
+    }
+
+    private void Logout()
+    {
+        ((ApplicationAuthenticationStateProvider)AuthenticationStateProvider).SignOut();
+        Navigation.NavigateTo("/login");
     }
 }

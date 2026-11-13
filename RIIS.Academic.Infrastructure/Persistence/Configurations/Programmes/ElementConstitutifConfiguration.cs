@@ -7,11 +7,15 @@ public class ElementConstitutifConfiguration : IEntityTypeConfiguration<ElementC
 {
     public void Configure(EntityTypeBuilder<ElementConstitutif> builder)
     {
-        builder.ToTable("ElementsConstitutifs");
+        builder.ToTable("ElementsConstitutifs", table =>
+            table.HasCheckConstraint(
+                "CK_ElementsConstitutifs_CreditsVolume",
+                "[Credits] >= 0 AND [VolumeHoraire] >= 0"));
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Code).HasMaxLength(30);
         builder.Property(x => x.Libelle).HasMaxLength(200).IsRequired();
         builder.Property(x => x.Type).HasConversion<string>().HasMaxLength(20);
+        builder.Property(x => x.Credits).HasPrecision(5, 2);
         builder.HasIndex(x => new { x.UniteEnseignementId, x.Code })
             .IsUnique()
             .HasFilter("[Code] IS NOT NULL");

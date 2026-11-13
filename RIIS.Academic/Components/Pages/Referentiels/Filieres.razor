@@ -15,19 +15,21 @@
 
     @if (showForm)
     {
-        <RadzenCard>
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
             <RadzenTemplateForm TItem="FiliereDto" Data="@model" Submit="@Save">
                 <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="riis-modal-title rz-m-0">@(model.Id == 0 ? "Nouvelle filière" : "Modifier la filière")</RadzenText>
                     <RadzenRow>
                         <RadzenColumn Size="12" SizeMD="3">
                             <RadzenFormField Text="Code" Style="width:100%">
-                                <RadzenTextBox @bind-Value="@model.Code" Name="Code" />
+                                <RadzenTextBox Value="@model.Code" Name="Code" ReadOnly="true" />
                             </RadzenFormField>
                             <RadzenRequiredValidator Component="Code" Text="Code obligatoire." />
                         </RadzenColumn>
                         <RadzenColumn Size="12" SizeMD="7">
                             <RadzenFormField Text="Libellé" Style="width:100%">
-                                <RadzenTextBox @bind-Value="@model.Libelle" Name="Libelle" />
+                                <RadzenTextBox @bind-Value="@model.Libelle" Name="Libelle" @oninput="@OnLibelleInput" />
                             </RadzenFormField>
                             <RadzenRequiredValidator Component="Libelle" Text="Libellé obligatoire." />
                         </RadzenColumn>
@@ -42,11 +44,12 @@
                     </RadzenStack>
                 </RadzenStack>
             </RadzenTemplateForm>
-        </RadzenCard>
+            </RadzenCard>
+        </div>
     }
 
     <RadzenCard>
-        <RadzenDataGrid Data="@items" TItem="FiliereDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+        <RadzenDataGrid @ref="filieresGrid" Data="@items" TItem="FiliereDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
             <Columns>
                 <RadzenDataGridColumn TItem="FiliereDto" Property="Code" Title="Code" />
                 <RadzenDataGridColumn TItem="FiliereDto" Property="Libelle" Title="Libellé" />
@@ -66,19 +69,23 @@
 
 @code {
     private List<FiliereDto> items = [];
+    private RadzenDataGrid<FiliereDto>? filieresGrid;
     private FiliereDto model = new();
     private bool showForm;
+    private bool isCreating;
 
     protected override async Task OnInitializedAsync() => await Load();
 
     private async Task Load()
     {
         items = await ReferentielsService.GetFilieresAsync();
+        if (filieresGrid is not null) await filieresGrid.Reload();
     }
 
     private void Create()
     {
         model = ReferentielsService.CreateDefaultFiliere();
+        isCreating = true;
         showForm = true;
     }
 
@@ -91,7 +98,18 @@
             Libelle = item.Libelle,
             EstActive = item.EstActive
         };
+        isCreating = false;
         showForm = true;
+    }
+
+    private async Task OnLibelleInput(ChangeEventArgs args)
+    {
+        model.Libelle = args.Value?.ToString() ?? string.Empty;
+
+        if (isCreating)
+        {
+            model.Code = await ReferentielsService.GenerateFiliereCodeAsync(model.Libelle);
+        }
     }
 
     private async Task Save(FiliereDto _)
@@ -122,7 +140,11 @@
         }
     }
 
-    private void Cancel() => showForm = false;
+    private void Cancel()
+    {
+        isCreating = false;
+        showForm = false;
+    }
     private void NotifySuccess() => NotificationService.Notify(NotificationSeverity.Success, "Succès", "Données enregistrées.");
     private void NotifyError(string message) => NotificationService.Notify(NotificationSeverity.Error, "Erreur", message);
 }

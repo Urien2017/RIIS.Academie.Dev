@@ -8,12 +8,29 @@ public class CalculNotesService : ICalculNotesService
 {
     public decimal? CalculerMoyenneElementConstitutif(decimal? moyenneCcon, decimal? moyenneCc, decimal? moyenneSnOuSr)
     {
-        if (moyenneCcon is null || moyenneCc is null || moyenneSnOuSr is null)
+        // Une évaluation peut ne pas être prévue pour un EC (par exemple CC
+        // absent). Les pondérations des évaluations réellement disponibles
+        // sont renormalisées afin que leur somme représente 100 %.
+        var composantes = new[]
+        {
+            (Valeur: moyenneCcon, Ponderation: 0.20m),
+            (Valeur: moyenneCc, Ponderation: 0.10m),
+            (Valeur: moyenneSnOuSr, Ponderation: 0.70m)
+        };
+
+        var disponibles = composantes
+            .Where(x => x.Valeur.HasValue)
+            .ToList();
+
+        if (disponibles.Count == 0)
         {
             return null;
         }
 
-        return Math.Round((moyenneCcon.Value * 0.20m) + (moyenneCc.Value * 0.10m) + (moyenneSnOuSr.Value * 0.70m), 2);
+        var ponderationTotale = disponibles.Sum(x => x.Ponderation);
+        var moyenne = disponibles.Sum(x => x.Valeur!.Value * x.Ponderation) / ponderationTotale;
+
+        return Math.Round(moyenne, 2);
     }
 
     public bool EstEligibleRattrapage(decimal? moyenneElementConstitutif)

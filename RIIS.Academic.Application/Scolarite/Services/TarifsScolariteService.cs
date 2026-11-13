@@ -100,6 +100,7 @@ public class TarifsScolariteService(
                 ParcoursAcademiqueId = dto.ParcoursAcademiqueId,
                 Montant = dto.Montant,
                 Devise = dto.Devise,
+                DateNotification = dto.DateNotification,
                 Priorite = dto.Priorite,
                 EstActif = dto.EstActif
             }, cancellationToken);
@@ -114,6 +115,7 @@ public class TarifsScolariteService(
             entity.ParcoursAcademiqueId = dto.ParcoursAcademiqueId;
             entity.Montant = dto.Montant;
             entity.Devise = dto.Devise;
+            entity.DateNotification = dto.DateNotification;
             entity.Priorite = dto.Priorite;
             entity.EstActif = dto.EstActif;
         }
@@ -217,6 +219,7 @@ public class TarifsScolariteService(
             ParcoursAcademiqueLibelle = parcoursItem?.Libelle ?? string.Empty,
             Montant = entity.Montant,
             Devise = entity.Devise,
+            DateNotification = entity.DateNotification,
             Priorite = entity.Priorite,
             EstActif = entity.EstActif
         };

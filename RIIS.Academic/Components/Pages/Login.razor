@@ -1,0 +1,107 @@
+@page "/login"
+@layout Layout.LoginLayout
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Connexion | RIIS Academic</PageTitle>
+
+<RadzenRow Gap="0" class="rz-my-12 rz-mx-auto rz-border-radius-6 rz-shadow-10 riis-login-shell">
+    <RadzenColumn Size="12" SizeMD="6">
+        <RadzenCard class="rz-shadow-0 rz-border-radius-0 rz-text-align-center rz-p-12 riis-login-welcome">
+            <RadzenStack Gap="1rem" JustifyContent="JustifyContent.Center" Style="height:100%">
+                <RadzenIcon Icon="school" class="riis-login-icon" />
+                <RadzenText TextStyle="TextStyle.DisplayH3" TagName="TagName.H2" class="rz-color-white rz-mb-4">Bienvenue</RadzenText>
+                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.P" class="rz-color-white">RIIS Academic</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body2" class="rz-color-white">Gestion académique, financière et administrative de votre établissement.</RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+
+    <RadzenColumn Size="12" SizeMD="6">
+        <RadzenCard class="rz-shadow-0 rz-border-radius-0 rz-p-12 riis-login-form-card">
+            <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H2" class="rz-mb-6">Connexion</RadzenText>
+
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" ShowIcon="true" class="rz-mb-4">@errorMessage</RadzenAlert>
+            }
+
+            <RadzenTemplateForm TItem="LoginModel" Data="@model" Submit="@Submit">
+                <RadzenStack Gap="1.25rem">
+                    <RadzenFormField Text="Nom d'utilisateur" AllowFloatingLabel="false" Variant="Variant.Outlined" Style="width:100%">
+                        <RadzenTextBox @bind-Value="model.Username" Name="Username" Style="width:100%" AutoComplete="username" />
+                    </RadzenFormField>
+                    <RadzenRequiredValidator Component="Username" Text="Le nom d'utilisateur est obligatoire." />
+
+                    <RadzenFormField Text="Mot de passe" AllowFloatingLabel="false" Variant="Variant.Outlined" Style="width:100%">
+                        <RadzenPassword @bind-Value="model.Password" Name="Password" Style="width:100%" AutoComplete="current-password" />
+                    </RadzenFormField>
+                    <RadzenRequiredValidator Component="Password" Text="Le mot de passe est obligatoire." />
+
+                    <RadzenButton Text="Se connecter" Icon="login" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Style="width:100%" />
+                </RadzenStack>
+            </RadzenTemplateForm>
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>
+
+<style>
+    .riis-login-shell {
+        width: 100%;
+        max-width: 800px;
+        overflow: hidden;
+    }
+
+    .riis-login-welcome {
+        height: 100%;
+        min-height: 430px;
+        background: var(--rz-sidebar-background-color);
+        display: flex;
+        align-items: center;
+    }
+
+    .riis-login-form-card {
+        height: 100%;
+        min-height: 430px;
+    }
+
+    .riis-login-icon {
+        font-size: 3.5rem;
+        color: white;
+    }
+
+    @@media (max-width: 767px) {
+        .riis-login-shell {
+            margin-top: 1rem !important;
+            margin-bottom: 1rem !important;
+        }
+
+        .riis-login-welcome,
+        .riis-login-form-card {
+            min-height: auto;
+        }
+    }
+</style>
+
+@code {
+    private readonly LoginModel model = new();
+    private string? errorMessage;
+
+    private async Task Submit(LoginModel _)
+    {
+        var provider = (ApplicationAuthenticationStateProvider)AuthenticationStateProvider;
+        if (!await provider.TrySignInAsync(model.Username.Trim(), model.Password))
+        {
+            errorMessage = "Nom d'utilisateur ou mot de passe incorrect.";
+            return;
+        }
+
+        Navigation.NavigateTo("/");
+    }
+
+    private sealed class LoginModel
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+}

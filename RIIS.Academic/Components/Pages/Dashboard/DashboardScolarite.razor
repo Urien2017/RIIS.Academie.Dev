@@ -1,0 +1,276 @@
+@page "/dashboard-scolarite"
+@inject IDashboardScolariteService DashboardScolariteService
+
+<RadzenStack Gap="1rem" Style="position: relative">
+    <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" class="rz-mb-4">
+        <RadzenColumn Size="12" SizeLG="7">
+            <RadzenStack Gap="0.25rem">
+                <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-m-0 riis-page-title" Text="Dashboard scolarité" />
+                <RadzenText TextStyle="TextStyle.Subtitle1" TagName="TagName.P" class="rz-m-0">
+                    Suivi des dossiers financiers, encaissements, recouvrements et soldes de scolarité.
+                </RadzenText>
+            </RadzenStack>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeLG="5">
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.Center" Gap="0.5rem" Wrap="FlexWrap.Wrap">
+                <RadzenBadge Text="Données financières" BadgeStyle="BadgeStyle.Info" Variant="Variant.Flat" Shade="Shade.Light" />
+                <RadzenBadge Text="@($"Généré le {dashboard.DateGenerationUtc.ToLocalTime():dd/MM/yyyy HH:mm}")" BadgeStyle="BadgeStyle.Secondary" Variant="Variant.Flat" Shade="Shade.Light" />
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+
+    @if (!string.IsNullOrWhiteSpace(loadError))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" ShowIcon="true">@loadError</RadzenAlert>
+    }
+
+    <RadzenCard Variant="Variant.Outlined">
+        <RadzenStack Gap="1rem">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="rz-m-0">Filtres de pilotage</RadzenText>
+                @if (isLoading)
+                {
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenProgressBarCircular Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small" />
+                        <RadzenText TextStyle="TextStyle.Caption" Text="Chargement..." />
+                    </RadzenStack>
+                }
+            </RadzenStack>
+            <RadzenRow>
+                <RadzenColumn Size="12" SizeMD="4">
+                    <RadzenFormField Text="Année académique" Style="width:100%">
+                        <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@annees" TextProperty="Libelle" ValueProperty="Id" @bind-Value="selectedAnneeId" AllowClear="true" Placeholder="Toutes" Change="@OnFiltersChanged" Style="width:100%" />
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="12" SizeMD="4">
+                    <RadzenFormField Text="Cycle" Style="width:100%">
+                        <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@cycles" TextProperty="Libelle" ValueProperty="Id" @bind-Value="selectedCycleId" AllowClear="true" Placeholder="Tous" Change="@OnFiltersChanged" Style="width:100%" />
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="12" SizeMD="4">
+                    <RadzenFormField Text="Parcours académique" Style="width:100%">
+                        <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@parcours" TextProperty="Libelle" ValueProperty="Id" @bind-Value="selectedParcoursId" AllowClear="true" Placeholder="Tous" Change="@OnFiltersChanged" Style="width:100%" />
+                    </RadzenFormField>
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenRow Style="--rz-text-h2-line-height: 1; --rz-text-h2-font-weight: 200;">
+        <RadzenColumn Size="12" SizeMD="6" SizeXL="3">
+            <RadzenCard Variant="Variant.Outlined" Style="height:100%">
+                <RadzenStack Gap="0.5rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween"><RadzenText TextStyle="TextStyle.H6" Text="Dossiers financiers" /><RadzenText TextStyle="TextStyle.H2" class="rz-color-info rz-m-0" Text="@kpi.NombreDossiers.ToString()" /></RadzenStack>
+                    <RadzenText TextStyle="TextStyle.Caption" Text="Dossiers suivis dans le périmètre" />
+                    <RadzenProgressBar Value="@kpi.NombreDossiers" Max="@(Math.Max(1, kpi.NombreDossiers))" ShowValue="false" />
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeMD="6" SizeXL="3">
+            <RadzenCard Variant="Variant.Outlined" Style="height:100%">
+                <RadzenStack Gap="0.5rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween"><RadzenText TextStyle="TextStyle.H6" Text="Recouvrement" /><RadzenText TextStyle="TextStyle.H2" class="rz-color-success rz-m-0" Text="@($"{kpi.TauxRecouvrement:0.##}%")" /></RadzenStack>
+                    <RadzenText TextStyle="TextStyle.Caption" Text="Montant encaissé / montant attendu" />
+                    <RadzenProgressBar Value="@((double)kpi.TauxRecouvrement)" Max="100" ProgressBarStyle="ProgressBarStyle.Success" ShowValue="false" />
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeMD="6" SizeXL="3">
+            <RadzenCard Variant="Variant.Outlined" Style="height:100%">
+                <RadzenStack Gap="0.5rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween"><RadzenText TextStyle="TextStyle.H6" Text="Total encaissé" /><RadzenText TextStyle="TextStyle.H2" class="rz-color-warning rz-m-0" Text="@FormatMoney(kpi.TotalEncaisse)" /></RadzenStack>
+                    <RadzenText TextStyle="TextStyle.Caption" Text="Paiements actifs enregistrés" />
+                    <RadzenText TextStyle="TextStyle.Subtitle2" Text="@($"Affecté : {FormatMoney(kpi.TotalAffecte)}")" />
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeMD="6" SizeXL="3">
+            <RadzenCard Variant="Variant.Outlined" Style="height:100%">
+                <RadzenStack Gap="0.5rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween"><RadzenText TextStyle="TextStyle.H6" Text="Reste à payer" /><RadzenText TextStyle="TextStyle.H2" class="rz-color-danger rz-m-0" Text="@FormatMoney(kpi.TotalRestant)" /></RadzenStack>
+                    <RadzenText TextStyle="TextStyle.Caption" Text="Montant restant sur les éléments financiers" />
+                    <RadzenText TextStyle="TextStyle.Subtitle2" Text="@($"Non affecté : {FormatMoney(kpi.TotalNonAffecte)}")" />
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <RadzenRow>
+        <RadzenColumn Size="12" SizeMD="8">
+            <RadzenCard Variant="Variant.Outlined" Style="height:100%">
+                <RadzenStack Gap="0.5rem">
+                    <RadzenText TextStyle="TextStyle.H6" Text="Évolution des encaissements" />
+                    <RadzenText TextStyle="TextStyle.Caption" Text="Montants encaissés et affectés par période" />
+                    @if (dashboard.EvolutionEncaissements.Count > 0)
+                    {
+                        <RadzenChart Style="width:100%; height:340px">
+                            <RadzenLineSeries Data="@dashboard.EvolutionEncaissements" CategoryProperty="Periode" ValueProperty="Encaisse" Title="Encaissé" Stroke="var(--rz-warning)" />
+                            <RadzenLineSeries Data="@dashboard.EvolutionEncaissements" CategoryProperty="Periode" ValueProperty="Affecte" Title="Affecté" Stroke="var(--rz-success)" />
+                            <RadzenMarkers Visible="true" MarkerType="MarkerType.Circle" />
+                            <RadzenLegend Visible="true" Position="LegendPosition.Bottom" />
+                        </RadzenChart>
+                    }
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeMD="4">
+            <RadzenCard Variant="Variant.Outlined" Style="height:100%; --rz-card-padding:0">
+                <RadzenTabs Style="height:100%; min-height:390px">
+                    <Tabs>
+                        <RadzenTabsItem Text="Statuts">
+                            @if (dashboard.RepartitionStatuts.Count > 0)
+                            {
+                                <RadzenChart Style="width:100%; height:350px"><RadzenDonutSeries Data="@dashboard.RepartitionStatuts" CategoryProperty="Libelle" ValueProperty="Nombre" Fills="@statutColors" /></RadzenChart>
+                            }
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="Modes de paiement">
+                            @if (dashboard.RepartitionModesPaiement.Count > 0)
+                            {
+                                <RadzenChart Style="width:100%; height:350px"><RadzenColumnSeries Data="@dashboard.RepartitionModesPaiement" CategoryProperty="Libelle" ValueProperty="Montant" Fill="var(--rz-info)" /><RadzenCategoryAxis Padding="20" /><RadzenLegend Visible="false" /></RadzenChart>
+                            }
+                        </RadzenTabsItem>
+                    </Tabs>
+                </RadzenTabs>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <RadzenRow>
+        <RadzenColumn Size="12" SizeMD="7">
+            <RadzenDataGrid @ref="parcoursGrid" Data="@dashboard.Parcours" TItem="DashboardScolariteParcoursDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowColumnResize="true" PageSize="8">
+                <HeaderTemplate><RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween"><RadzenText TextStyle="TextStyle.H6" Text="Synthèse par parcours" /><RadzenButton Icon="refresh" Text="Actualiser" ButtonStyle="ButtonStyle.Light" Click="@RefreshDashboard" /></RadzenStack></HeaderTemplate>
+                <Columns>
+                    <RadzenDataGridColumn TItem="DashboardScolariteParcoursDto" Property="Parcours" Title="Parcours" />
+                    <RadzenDataGridColumn TItem="DashboardScolariteParcoursDto" Property="NombreDossiers" Title="Dossiers" Width="100px" />
+                    <RadzenDataGridColumn TItem="DashboardScolariteParcoursDto" Property="TotalAttendu" Title="Attendu" Width="130px"><Template Context="x">@FormatMoney(x.TotalAttendu)</Template></RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="DashboardScolariteParcoursDto" Property="TotalEncaisse" Title="Encaissé" Width="130px"><Template Context="x">@FormatMoney(x.TotalEncaisse)</Template></RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="DashboardScolariteParcoursDto" Property="TauxRecouvrement" Title="Recouvrement" Width="140px"><Template Context="x"><RadzenProgressBar Value="@((double)x.TauxRecouvrement)" Max="100" ShowValue="true" /></Template></RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeMD="5">
+            <RadzenDataGrid @ref="paiementsRecentsGrid" Data="@dashboard.PaiementsRecents" TItem="DashboardScolaritePaiementRecentDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" PageSize="8">
+                <HeaderTemplate><RadzenText TextStyle="TextStyle.H6" Text="Paiements récents" /></HeaderTemplate>
+                <Columns>
+                    <RadzenDataGridColumn TItem="DashboardScolaritePaiementRecentDto" Property="DatePaiement" Title="Date" Width="100px" />
+                    <RadzenDataGridColumn TItem="DashboardScolaritePaiementRecentDto" Property="Etudiant" Title="Étudiant" />
+                    <RadzenDataGridColumn TItem="DashboardScolaritePaiementRecentDto" Property="ModePaiement" Title="Mode" Width="110px" />
+                    <RadzenDataGridColumn TItem="DashboardScolaritePaiementRecentDto" Property="Montant" Title="Montant" Width="130px"><Template Context="x">@FormatMoney(x.Montant)</Template></RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <RadzenCard Variant="Variant.Outlined">
+        <RadzenStack Gap="0.75rem">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+                <RadzenText TextStyle="TextStyle.H6" Text="Délais de paiement dépassés" />
+                <RadzenBadge Text="@($"{dashboard.RetardsPaiement.Sum(x => x.NombreEtudiants)} étudiant(s)")" BadgeStyle="BadgeStyle.Danger" Variant="Variant.Flat" Shade="Shade.Light" />
+            </RadzenStack>
+            <RadzenText TextStyle="TextStyle.Caption" Text="Étudiants n'ayant pas atteint le montant du tarif avant sa date de notification." />
+
+            @if (dashboard.RetardsPaiement.Count == 0)
+            {
+                <RadzenAlert AlertStyle="AlertStyle.Success" Variant="Variant.Flat" ShowIcon="true">
+                    Aucun retard de paiement détecté dans le périmètre sélectionné.
+                </RadzenAlert>
+            }
+            else
+            {
+                @foreach (var groupe in dashboard.RetardsPaiement)
+                {
+                    <RadzenPanel Text="@($"{groupe.TypeElementScolariteLibelle} ({groupe.NombreEtudiants})")" AllowCollapse="true" Collapsed="false">
+                        <RadzenDataGrid Data="@groupe.Etudiants" TItem="DashboardScolariteRetardPaiementEtudiantDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowColumnResize="true" PageSize="8">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="DashboardScolariteRetardPaiementEtudiantDto" Property="Matricule" Title="Matricule" Width="130px" />
+                                <RadzenDataGridColumn TItem="DashboardScolariteRetardPaiementEtudiantDto" Property="Etudiant" Title="Étudiant" />
+                                <RadzenDataGridColumn TItem="DashboardScolariteRetardPaiementEtudiantDto" Property="Parcours" Title="Parcours" />
+                                <RadzenDataGridColumn TItem="DashboardScolariteRetardPaiementEtudiantDto" Title="Notification" Width="125px">
+                                    <Template Context="item">@item.DateNotification.ToString("dd/MM/yyyy")</Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="DashboardScolariteRetardPaiementEtudiantDto" Title="Attendu" Width="125px">
+                                    <Template Context="item">@FormatMoney(item.MontantAttendu)</Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="DashboardScolariteRetardPaiementEtudiantDto" Title="Payé avant délai" Width="145px">
+                                    <Template Context="item">@FormatMoney(item.MontantPayeAvantNotification)</Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="DashboardScolariteRetardPaiementEtudiantDto" Title="Reste" Width="125px">
+                                    <Template Context="item">@FormatMoney(item.MontantRestant)</Template>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid>
+                    </RadzenPanel>
+                }
+            }
+        </RadzenStack>
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    private RadzenDataGrid<DashboardScolariteParcoursDto>? parcoursGrid;
+    private RadzenDataGrid<DashboardScolaritePaiementRecentDto>? paiementsRecentsGrid;
+    private DashboardScolariteDto dashboard = new();
+    private List<FilterOption> annees = [];
+    private List<FilterOption> cycles = [];
+    private List<FilterOption> parcours = [];
+    private long? selectedAnneeId;
+    private long? selectedCycleId;
+    private long? selectedParcoursId;
+    private bool isLoading;
+    private string? loadError;
+    private DashboardScolariteKpiDto kpi => dashboard.Kpi;
+    private IEnumerable<string> statutColors = ["#28a745", "#ffc107", "#6c757d"];
+
+    protected override async Task OnInitializedAsync() => await LoadDashboardAsync();
+
+    private async Task OnFiltersChanged(object? _)
+    {
+        await LoadDashboardAsync();
+    }
+
+    private async Task RefreshDashboard() => await LoadDashboardAsync();
+
+    private async Task LoadDashboardAsync()
+    {
+        isLoading = true;
+        loadError = null;
+        try
+        {
+            dashboard = await DashboardScolariteService.GetDashboardScolariteAsync(new DashboardScolariteFilterDto
+            {
+                AnneeAcademiqueId = selectedAnneeId,
+                CycleFormationId = selectedCycleId,
+                ParcoursAcademiqueId = selectedParcoursId
+            });
+            annees = dashboard.Annees.Select(x => new FilterOption(x.Id, x.Libelle)).ToList();
+            cycles = dashboard.Cycles.Select(x => new FilterOption(x.Id, x.Libelle)).ToList();
+            parcours = dashboard.ParcoursDisponibles.Select(x => new FilterOption(x.Id, x.Libelle)).ToList();
+            await ReloadDashboardGridsAsync();
+        }
+        catch (Exception ex)
+        {
+            loadError = $"Impossible de charger le dashboard de scolarité : {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ReloadDashboardGridsAsync()
+    {
+        if (parcoursGrid is not null)
+        {
+            await parcoursGrid.Reload();
+        }
+
+        if (paiementsRecentsGrid is not null)
+        {
+            await paiementsRecentsGrid.Reload();
+        }
+    }
+
+    private static string FormatMoney(decimal value) => $"{value:N0} XAF";
+
+    private sealed record FilterOption(long Id, string Libelle);
+}

@@ -1,7 +1,9 @@
 @page "/releves/{DossierAcademiqueId:long}"
 @inject IRelevesNotesService RelevesNotesService
+@inject IReleveNotePdfExportService ReleveNotePdfExportService
 @inject NavigationManager Navigation
 @inject NotificationService NotificationService
+@inject DialogService DialogService
 
 <RadzenStack Gap="1rem">
     <RadzenCard>
@@ -23,6 +25,14 @@
                                   Icon="download"
                                   ButtonStyle="ButtonStyle.Primary"
                                   Click="@ExportWord" />
+                    <RadzenButton Text="Exporter PDF"
+                                  Icon="picture_as_pdf"
+                                  ButtonStyle="ButtonStyle.Danger"
+                                  Click="@ExportPdf" />
+                    <RadzenButton Text="Aperçu PDF"
+                                  Icon="preview"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Click="@PreviewPdf" />
                     <RadzenButton Text="Word Modèle"
                                   Icon="article"
                                   ButtonStyle="ButtonStyle.Secondary"
@@ -59,6 +69,19 @@
 
                     <RadzenBadge Text="@releve.DecisionMention" BadgeStyle="@GetDecisionBadgeStyle(releve.Decision)" />
                 </RadzenStack>
+
+                @if (!string.IsNullOrWhiteSpace(releve.QrCodeDataUrl))
+                {
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.75rem">
+                        <img src="@releve.QrCodeDataUrl"
+                             alt="QR code du relevé"
+                             title="QR code du relevé"
+                             width="120"
+                             height="120"
+                             style="display:block; border:1px solid var(--rz-border-color); padding:0.25rem; background:#fff;" />
+                        <RadzenText TextStyle="TextStyle.Caption" Text="Identification du relevé" />
+                    </RadzenStack>
+                }
 
                 <RadzenRow>
                     <RadzenColumn Size="12" SizeMD="3">
@@ -104,7 +127,7 @@
             <RadzenStack Gap="1rem">
                 <RadzenText TextStyle="TextStyle.H6" Text="Récapitulatif annuel" />
 
-                <RadzenDataGrid Data="@releve.Resume" TItem="ReleveNoteResumeDto" AllowPaging="false" AllowSorting="false">
+                <RadzenDataGrid @ref="releveResumeGrid" Data="@releve.Resume" TItem="ReleveNoteResumeDto" AllowPaging="false" AllowSorting="false" AllowColumnResize="true">
                     <Columns>
                         <RadzenDataGridColumn TItem="ReleveNoteResumeDto" Property="Libelle" Title="Période" />
                         <RadzenDataGridColumn TItem="ReleveNoteResumeDto" Title="Moyenne" Width="160px">
@@ -127,7 +150,7 @@
                         <RadzenText Text="@($"Moyenne : {FormatNote(semestre.Moyenne)} | Crédits : {FormatCredit(semestre.CreditsCapitalises)}/{FormatCredit(semestre.CreditsAttendus)} | Grade : {semestre.Grade}")" />
                     </RadzenStack>
 
-                    <RadzenDataGrid Data="@semestre.Lignes" TItem="ReleveNoteLigneDto" AllowPaging="true" PageSize="10" AllowSorting="true">
+                    <RadzenDataGrid Data="@semestre.Lignes" TItem="ReleveNoteLigneDto" AllowPaging="true" PageSize="10" AllowSorting="true" AllowColumnResize="true">
                         <Columns>
                             <RadzenDataGridColumn TItem="ReleveNoteLigneDto" Property="UniteEnseignementLibelle" Title="UE (Unité d'enseignement)" />
                             <RadzenDataGridColumn TItem="ReleveNoteLigneDto" Property="ElementConstitutifCode" Title="Code" Width="110px" />
@@ -154,6 +177,7 @@
     public long DossierAcademiqueId { get; set; }
 
     private ReleveNoteAnnuelDto? releve;
+    private RadzenDataGrid<ReleveNoteResumeDto>? releveResumeGrid;
     private bool isLoading = true;
 
     protected override async Task OnParametersSetAsync()
@@ -163,6 +187,10 @@
         try
         {
             releve = await RelevesNotesService.GenererReleveAnnuelAsync(DossierAcademiqueId);
+            if (releveResumeGrid is not null)
+            {
+                await releveResumeGrid.Reload();
+            }
         }
         catch (Exception ex)
         {
@@ -180,6 +208,45 @@
 
     private void ExportWord()
         => Navigation.NavigateTo($"/exports/releves/{DossierAcademiqueId}.docx", forceLoad: true);
+
+    private void ExportPdf()
+        => Navigation.NavigateTo($"/exports/releves/{DossierAcademiqueId}.pdf", forceLoad: true);
+
+    private async Task PreviewPdf()
+    {
+        try
+        {
+            var export = await ReleveNotePdfExportService.ExporterReleveAnnuelAsync(
+                DossierAcademiqueId,
+                CancellationToken.None);
+
+            if (export is null)
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Erreur", "Le relevé PDF ne peut pas être généré.");
+                return;
+            }
+
+            var pdfDataUrl = $"data:{export.ContentType};base64,{Convert.ToBase64String(export.Content)}";
+            await DialogService.OpenAsync<RelevePdfPreviewDialog>(
+                $"Aperçu PDF - {releve?.EtudiantNomComplet ?? "Relevé de notes"}",
+                new Dictionary<string, object?>
+                {
+                    [nameof(RelevePdfPreviewDialog.PdfUrl)] = pdfDataUrl
+                },
+                new DialogOptions
+                {
+                    Width = "95vw",
+                    Height = "95vh",
+                    Resizable = true,
+                    Draggable = true,
+                    CloseDialogOnOverlayClick = true
+                });
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Erreur", ex.Message);
+        }
+    }
 
     private void ExportTemplateWord()
         => Navigation.NavigateTo($"/exports/releves/{DossierAcademiqueId}.modele.docx", forceLoad: true);

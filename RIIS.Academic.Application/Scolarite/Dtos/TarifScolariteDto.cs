@@ -11,6 +11,7 @@ public class TarifScolariteDto
     public string ParcoursAcademiqueLibelle { get; set; } = string.Empty;
     public decimal Montant { get; set; }
     public string Devise { get; set; } = "XAF";
+    public DateOnly? DateNotification { get; set; }
     public int Priorite { get; set; }
     public bool EstActif { get; set; } = true;
 }

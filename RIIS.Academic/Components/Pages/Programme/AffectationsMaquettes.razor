@@ -1,0 +1,245 @@
+@page "/programme/affectations-maquettes"
+@inject IProgrammePedagogiqueService ProgrammeService
+@inject IReferentielsService ReferentielsService
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+<RadzenStack Gap="1rem">
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+            <RadzenStack Gap="0">
+                <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-m-0" Text="Affectations des maquettes" />
+                <RadzenText Text="Associez une maquette pédagogique indépendante aux parcours administratifs concernés." />
+            </RadzenStack>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                <RadzenButton Text="Retour aux maquettes" Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Click="BackToMaquettes" />
+                <RadzenButton Text="Nouvelle affectation" Icon="add_link" ButtonStyle="ButtonStyle.Primary" Click="Create" />
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenCard>
+        <RadzenRow>
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenFormField Text="Maquette" Style="width:100%">
+                    <RadzenDropDown Data="@maquettes" TextProperty="Libelle" ValueProperty="Id"
+                                    @bind-Value="selectedMaquetteId" Change="OnMaquetteChanged"
+                                    AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                    AllowClear="true" Placeholder="Toutes les maquettes" Style="width:100%" />
+                </RadzenFormField>
+            </RadzenColumn>
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenFormField Text="Parcours" Style="width:100%">
+                    <RadzenDropDown Data="@parcours" TextProperty="Libelle" ValueProperty="Id"
+                                    @bind-Value="selectedParcoursId" Change="OnParcoursChanged"
+                                    AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                    AllowClear="true" Placeholder="Tous les parcours" Style="width:100%" />
+                </RadzenFormField>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenCard>
+
+    @if (showForm)
+    {
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
+                <RadzenTemplateForm TItem="AffectationMaquetteDto" Data="@model" Submit="Save">
+                    <RadzenStack Gap="1rem">
+                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="riis-modal-title rz-m-0">@(model.Id == 0 ? "Nouvelle affectation" : "Modifier l'affectation")</RadzenText>
+                        <RadzenRow>
+                            <RadzenColumn Size="12" SizeMD="6">
+                                <RadzenFormField Text="Maquette pédagogique" Style="width:100%">
+                                    <RadzenDropDown Data="@maquettes" TextProperty="Libelle" ValueProperty="Id"
+                                                    @bind-Value="model.MaquettePedagogiqueId"
+                                                    AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                    Name="MaquettePedagogiqueId" Style="width:100%" />
+                                </RadzenFormField>
+                                <RadzenRequiredValidator Component="MaquettePedagogiqueId" Text="Maquette obligatoire." />
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="6">
+                                <RadzenFormField Text="Parcours académique" Style="width:100%">
+                                    <RadzenDropDown Data="@parcours" TextProperty="Libelle" ValueProperty="Id"
+                                                    @bind-Value="model.ParcoursAcademiqueId"
+                                                    AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                    Name="ParcoursAcademiqueId" Style="width:100%" />
+                                </RadzenFormField>
+                                <RadzenRequiredValidator Component="ParcoursAcademiqueId" Text="Parcours obligatoire." />
+                            </RadzenColumn>
+                        </RadzenRow>
+                        <RadzenRow>
+                            <RadzenColumn Size="12" SizeMD="3">
+                                <RadzenFormField Text="Début d'affectation" Style="width:100%">
+                                    <RadzenDatePicker TValue="DateTime?" Value="@DateDebutValue" Change="OnDateDebutChanged" DateFormat="dd/MM/yyyy" Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="3">
+                                <RadzenFormField Text="Fin d'affectation" Style="width:100%">
+                                    <RadzenDatePicker TValue="DateTime?" Value="@DateFinValue" Change="OnDateFinChanged" DateFormat="dd/MM/yyyy" Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="3">
+                                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Style="height:100%">
+                                    <RadzenCheckBox @bind-Value="model.EstActive" />
+                                    <RadzenText Text="Affectation active" />
+                                </RadzenStack>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="3">
+                                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Style="height:100%">
+                                    <RadzenCheckBox @bind-Value="model.EstPrincipale" />
+                                    <RadzenText Text="Maquette principale" />
+                                </RadzenStack>
+                            </RadzenColumn>
+                        </RadzenRow>
+                        <RadzenFormField Text="Observation" Style="width:100%">
+                            <RadzenTextArea @bind-Value="model.Observation" Rows="3" />
+                        </RadzenFormField>
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
+                            <RadzenButton Text="Annuler" Icon="close" ButtonStyle="ButtonStyle.Light" Click="Cancel" />
+                            <RadzenButton Text="Enregistrer" Icon="save" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" />
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenTemplateForm>
+            </RadzenCard>
+        </div>
+    }
+
+    <RadzenCard>
+        <RadzenDataGrid @ref="grid" Data="@items" TItem="AffectationMaquetteDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowColumnResize="true" PageSize="12">
+            <Columns>
+                <RadzenDataGridColumn TItem="AffectationMaquetteDto" Property="ParcoursAcademiqueLibelle" Title="Parcours" />
+                <RadzenDataGridColumn TItem="AffectationMaquetteDto" Property="MaquettePedagogiqueLibelle" Title="Maquette" />
+                <RadzenDataGridColumn TItem="AffectationMaquetteDto" Property="DateDebut" Title="Début" />
+                <RadzenDataGridColumn TItem="AffectationMaquetteDto" Property="DateFin" Title="Fin" />
+                <RadzenDataGridColumn TItem="AffectationMaquetteDto" Title="Principale" Width="110px">
+                    <Template Context="item"><RadzenCheckBox Value="@item.EstPrincipale" Disabled="true" /></Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AffectationMaquetteDto" Title="Active" Width="90px">
+                    <Template Context="item"><RadzenCheckBox Value="@item.EstActive" Disabled="true" /></Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AffectationMaquetteDto" Title="Actions" Width="130px" Sortable="false" Filterable="false">
+                    <Template Context="item">
+                        <RadzenButton Icon="edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(() => Edit(item))" />
+                        <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Click="@(() => Delete(item))" class="rz-ml-1" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    [SupplyParameterFromQuery(Name = "maquetteId")]
+    public long? MaquetteId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "parcoursId")]
+    public long? ParcoursId { get; set; }
+
+    private RadzenDataGrid<AffectationMaquetteDto>? grid;
+    private List<AffectationMaquetteDto> items = [];
+    private List<LookupDto> maquettes = [];
+    private List<LookupDto> parcours = [];
+    private List<ParcoursAcademiqueDto> parcoursDetails = [];
+    private AffectationMaquetteDto model = new() { EstActive = true, EstPrincipale = true };
+    private long? selectedMaquetteId;
+    private long? selectedParcoursId;
+    private bool showForm;
+
+    private DateTime? DateDebutValue => model.DateDebut?.ToDateTime(TimeOnly.MinValue);
+    private DateTime? DateFinValue => model.DateFin?.ToDateTime(TimeOnly.MinValue);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLookups();
+        selectedMaquetteId = MaquetteId;
+        selectedParcoursId = ParcoursId;
+        await Load();
+    }
+
+    private async Task LoadLookups()
+    {
+        maquettes = await ProgrammeService.GetMaquettesLookupAsync();
+        parcours = await ProgrammeService.GetParcoursAcademiquesLookupAsync();
+        parcoursDetails = await ReferentielsService.GetParcoursAcademiquesAsync();
+    }
+
+    private async Task Load()
+    {
+        items = await ProgrammeService.GetAffectationsMaquettesAsync(selectedMaquetteId, selectedParcoursId);
+        if (grid is not null) await grid.Reload();
+    }
+
+    private async Task OnMaquetteChanged(object? _) => await Load();
+    private async Task OnParcoursChanged(object? _) => await Load();
+
+    private void Create()
+    {
+        model = new AffectationMaquetteDto
+        {
+            MaquettePedagogiqueId = selectedMaquetteId ?? 0,
+            ParcoursAcademiqueId = selectedParcoursId ?? 0,
+            EstActive = true,
+            EstPrincipale = true
+        };
+        SyncDatesFromParcours();
+        showForm = true;
+    }
+
+    private void Edit(AffectationMaquetteDto item)
+    {
+        model = new AffectationMaquetteDto
+        {
+            Id = item.Id,
+            MaquettePedagogiqueId = item.MaquettePedagogiqueId,
+            ParcoursAcademiqueId = item.ParcoursAcademiqueId,
+            EstActive = item.EstActive,
+            EstPrincipale = item.EstPrincipale,
+            DateDebut = item.DateDebut,
+            DateFin = item.DateFin,
+            Observation = item.Observation
+        };
+        showForm = true;
+    }
+
+    private async Task Save(AffectationMaquetteDto _)
+    {
+        try
+        {
+            await ProgrammeService.SaveAffectationMaquetteAsync(model);
+            NotificationService.Notify(NotificationSeverity.Success, "Affectation enregistrée", "La maquette est maintenant liée au parcours.");
+            showForm = false;
+            await LoadLookups();
+            await Load();
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Erreur", ex.Message);
+        }
+    }
+
+    private async Task Delete(AffectationMaquetteDto item)
+    {
+        try
+        {
+            await ProgrammeService.DeleteAffectationMaquetteAsync(item.Id);
+            await Load();
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Erreur", ex.Message);
+        }
+    }
+
+    private void SyncDatesFromParcours()
+    {
+        var parcoursItem = parcoursDetails.FirstOrDefault(x => x.Id == model.ParcoursAcademiqueId);
+        if (parcoursItem is null || parcoursItem.AnneeDebut < 1) return;
+
+        model.DateDebut = new DateOnly(parcoursItem.AnneeDebut, 9, 1);
+        model.DateFin = new DateOnly(parcoursItem.AnneeDebut + 1, 8, 1);
+    }
+
+    private void OnDateDebutChanged(DateTime? value) => model.DateDebut = value is null ? null : DateOnly.FromDateTime(value.Value);
+    private void OnDateFinChanged(DateTime? value) => model.DateFin = value is null ? null : DateOnly.FromDateTime(value.Value);
+    private void Cancel() => showForm = false;
+    private void BackToMaquettes() => NavigationManager.NavigateTo("/programme/maquettes");
+}

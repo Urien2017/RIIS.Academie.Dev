@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RIIS.Academic.Mobile.MainPage"
+             Title="Cahier de texte">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="14">
+            <Label Text="RIIS Academic" Style="{StaticResource Headline}" />
+            <Label Text="Capture mobile du cahier de texte" Style="{StaticResource SubHeadline}" />
+
+            <Border Stroke="#D7DCE5" StrokeShape="RoundRectangle 8" Padding="14">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Connexion à l'API" FontAttributes="Bold" />
+                    <Entry x:Name="ApiUrlEntry" Placeholder="URL de l'application" Keyboard="Url" />
+                    <Entry x:Name="ApiKeyEntry" Placeholder="Clé X-RIIS-Mobile-Key" IsPassword="True" />
+                    <Button Text="Charger les référentiels" Clicked="OnLoadLookupsClicked" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Stroke="#D7DCE5" StrokeShape="RoundRectangle 8" Padding="14">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Référentiels de la capture" FontAttributes="Bold" />
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
+                        <Picker x:Name="AnneePicker" Grid.Row="0" Title="Année académique"
+                                ItemDisplayBinding="{Binding Libelle}"
+                                SelectedIndexChanged="OnAnneeSelected" />
+                        <Picker x:Name="ClassePicker" Grid.Row="1" Title="Classe / parcours"
+                                ItemDisplayBinding="{Binding Libelle}" />
+                        <Entry x:Name="EnseignantEntry" Grid.Row="2" Placeholder="Nom de l'enseignant" />
+                        <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <Entry x:Name="PageNumberEntry" Grid.Column="0" Placeholder="N° de page" Keyboard="Numeric" Text="1" />
+                            <DatePicker x:Name="CourseDatePicker" Grid.Column="1" />
+                        </Grid>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Stroke="#D7DCE5" StrokeShape="RoundRectangle 8" Padding="14">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Séance détectée" FontAttributes="Bold" />
+                    <Entry x:Name="ElementCodeEntry" Placeholder="Code EC, ex. BAT111-EC01" />
+                    <Entry x:Name="LessonTitleEntry" Placeholder="Titre de la leçon" />
+                    <Editor x:Name="OcrTextEditor" Placeholder="Texte OCR ou transcription manuscrite" MinimumHeightRequest="120" AutoSize="TextChanges" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Grid.Column="0" Text="Capturer et téléverser" Clicked="OnCaptureClicked" />
+                <Button Grid.Column="1" Text="Choisir une image" Clicked="OnPickImageClicked" />
+            </Grid>
+
+            <Image x:Name="CapturePreview" HeightRequest="220" Aspect="AspectFit" IsVisible="False" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button x:Name="ImportButton" Grid.Column="0" Text="Importer la page" Clicked="OnImportClicked" IsEnabled="False" />
+                <Button x:Name="ConfirmButton" Grid.Column="1" Text="Valider et confirmer" Clicked="OnConfirmClicked" IsEnabled="False" />
+            </Grid>
+
+            <ActivityIndicator x:Name="BusyIndicator" IsVisible="False" IsRunning="False" />
+            <Label x:Name="StatusLabel" TextColor="#344054" LineBreakMode="WordWrap" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

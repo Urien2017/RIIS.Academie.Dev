@@ -1,14 +1,4 @@
 {
-  ".vs/RIIS.Academic.slnx/v18/DocumentLayout.backup.json": {
-    "mtime": 1787250578.2941656,
-    "ast_hash": "b20007f45edd0a732ef41d456249aa9a",
-    "semantic_hash": "b20007f45edd0a732ef41d456249aa9a"
-  },
-  ".vs/RIIS.Academic.slnx/v18/DocumentLayout.json": {
-    "mtime": 1787250606.587639,
-    "ast_hash": "b20007f45edd0a732ef41d456249aa9a",
-    "semantic_hash": "b20007f45edd0a732ef41d456249aa9a"
-  },
   "RIIS.Academic.Application/Abstractions/Persistence/IRepository.cs": {
     "mtime": 1784222455.6930063,
     "ast_hash": "ccddd6fee008596cdaed77c72faeecbb",
@@ -110,9 +100,9 @@
     "semantic_hash": "07283f54f2e0af3800f58d552e35e547"
   },
   "RIIS.Academic.Application/Dossiers/Dtos/DossierEtudiantAnnuelDto.cs": {
-    "mtime": 1787242036.079543,
-    "ast_hash": "8cdaf3317156350ba760226b5d11825a",
-    "semantic_hash": "8cdaf3317156350ba760226b5d11825a"
+    "mtime": 1787872223.1052792,
+    "ast_hash": "c44315964b39c390a2c0036c9c939011",
+    "semantic_hash": "c44315964b39c390a2c0036c9c939011"
   },
   "RIIS.Academic.Application/Dossiers/Dtos/DossierFinancierDto.cs": {
     "mtime": 1787242035.4303534,
@@ -130,9 +120,9 @@
     "semantic_hash": "3fe53196947f064a6bf6a71b2a8419fa"
   },
   "RIIS.Academic.Application/Dossiers/Services/DossierEtudiantService.cs": {
-    "mtime": 1787242089.6554382,
-    "ast_hash": "9d537ebf8b7b884991df49909992b87f",
-    "semantic_hash": "9d537ebf8b7b884991df49909992b87f"
+    "mtime": 1787873986.0519269,
+    "ast_hash": "cbcfe44e987877e9653207337805709c",
+    "semantic_hash": "cbcfe44e987877e9653207337805709c"
   },
   "RIIS.Academic.Application/Dossiers/Services/DossierFinancierService.cs": {
     "mtime": 1787242088.2994363,
@@ -150,9 +140,9 @@
     "semantic_hash": "5ff305b1a69eed73b912cd76fa9ddfea"
   },
   "RIIS.Academic.Application/Dossiers/Services/IDossierEtudiantService.cs": {
-    "mtime": 1787242088.9829962,
-    "ast_hash": "7e23d7bc863c04de0f6c5555963d89a5",
-    "semantic_hash": "7e23d7bc863c04de0f6c5555963d89a5"
+    "mtime": 1787854314.558853,
+    "ast_hash": "055f4d1aa5f3a6e80a9eb87da1bd4b1b",
+    "semantic_hash": "055f4d1aa5f3a6e80a9eb87da1bd4b1b"
   },
   "RIIS.Academic.Application/Dossiers/Services/IDossierFinancierService.cs": {
     "mtime": 1787242087.623499,
@@ -430,9 +420,9 @@
     "semantic_hash": "7a90c2140a9fd12fa478ca234d70dd87"
   },
   "RIIS.Academic.Application/Releves/Services/RelevesNotesService.cs": {
-    "mtime": 1787243659.7674475,
-    "ast_hash": "bfefc22d6290099f4535b70de95e49f1",
-    "semantic_hash": "bfefc22d6290099f4535b70de95e49f1"
+    "mtime": 1787936857.1040232,
+    "ast_hash": "e199147b8f40fd6a9e65f229f1e33d5e",
+    "semantic_hash": "e199147b8f40fd6a9e65f229f1e33d5e"
   },
   "RIIS.Academic.Application/Scolarite/Dtos/AdministrationDossierScolariteDto.cs": {
     "mtime": 1787242667.9325106,
@@ -440,14 +430,14 @@
     "semantic_hash": "ac1034626c07111d707ab3a993f9e6c3"
   },
   "RIIS.Academic.Application/Scolarite/Dtos/DossierScolariteDto.cs": {
-    "mtime": 1787242666.6152058,
-    "ast_hash": "2f5abbca75ba3017aa003fe6c8e19fa6",
-    "semantic_hash": "2f5abbca75ba3017aa003fe6c8e19fa6"
+    "mtime": 1787916405.9954276,
+    "ast_hash": "9ae798a17135ef25db329640e752b619",
+    "semantic_hash": "9ae798a17135ef25db329640e752b619"
   },
   "RIIS.Academic.Application/Scolarite/Dtos/FinanceDossierScolariteDto.cs": {
-    "mtime": 1787242209.0327604,
-    "ast_hash": "662039498d587b9dde69d9779035b599",
-    "semantic_hash": "662039498d587b9dde69d9779035b599"
+    "mtime": 1787872260.9671402,
+    "ast_hash": "fac774aad170a36d7b1473c00af1aaec",
+    "semantic_hash": "fac774aad170a36d7b1473c00af1aaec"
   },
   "RIIS.Academic.Application/Scolarite/Dtos/ModePaiementScolariteDto.cs": {
     "mtime": 1786461663.0772977,
@@ -465,24 +455,24 @@
     "semantic_hash": "993ab399a36426594415e5d2a9e5001e"
   },
   "RIIS.Academic.Application/Scolarite/Services/DossiersScolariteService.cs": {
-    "mtime": 1787242668.6091654,
-    "ast_hash": "774598a66321721f63e0bd4c3175a83c",
-    "semantic_hash": "774598a66321721f63e0bd4c3175a83c"
+    "mtime": 1787916409.670058,
+    "ast_hash": "14180d16631a8e0d0d0969e3daa35e03",
+    "semantic_hash": "14180d16631a8e0d0d0969e3daa35e03"
   },
   "RIIS.Academic.Application/Scolarite/Services/FinancesScolariteService.cs": {
-    "mtime": 1787242602.8123877,
-    "ast_hash": "7e30818199e444feeff8ecdbd6d63ef3",
-    "semantic_hash": "7e30818199e444feeff8ecdbd6d63ef3"
+    "mtime": 1787872437.3742936,
+    "ast_hash": "bd974032c2913502884573b5501a582c",
+    "semantic_hash": "bd974032c2913502884573b5501a582c"
   },
   "RIIS.Academic.Application/Scolarite/Services/IDossiersScolariteService.cs": {
-    "mtime": 1786456457.367577,
-    "ast_hash": "414de118ff215c16e1ddf567305558c6",
-    "semantic_hash": "414de118ff215c16e1ddf567305558c6"
+    "mtime": 1787259964.7813394,
+    "ast_hash": "80eae01d13b78f4d09d5a991c5b7450a",
+    "semantic_hash": "80eae01d13b78f4d09d5a991c5b7450a"
   },
   "RIIS.Academic.Application/Scolarite/Services/IFinancesScolariteService.cs": {
-    "mtime": 1786461701.4311037,
-    "ast_hash": "c8243580f8f85f37f72f3027223b4422",
-    "semantic_hash": "c8243580f8f85f37f72f3027223b4422"
+    "mtime": 1787872429.9977806,
+    "ast_hash": "01f465d055e89951f0124e63b814c994",
+    "semantic_hash": "01f465d055e89951f0124e63b814c994"
   },
   "RIIS.Academic.Application/Scolarite/Services/IModesPaiementScolariteService.cs": {
     "mtime": 1786461670.7119572,
@@ -513,36 +503,6 @@
     "mtime": 1786632626.2993307,
     "ast_hash": "697c800ce3e909face5e010821a8ca8d",
     "semantic_hash": "697c800ce3e909face5e010821a8ca8d"
-  },
-  "RIIS.Academic.Application/bin/Debug/net10.0/RIIS.Academic.Application.deps.json": {
-    "mtime": 1787250375.55891,
-    "ast_hash": "2b55e9546b04ff294e4a3b0abf3cf1f2",
-    "semantic_hash": "2b55e9546b04ff294e4a3b0abf3cf1f2"
-  },
-  "RIIS.Academic.Application/obj/Debug/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs": {
-    "mtime": 1786665192.0072117,
-    "ast_hash": "8479efdf06e2d26e053d27ffa6964185",
-    "semantic_hash": "8479efdf06e2d26e053d27ffa6964185"
-  },
-  "RIIS.Academic.Application/obj/Debug/net10.0/RIIS.Academic.Application.AssemblyInfo.cs": {
-    "mtime": 1787250375.0954795,
-    "ast_hash": "99a3aeac99d8b8f714ce18eb36294bb6",
-    "semantic_hash": "99a3aeac99d8b8f714ce18eb36294bb6"
-  },
-  "RIIS.Academic.Application/obj/Debug/net10.0/RIIS.Academic.Application.GlobalUsings.g.cs": {
-    "mtime": 1783955351.5677726,
-    "ast_hash": "9706b2dbf69f7db452e8b0d5baf54dcf",
-    "semantic_hash": "9706b2dbf69f7db452e8b0d5baf54dcf"
-  },
-  "RIIS.Academic.Application/obj/RIIS.Academic.Application.csproj.nuget.dgspec.json": {
-    "mtime": 1787250303.1853108,
-    "ast_hash": "c9384b7c39ee7363f22bbad0a9b0ef0b",
-    "semantic_hash": "c9384b7c39ee7363f22bbad0a9b0ef0b"
-  },
-  "RIIS.Academic.Application/obj/project.assets.json": {
-    "mtime": 1787077982.0913548,
-    "ast_hash": "8ee7622a968b79515375d48a76d63aa4",
-    "semantic_hash": "8ee7622a968b79515375d48a76d63aa4"
   },
   "RIIS.Academic.Domain/Common/AuditableEntity.cs": {
     "mtime": 1783955299.3285122,
@@ -854,36 +814,6 @@
     "ast_hash": "4a49a406974199b18f2f35767e2b500e",
     "semantic_hash": "4a49a406974199b18f2f35767e2b500e"
   },
-  "RIIS.Academic.Domain/bin/Debug/net10.0/RIIS.Academic.Domain.deps.json": {
-    "mtime": 1787250374.9989924,
-    "ast_hash": "f9583e90e52546388d912dd590dec813",
-    "semantic_hash": "f9583e90e52546388d912dd590dec813"
-  },
-  "RIIS.Academic.Domain/obj/Debug/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs": {
-    "mtime": 1786665191.502381,
-    "ast_hash": "8479efdf06e2d26e053d27ffa6964185",
-    "semantic_hash": "8479efdf06e2d26e053d27ffa6964185"
-  },
-  "RIIS.Academic.Domain/obj/Debug/net10.0/RIIS.Academic.Domain.AssemblyInfo.cs": {
-    "mtime": 1787250374.9223602,
-    "ast_hash": "5af196cdd2cbf859c424e45d425af3ba",
-    "semantic_hash": "5af196cdd2cbf859c424e45d425af3ba"
-  },
-  "RIIS.Academic.Domain/obj/Debug/net10.0/RIIS.Academic.Domain.GlobalUsings.g.cs": {
-    "mtime": 1783955351.5718532,
-    "ast_hash": "9706b2dbf69f7db452e8b0d5baf54dcf",
-    "semantic_hash": "9706b2dbf69f7db452e8b0d5baf54dcf"
-  },
-  "RIIS.Academic.Domain/obj/RIIS.Academic.Domain.csproj.nuget.dgspec.json": {
-    "mtime": 1787250303.1853108,
-    "ast_hash": "a654313003ec71058f5a7fe6bc3d5062",
-    "semantic_hash": "a654313003ec71058f5a7fe6bc3d5062"
-  },
-  "RIIS.Academic.Domain/obj/project.assets.json": {
-    "mtime": 1787077982.0903513,
-    "ast_hash": "6e7edac176ddad696262f01a59b09400",
-    "semantic_hash": "6e7edac176ddad696262f01a59b09400"
-  },
   "RIIS.Academic.Infrastructure/Documents/ProcesVerbalExcelExportService.cs": {
     "mtime": 1784886052.7973263,
     "ast_hash": "f71519d455f117b508cea64b50b27e64",
@@ -980,7 +910,7 @@
     "semantic_hash": "d5ecc6d37a8d1a693287379dd9310984"
   },
   "RIIS.Academic.Infrastructure/Migrations/RiisAcademicDbContextModelSnapshot.cs": {
-    "mtime": 1786652003.8773074,
+    "mtime": 1787919908.273224,
     "ast_hash": "b392ef0fe9ff90b84a3607392182c016",
     "semantic_hash": "b392ef0fe9ff90b84a3607392182c016"
   },
@@ -1140,7 +1070,7 @@
     "semantic_hash": "798fc326509e0b3f0a0caa5f98673f2f"
   },
   "RIIS.Academic.Infrastructure/Persistence/Configurations/Scolarite/ElementScolariteEtudiantConfiguration.cs": {
-    "mtime": 1787241418.7933247,
+    "mtime": 1787920368.227276,
     "ast_hash": "28d880497882910186b47d4bc0206e48",
     "semantic_hash": "28d880497882910186b47d4bc0206e48"
   },
@@ -1150,12 +1080,12 @@
     "semantic_hash": "b27a27d7586ebd812730b9b47e410526"
   },
   "RIIS.Academic.Infrastructure/Persistence/Configurations/Scolarite/NotificationScolariteConfiguration.cs": {
-    "mtime": 1787241420.1594274,
+    "mtime": 1787920369.2582796,
     "ast_hash": "a07bf27aa868ffc291ce1aa903ba75ab",
     "semantic_hash": "a07bf27aa868ffc291ce1aa903ba75ab"
   },
   "RIIS.Academic.Infrastructure/Persistence/Configurations/Scolarite/PaiementScolariteConfiguration.cs": {
-    "mtime": 1787241419.4673061,
+    "mtime": 1787920368.7328627,
     "ast_hash": "3ed05cb0ba71ac656d0337ffbcef6750",
     "semantic_hash": "3ed05cb0ba71ac656d0337ffbcef6750"
   },
@@ -1180,14 +1110,14 @@
     "semantic_hash": "9a6b2d92c1d2de8c0fbecf6de7165e9f"
   },
   "RIIS.Academic.Infrastructure/Persistence/DatabaseInitializer.cs": {
-    "mtime": 1787054231.2287002,
-    "ast_hash": "f1e92dfd66f6ce5ca746bf04ae784484",
-    "semantic_hash": "f1e92dfd66f6ce5ca746bf04ae784484"
+    "mtime": 1787936953.9529004,
+    "ast_hash": "306c11210f27bbe4fef09a8daf68e30f",
+    "semantic_hash": "306c11210f27bbe4fef09a8daf68e30f"
   },
   "RIIS.Academic.Infrastructure/Persistence/DependencyInjection.cs": {
-    "mtime": 1787250293.116053,
-    "ast_hash": "08d647f4ea925824dc4d9b04c458f96c",
-    "semantic_hash": "08d647f4ea925824dc4d9b04c458f96c"
+    "mtime": 1787847511.767383,
+    "ast_hash": "80eaeb7c9f9027303d49d237857024b7",
+    "semantic_hash": "80eaeb7c9f9027303d49d237857024b7"
   },
   "RIIS.Academic.Infrastructure/Persistence/Migrations/20260814000042_InitialCreate.Designer.cs": {
     "mtime": 1786665642.6697054,
@@ -1200,12 +1130,12 @@
     "semantic_hash": "7244a8f36a41001b03a84b2ff8d3ff9c"
   },
   "RIIS.Academic.Infrastructure/Persistence/Migrations/20260818172534_AddRefonteQoder.Designer.cs": {
-    "mtime": 1787073934.4590783,
+    "mtime": 1787917374.4105742,
     "ast_hash": "c5ff979b0459ee5fe61f851264dad9f7",
     "semantic_hash": "c5ff979b0459ee5fe61f851264dad9f7"
   },
   "RIIS.Academic.Infrastructure/Persistence/Migrations/20260818172534_AddRefonteQoder.cs": {
-    "mtime": 1787073934.4590783,
+    "mtime": 1787917374.4115765,
     "ast_hash": "0cd7b4d97cb5e63a693c32ec4d2e4f16",
     "semantic_hash": "0cd7b4d97cb5e63a693c32ec4d2e4f16"
   },
@@ -1314,51 +1244,6 @@
     "ast_hash": "3cb5c45be4a38b344702e077ff0c7aaf",
     "semantic_hash": "3cb5c45be4a38b344702e077ff0c7aaf"
   },
-  "RIIS.Academic.Infrastructure/bin/Debug/net10.0/BuildHost-netcore/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.deps.json": {
-    "mtime": 1763421306.0,
-    "ast_hash": "6a002d69baf7b85bfe11c404487f1905",
-    "semantic_hash": "6a002d69baf7b85bfe11c404487f1905"
-  },
-  "RIIS.Academic.Infrastructure/bin/Debug/net10.0/BuildHost-netcore/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.runtimeconfig.json": {
-    "mtime": 1763421306.0,
-    "ast_hash": "4a59cbd5a00293f28ad2649fdda570f9",
-    "semantic_hash": "4a59cbd5a00293f28ad2649fdda570f9"
-  },
-  "RIIS.Academic.Infrastructure/bin/Debug/net10.0/RIIS.Academic.Infrastructure.deps.json": {
-    "mtime": 1787250376.1681607,
-    "ast_hash": "81dcf39fb8234d8bd2d60c9c7c5ad4d9",
-    "semantic_hash": "81dcf39fb8234d8bd2d60c9c7c5ad4d9"
-  },
-  "RIIS.Academic.Infrastructure/bin/Debug/net10.0/RIIS.Academic.Infrastructure.runtimeconfig.json": {
-    "mtime": 1787250376.1691692,
-    "ast_hash": "5e2fec3a44baa37dd9b51c63a09513c6",
-    "semantic_hash": "5e2fec3a44baa37dd9b51c63a09513c6"
-  },
-  "RIIS.Academic.Infrastructure/obj/Debug/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs": {
-    "mtime": 1786665192.273004,
-    "ast_hash": "8479efdf06e2d26e053d27ffa6964185",
-    "semantic_hash": "8479efdf06e2d26e053d27ffa6964185"
-  },
-  "RIIS.Academic.Infrastructure/obj/Debug/net10.0/RIIS.Academic.Infrastructure.AssemblyInfo.cs": {
-    "mtime": 1787250375.6829543,
-    "ast_hash": "67f9ce2ab16edb71e395c3923a0c34fc",
-    "semantic_hash": "67f9ce2ab16edb71e395c3923a0c34fc"
-  },
-  "RIIS.Academic.Infrastructure/obj/Debug/net10.0/RIIS.Academic.Infrastructure.GlobalUsings.g.cs": {
-    "mtime": 1783955351.5677726,
-    "ast_hash": "9706b2dbf69f7db452e8b0d5baf54dcf",
-    "semantic_hash": "9706b2dbf69f7db452e8b0d5baf54dcf"
-  },
-  "RIIS.Academic.Infrastructure/obj/RIIS.Academic.Infrastructure.csproj.nuget.dgspec.json": {
-    "mtime": 1787250303.2278278,
-    "ast_hash": "811c1bd2b3a9cdd646c26151645d9ca8",
-    "semantic_hash": "811c1bd2b3a9cdd646c26151645d9ca8"
-  },
-  "RIIS.Academic.Infrastructure/obj/project.assets.json": {
-    "mtime": 1787248237.744491,
-    "ast_hash": "1ed0c1fad07d5f98d3b103ba951944fa",
-    "semantic_hash": "1ed0c1fad07d5f98d3b103ba951944fa"
-  },
   "RIIS.Academic.slnx": {
     "mtime": 1784209276.5490544,
     "ast_hash": "f3db48fda47ed08fcfe99ded291e770a",
@@ -1410,9 +1295,9 @@
     "semantic_hash": "214c0d603917bce65578def1d9210b2b"
   },
   "RIIS.Academic/Components/Pages/Dossier/DossierEtudiant.razor": {
-    "mtime": 1787245564.5241885,
-    "ast_hash": "98ccd67524cad3f5db5d988d60b880b4",
-    "semantic_hash": "98ccd67524cad3f5db5d988d60b880b4"
+    "mtime": 1787916399.8721042,
+    "ast_hash": "8c8c9a4eadc6be90f568e88146fa2f9d",
+    "semantic_hash": "8c8c9a4eadc6be90f568e88146fa2f9d"
   },
   "RIIS.Academic/Components/Pages/Dossier/Etudiants.razor": {
     "mtime": 1787243047.3128698,
@@ -1450,9 +1335,9 @@
     "semantic_hash": "aebb22a934da05c1007ed4a7567fea4a"
   },
   "RIIS.Academic/Components/Pages/Programme/Maquettes.razor": {
-    "mtime": 1786642685.955133,
-    "ast_hash": "b8d1d20d0649fc28e79e707ed1f29c34",
-    "semantic_hash": "b8d1d20d0649fc28e79e707ed1f29c34"
+    "mtime": 1787929345.3560898,
+    "ast_hash": "d3ab662afa4ce084926c678760e631a9",
+    "semantic_hash": "d3ab662afa4ce084926c678760e631a9"
   },
   "RIIS.Academic/Components/Pages/Programme/Semestres.razor": {
     "mtime": 1787073205.1849923,
@@ -1515,14 +1400,14 @@
     "semantic_hash": "e1928af534b4c206336c6a981c7fd808"
   },
   "RIIS.Academic/Components/Pages/Scolarite/DossiersScolarite.razor": {
-    "mtime": 1787243142.5655568,
-    "ast_hash": "ac40f6f6b23c928d30b95642bbc3dd49",
-    "semantic_hash": "ac40f6f6b23c928d30b95642bbc3dd49"
+    "mtime": 1787916900.7875278,
+    "ast_hash": "f09c2b893547b61269a40151e7b3f61b",
+    "semantic_hash": "f09c2b893547b61269a40151e7b3f61b"
   },
   "RIIS.Academic/Components/Pages/Scolarite/FinancesScolarite.razor": {
-    "mtime": 1787243146.4453313,
-    "ast_hash": "60d7f0b68029959ccbfd08d96c0922d5",
-    "semantic_hash": "60d7f0b68029959ccbfd08d96c0922d5"
+    "mtime": 1787872511.7634325,
+    "ast_hash": "e4dd26e85858b07639085670acc3b13a",
+    "semantic_hash": "e4dd26e85858b07639085670acc3b13a"
   },
   "RIIS.Academic/Components/Pages/Scolarite/ModesPaiementScolarite.razor": {
     "mtime": 1786461869.5294218,
@@ -1555,14 +1440,14 @@
     "semantic_hash": "7d80b535c7f00edefd6718eefc20d0d5"
   },
   "RIIS.Academic/Program.cs": {
-    "mtime": 1787250577.7621841,
-    "ast_hash": "2eea3bd72c205fb040dcedf8b701388b",
-    "semantic_hash": "2eea3bd72c205fb040dcedf8b701388b"
+    "mtime": 1787935487.7366443,
+    "ast_hash": "a185304ebfffde9b9328aaf88845b638",
+    "semantic_hash": "a185304ebfffde9b9328aaf88845b638"
   },
   "RIIS.Academic/Properties/launchSettings.json": {
-    "mtime": 1787088644.341143,
-    "ast_hash": "bdc4a0e2574c083a46f65d68a780d3b0",
-    "semantic_hash": "bdc4a0e2574c083a46f65d68a780d3b0"
+    "mtime": 1787849289.5534215,
+    "ast_hash": "d18d7f2fdf97f30ac736f7c555884a46",
+    "semantic_hash": "d18d7f2fdf97f30ac736f7c555884a46"
   },
   "RIIS.Academic/RIIS.Academic.csproj": {
     "mtime": 1787250072.8559234,
@@ -1579,204 +1464,24 @@
     "ast_hash": "3f6298d5aa82a897681e9b12fd35df1e",
     "semantic_hash": "3f6298d5aa82a897681e9b12fd35df1e"
   },
-  "RIIS.Academic/bin/Debug/net10.0/BuildHost-netcore/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.deps.json": {
-    "mtime": 1763421306.0,
-    "ast_hash": "6a002d69baf7b85bfe11c404487f1905",
-    "semantic_hash": "6a002d69baf7b85bfe11c404487f1905"
-  },
-  "RIIS.Academic/bin/Debug/net10.0/BuildHost-netcore/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.runtimeconfig.json": {
-    "mtime": 1763421306.0,
-    "ast_hash": "4a59cbd5a00293f28ad2649fdda570f9",
-    "semantic_hash": "4a59cbd5a00293f28ad2649fdda570f9"
-  },
-  "RIIS.Academic/bin/Debug/net10.0/RIIS.Academic.Web.deps.json": {
-    "mtime": 1787077804.4213178,
-    "ast_hash": "39752a69c9920d0ca7acf90ddb00b18f",
-    "semantic_hash": "39752a69c9920d0ca7acf90ddb00b18f"
-  },
-  "RIIS.Academic/bin/Debug/net10.0/RIIS.Academic.Web.runtimeconfig.json": {
-    "mtime": 1787077804.4353783,
-    "ast_hash": "37595336dae30b037bd95e5047b95825",
-    "semantic_hash": "37595336dae30b037bd95e5047b95825"
-  },
-  "RIIS.Academic/bin/Debug/net10.0/RIIS.Academic.Web.staticwebassets.endpoints.json": {
-    "mtime": 1787077804.2587593,
-    "ast_hash": "70c6271e31cb5bf43bdbbfb2e8300df2",
-    "semantic_hash": "70c6271e31cb5bf43bdbbfb2e8300df2"
-  },
-  "RIIS.Academic/bin/Debug/net10.0/RIIS.Academic.Web.staticwebassets.runtime.json": {
-    "mtime": 1787077804.2781098,
-    "ast_hash": "d43901e8f2cf66692ad9cfb5d4cb2fac",
-    "semantic_hash": "d43901e8f2cf66692ad9cfb5d4cb2fac"
-  },
-  "RIIS.Academic/bin/Debug/net10.0/RIIS.Academic.deps.json": {
-    "mtime": 1787250378.1275747,
-    "ast_hash": "3007166823489450c6c05772b9171e11",
-    "semantic_hash": "3007166823489450c6c05772b9171e11"
-  },
-  "RIIS.Academic/bin/Debug/net10.0/RIIS.Academic.runtimeconfig.json": {
-    "mtime": 1787250378.1301746,
-    "ast_hash": "70d968d6c0d663f85c14732070169e3b",
-    "semantic_hash": "70d968d6c0d663f85c14732070169e3b"
-  },
-  "RIIS.Academic/bin/Debug/net10.0/RIIS.Academic.staticwebassets.endpoints.json": {
-    "mtime": 1787250377.9428148,
-    "ast_hash": "7a70ad154d36babb3b537e8f61641236",
-    "semantic_hash": "7a70ad154d36babb3b537e8f61641236"
-  },
-  "RIIS.Academic/bin/Debug/net10.0/RIIS.Academic.staticwebassets.runtime.json": {
-    "mtime": 1787250377.9622862,
-    "ast_hash": "a9c0c4335a4fb36f4f7ea5ac4720c421",
-    "semantic_hash": "a9c0c4335a4fb36f4f7ea5ac4720c421"
-  },
-  "RIIS.Academic/bin/Debug/net10.0/appsettings.Development.json": {
-    "mtime": 1782751801.0613377,
-    "ast_hash": "0dcffe88614773e93bf787d15a25efa0",
-    "semantic_hash": "0dcffe88614773e93bf787d15a25efa0"
-  },
-  "RIIS.Academic/bin/Debug/net10.0/appsettings.json": {
-    "mtime": 1786710366.2807696,
-    "ast_hash": "3f6298d5aa82a897681e9b12fd35df1e",
-    "semantic_hash": "3f6298d5aa82a897681e9b12fd35df1e"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs": {
-    "mtime": 1786665192.5576777,
-    "ast_hash": "8479efdf06e2d26e053d27ffa6964185",
-    "semantic_hash": "8479efdf06e2d26e053d27ffa6964185"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/ApiEndpoints.json": {
-    "mtime": 1787250525.8352065,
-    "ast_hash": "3f624bad53e1bbbc2776cad0f2f63205",
-    "semantic_hash": "3f624bad53e1bbbc2776cad0f2f63205"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/EmbeddedAttribute.cs": {
-    "mtime": 1787250376.2872918,
-    "ast_hash": "4754a7d0933592bbad0d81eb7999c607",
-    "semantic_hash": "4754a7d0933592bbad0d81eb7999c607"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/RIIS.Academic.AssemblyInfo.cs": {
-    "mtime": 1787250376.3669732,
-    "ast_hash": "5cb33aa49b258143e2d0e10d116bf6b5",
-    "semantic_hash": "5cb33aa49b258143e2d0e10d116bf6b5"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/RIIS.Academic.GlobalUsings.g.cs": {
-    "mtime": 1782249891.4472177,
-    "ast_hash": "0072144e1fffed284fc6e1c12735d5a8",
-    "semantic_hash": "0072144e1fffed284fc6e1c12735d5a8"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/RIIS.Academic.MvcApplicationPartsAssemblyInfo.cs": {
-    "mtime": 1787250376.3922198,
-    "ast_hash": "8305d75e4d1eab1c8fc9dd41b02a5658",
-    "semantic_hash": "8305d75e4d1eab1c8fc9dd41b02a5658"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/RIIS.Academic.Web.AssemblyInfo.cs": {
-    "mtime": 1787077802.378995,
-    "ast_hash": "72309fdfbdae92a4880582b4213c1e55",
-    "semantic_hash": "72309fdfbdae92a4880582b4213c1e55"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/RIIS.Academic.Web.GlobalUsings.g.cs": {
-    "mtime": 1784203534.857587,
-    "ast_hash": "0072144e1fffed284fc6e1c12735d5a8",
-    "semantic_hash": "0072144e1fffed284fc6e1c12735d5a8"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/RIIS.Academic.Web.sourcelink.json": {
-    "mtime": 1787077802.433675,
-    "ast_hash": "87d625f59fa772f676f98a1a4bb642db",
-    "semantic_hash": "87d625f59fa772f676f98a1a4bb642db"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/ValidatableTypeAttribute.cs": {
-    "mtime": 1787250376.287794,
-    "ast_hash": "ad2a4d44fcf5f4903d1b6164b2b8b5de",
-    "semantic_hash": "ad2a4d44fcf5f4903d1b6164b2b8b5de"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/rbcswa.dswa.cache.json": {
-    "mtime": 1787250377.906845,
-    "ast_hash": "b133eff497bfe279a0882665ce58c314",
-    "semantic_hash": "b133eff497bfe279a0882665ce58c314"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/rjimswa.dswa.cache.json": {
-    "mtime": 1787250377.7484586,
-    "ast_hash": "ec8971f0afeb6dcb367b3f8d1b534cf3",
-    "semantic_hash": "ec8971f0afeb6dcb367b3f8d1b534cf3"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/rjsmcshtml.dswa.cache.json": {
-    "mtime": 1787250524.3411772,
-    "ast_hash": "5bb53610070019405ea9fc326fa14264",
-    "semantic_hash": "5bb53610070019405ea9fc326fa14264"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/rjsmrazor.dswa.cache.json": {
-    "mtime": 1787250524.3376417,
-    "ast_hash": "24f70a9c3a2b06567cefa3428cdccd44",
-    "semantic_hash": "24f70a9c3a2b06567cefa3428cdccd44"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/rpswa.dswa.cache.json": {
-    "mtime": 1787250522.640073,
-    "ast_hash": "adf9b6c00854d6fc374f74a602e2475f",
-    "semantic_hash": "adf9b6c00854d6fc374f74a602e2475f"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/staticwebassets.build.endpoints.json": {
-    "mtime": 1787250377.9428148,
-    "ast_hash": "7a70ad154d36babb3b537e8f61641236",
-    "semantic_hash": "7a70ad154d36babb3b537e8f61641236"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/staticwebassets.build.json": {
-    "mtime": 1787250377.929199,
-    "ast_hash": "8f7b883f0fad752319a8d6d0a0c6c508",
-    "semantic_hash": "8f7b883f0fad752319a8d6d0a0c6c508"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/staticwebassets.development.json": {
-    "mtime": 1787250377.9622862,
-    "ast_hash": "a9c0c4335a4fb36f4f7ea5ac4720c421",
-    "semantic_hash": "a9c0c4335a4fb36f4f7ea5ac4720c421"
-  },
-  "RIIS.Academic/obj/RIIS.Academic.Web.csproj.nuget.dgspec.json": {
-    "mtime": 1787076300.646445,
-    "ast_hash": "0ed43e45e445e167b589f82bc9988766",
-    "semantic_hash": "0ed43e45e445e167b589f82bc9988766"
-  },
-  "RIIS.Academic/obj/RIIS.Academic.csproj.nuget.dgspec.json": {
-    "mtime": 1787250303.2278278,
-    "ast_hash": "b32919652214b4219306533c7d542fd1",
-    "semantic_hash": "b32919652214b4219306533c7d542fd1"
-  },
-  "RIIS.Academic/obj/project.assets.json": {
-    "mtime": 1787078338.8929987,
-    "ast_hash": "51b89bf525ecf845e816eb3d29b093ea",
-    "semantic_hash": "51b89bf525ecf845e816eb3d29b093ea"
-  },
-  "RIIS.Academic.Application/obj/Debug/net10.0/RIIS.Academic.Application.csproj.FileListAbsolute.txt": {
-    "mtime": 1787250375.562977,
-    "ast_hash": "1d524040b315ae86190195028131fd5f",
-    "semantic_hash": "1d524040b315ae86190195028131fd5f"
-  },
-  "RIIS.Academic.Domain/obj/Debug/net10.0/RIIS.Academic.Domain.csproj.FileListAbsolute.txt": {
-    "mtime": 1787250375.0029924,
-    "ast_hash": "88a07c5957b969fed921955775459305",
-    "semantic_hash": "88a07c5957b969fed921955775459305"
-  },
-  "RIIS.Academic.Infrastructure/obj/Debug/net10.0/RIIS.Academic.Infrastructure.csproj.FileListAbsolute.txt": {
-    "mtime": 1787250376.174258,
-    "ast_hash": "833f54bc6bee8bf63f4677196645cfdd",
-    "semantic_hash": "833f54bc6bee8bf63f4677196645cfdd"
-  },
-  "RIIS.Academic/bin/Debug/net10.0/LatoFont/OFL.txt": {
-    "mtime": 1781103648.0,
-    "ast_hash": "99aa8fee7ed71044ae773b92d79ab24c",
-    "semantic_hash": "99aa8fee7ed71044ae773b92d79ab24c"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/RIIS.Academic.Web.csproj.FileListAbsolute.txt": {
-    "mtime": 1787077804.4522443,
-    "ast_hash": "1b475165a1429c00c5bdb1355d8243da",
-    "semantic_hash": "1b475165a1429c00c5bdb1355d8243da"
-  },
-  "RIIS.Academic/obj/Debug/net10.0/staticwebassets.upToDateCheck.txt": {
-    "mtime": 1787250377.9773788,
-    "ast_hash": "41ca249954fc66e21e74ca89f0bca9bd",
-    "semantic_hash": "41ca249954fc66e21e74ca89f0bca9bd"
-  },
   "RIIS.Academic/wwwroot/favicon.png": {
     "mtime": 1782249887.4182165,
     "ast_hash": "eab4f24ab5ff80be586dcdab8e87dc9c",
     "semantic_hash": "eab4f24ab5ff80be586dcdab8e87dc9c"
+  },
+  "RIIS.Academic.Infrastructure/Persistence/Seeders/ProgrammeNotesJsonSeeder.cs": {
+    "mtime": 1787935297.1000254,
+    "ast_hash": "f064651b7f945849ad78b7f04f88936e",
+    "semantic_hash": "f064651b7f945849ad78b7f04f88936e"
+  },
+  "RIIS.Academic.Infrastructure/Persistence/Seeders/SaisieNotesTestSeeder.cs": {
+    "mtime": 1787936937.1456137,
+    "ast_hash": "199468bb3f8d5a716853e4be7e3d8be1",
+    "semantic_hash": "199468bb3f8d5a716853e4be7e3d8be1"
+  },
+  "RIIS.Academic.Infrastructure/Persistence/Services/EfDossierEtudiantService.cs": {
+    "mtime": 1787873981.8720615,
+    "ast_hash": "ae15b303c0bf9148846363cd171674e4",
+    "semantic_hash": "ae15b303c0bf9148846363cd171674e4"
   }
 }

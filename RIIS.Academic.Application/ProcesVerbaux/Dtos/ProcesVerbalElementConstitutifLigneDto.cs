@@ -10,6 +10,11 @@ public class ProcesVerbalElementConstitutifLigneDto
     public decimal? MoyenneCcon { get; set; }
     public decimal? MoyenneCc { get; set; }
     public decimal? MoyenneSn { get; set; }
+    public decimal? MoyenneSr { get; set; }
+    public bool HasCconNotes { get; set; }
+    public bool HasCcNotes { get; set; }
+    public bool HasSnNotes { get; set; }
+    public bool HasSrNotes { get; set; }
     public decimal? MoyenneFinale { get; set; }
     public decimal CreditsAcquis { get; set; }
     public string Decision { get; set; } = string.Empty;

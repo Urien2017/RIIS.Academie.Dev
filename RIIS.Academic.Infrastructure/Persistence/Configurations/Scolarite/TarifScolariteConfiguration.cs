@@ -15,7 +15,9 @@ public class TarifScolariteConfiguration : IEntityTypeConfiguration<TarifScolari
         builder.Property(x => x.Montant).HasPrecision(18, 2);
         builder.Property(x => x.Devise).HasMaxLength(10);
         builder.HasIndex(x => x.Code);
-        builder.HasIndex(x => new { x.TypeElementScolariteId, x.ParcoursAcademiqueId });
+        builder.HasIndex(x => x.DateNotification);
+        builder.HasIndex(x => new { x.TypeElementScolariteId, x.ParcoursAcademiqueId })
+            .IsUnique();
 
         builder.HasOne(x => x.TypeElementScolarite)
             .WithMany(x => x.Tarifs)

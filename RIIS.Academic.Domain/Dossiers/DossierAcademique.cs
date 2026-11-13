@@ -5,6 +5,7 @@ public class DossierAcademique
     public long Id { get; set; }
     public long EtudiantId { get; set; }
     public long ParcoursAcademiqueId { get; set; }
+    public long? DossierEtudiantId { get; set; }
     public long? ClassePedagogiqueId { get; set; }
     public StatutDossierAcademique Statut { get; set; } = StatutDossierAcademique.EnCours;
     public DateTime CreeLeUtc { get; set; } = DateTime.UtcNow;
@@ -12,6 +13,7 @@ public class DossierAcademique
 
     public Etudiant Etudiant { get; set; } = null!;
     public ParcoursAcademique ParcoursAcademique { get; set; } = null!;
+    public DossierEtudiant? DossierEtudiant { get; set; }
     public ClassePedagogique? ClassePedagogique { get; set; }
     public ICollection<NoteEvaluation> NotesEvaluations { get; set; } = [];
     public ICollection<ResultatElementConstitutif> ResultatsElementsConstitutifs { get; set; } = [];

@@ -7,7 +7,7 @@
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
             <RadzenStack Gap="0">
                 <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-m-0" Text="Semestres pédagogiques" />
-                <RadzenText Text="Gestion des semestres rattachés aux maquettes." />
+                <RadzenText Text="Création des semestres et rattachement des UE avec leurs EC." />
             </RadzenStack>
             <RadzenButton Text="Nouveau semestre" Icon="add_circle" Click="@Create" ButtonStyle="ButtonStyle.Primary" />
         </RadzenStack>
@@ -16,7 +16,17 @@
     <RadzenCard>
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" Gap="0.75rem">
             <RadzenFormField Text="Maquette" Style="width: min(100%, 480px)">
-                <RadzenDropDown Data="@maquettes" TextProperty="Libelle" ValueProperty="Id" @bind-Value="@selectedMaquetteId" AllowClear="true" Placeholder="Toutes les maquettes" Style="width:100%" />
+                <RadzenDropDown AllowFiltering="true"
+                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                Data="@maquettes"
+                                TextProperty="Libelle"
+                                ValueProperty="Id"
+                                TValue="long?"
+                                @bind-Value="@selectedMaquetteId"
+                                Change="@OnFilterMaquetteChanged"
+                                AllowClear="true"
+                                Placeholder="Toutes les maquettes"
+                                Style="width:100%" />
             </RadzenFormField>
             <RadzenButton Text="Filtrer" Icon="filter_alt" Click="@Load" />
             <RadzenButton Text="Réinitialiser" Icon="refresh" ButtonStyle="ButtonStyle.Light" Click="@ResetFilter" />
@@ -25,26 +35,103 @@
 
     @if (showForm)
     {
-        <RadzenCard>
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
             <RadzenTemplateForm TItem="SemestrePedagogiqueDto" Data="@model" Submit="@Save">
                 <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="riis-modal-title rz-m-0">@(model.Id == 0 ? "Nouveau semestre" : "Modifier le semestre")</RadzenText>
                     <RadzenRow>
-                        <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenColumn Size="12" SizeMD="5">
                             <RadzenFormField Text="Maquette" Style="width:100%">
-                                <RadzenDropDown Data="@maquettes" TextProperty="Libelle" ValueProperty="Id" @bind-Value="@model.MaquettePedagogiqueId" Name="MaquettePedagogiqueId" Style="width:100%" />
+                                <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@maquettes" TextProperty="Libelle" ValueProperty="Id" @bind-Value="@model.MaquettePedagogiqueId" Change="@OnFormMaquetteChanged" Name="MaquettePedagogiqueId" Placeholder="Sélectionner une maquette" Style="width:100%" />
                             </RadzenFormField>
                             <RadzenRequiredValidator Component="MaquettePedagogiqueId" Text="Maquette obligatoire." />
                         </RadzenColumn>
-                        <RadzenColumn Size="12" SizeMD="2">
-                            <RadzenFormField Text="Numéro" Style="width:100%">
-                                <RadzenNumeric @bind-Value="@model.NumeroSemestre" Name="NumeroSemestre" Min="1" Max="10" />
+                        <RadzenColumn Size="12" SizeMD="3">
+                            <RadzenFormField Text="Numéro du semestre" Style="width:100%">
+                                <RadzenDropDown Data="@availableSemestreNumbers"
+                                                @bind-Value="@model.NumeroSemestre"
+                                                Name="NumeroSemestre"
+                                                Placeholder="Sélectionner un numéro"
+                                                Style="width:100%" />
                             </RadzenFormField>
+                            <RadzenRequiredValidator Component="NumeroSemestre" Text="Numéro obligatoire." />
                         </RadzenColumn>
                         <RadzenColumn Size="12" SizeMD="4">
                             <RadzenFormField Text="Libellé" Style="width:100%">
                                 <RadzenTextBox @bind-Value="@model.Libelle" Name="Libelle" />
                             </RadzenFormField>
                             <RadzenRequiredValidator Component="Libelle" Text="Libellé obligatoire." />
+                        </RadzenColumn>
+                    </RadzenRow>
+
+                    <RadzenRow>
+                        <RadzenColumn Size="12">
+                            <RadzenText TextStyle="TextStyle.Subtitle2" Text="UE du semestre" />
+                            <RadzenText Text="Sélectionnez une ou plusieurs UE. Les EC associés seront rattachés automatiquement au semestre." class="rz-text-secondary rz-mb-2" />
+                            @if (unitesEnseignement.Count == 0)
+                            {
+                                <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat" ShowIcon="true">
+                                    Aucune UE disponible. Créez d'abord une UE et ses EC.
+                                </RadzenAlert>
+                            }
+                            else
+                            {
+                                <RadzenFormField Text="Unités d'enseignement" Style="width:100%">
+                                    <RadzenDropDown Data="@unitesEnseignement"
+                                                    TextProperty="Libelle"
+                                                    ValueProperty="Id"
+                                                    @bind-Value="@selectedUniteEnseignementIds"
+                                                    Change="@OnUnitesSelectionChanged"
+                                                    TValue="IEnumerable<long>"
+                                                    Multiple="true"
+                                                    Chips="true"
+                                                    MaxSelectedLabels="@unitesEnseignement.Count"
+                                                    AllowFiltering="true"
+                                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                    FilterProperty="SelectionLabel"
+                                                    AllowClear="true"
+                                                    SelectAllText="Sélectionner toutes les UE"
+                                                    Placeholder="Sélectionner une ou plusieurs UE"
+                                                    Style="width:100%"
+                                                    class="riis-semestre-ue-select">
+                                        <ValueTemplate Context="selectedItem">
+                                            @if (selectedItem is UniteEnseignementDto selectedUe)
+                                            {
+                                                <span>@selectedUe.Libelle</span>
+                                            }
+                                        </ValueTemplate>
+                                        <Template Context="ueItem">
+                                            @{ var ue = (UniteEnseignementDto)ueItem; }
+                                            <RadzenStack Gap="0.2rem">
+                                                <RadzenText TextStyle="TextStyle.Subtitle2" Text="@FormatUe(ue)" />
+                                                <RadzenText Text="@($"{ue.Credits:0.##} crédits - {ue.VolumeHoraire} h")" class="rz-text-secondary" />
+                                                <RadzenText Text="@(ue.ElementsConstitutifs.Count == 0 ? "Aucun EC associé" : $"EC : {string.Join(", ", ue.ElementsConstitutifs.Select(FormatEc))}")" class="rz-text-secondary" />
+                                            </RadzenStack>
+                                        </Template>
+                                    </RadzenDropDown>
+                                </RadzenFormField>
+
+                                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.75rem" class="rz-mt-2">
+                                    <RadzenButton Text="Valider la sélection"
+                                                  Icon="check"
+                                                  ButtonType="ButtonType.Button"
+                                                  ButtonStyle="ButtonStyle.Secondary"
+                                                  Click="@ValidateUniteEnseignementSelection"
+                                                  Disabled="@(!HasSelectedUnites)" />
+                                    @if (HasSelectedUnites && !uniteSelectionConfirmed)
+                                    {
+                                        <RadzenText Text="Cliquez sur « Valider la sélection » pour confirmer les UE choisies." class="rz-text-secondary" />
+                                    }
+                                </RadzenStack>
+
+                                @if (HasSelectedUnites && uniteSelectionConfirmed)
+                                {
+                                    <RadzenAlert AlertStyle="AlertStyle.Success" Variant="Variant.Flat" ShowIcon="true" class="rz-mt-2">
+                                        @($"{selectedUniteEnseignementIds.Count()} UE sélectionnée(s) : {SelectedUnitesSummary}")
+                                    </RadzenAlert>
+                                }
+                            }
                         </RadzenColumn>
                     </RadzenRow>
 
@@ -62,15 +149,16 @@
                     </RadzenStack>
                 </RadzenStack>
             </RadzenTemplateForm>
-        </RadzenCard>
+            </RadzenCard>
+        </div>
     }
 
     <RadzenCard>
-        <RadzenDataGrid Data="@items" TItem="SemestrePedagogiqueDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+<RadzenDataGrid @ref="semestresGrid" Data="@items" TItem="SemestrePedagogiqueDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
             <Columns>
-                <RadzenDataGridColumn TItem="SemestrePedagogiqueDto" Property="MaquettePedagogiqueLibelle" Title="Maquette" />
+                <RadzenDataGridColumn TItem="SemestrePedagogiqueDto" Property="UniteEnseignementLibelle" Title="UE" />
                 <RadzenDataGridColumn TItem="SemestrePedagogiqueDto" Property="NumeroSemestre" Title="N°" Width="90px" />
-                <RadzenDataGridColumn TItem="SemestrePedagogiqueDto" Property="Libelle" Title="Libellé" />
+                <RadzenDataGridColumn TItem="SemestrePedagogiqueDto" Property="Libelle" Title="Libellé du semestre" />
                 <RadzenDataGridColumn TItem="SemestrePedagogiqueDto" Property="CreditsUE" Title="Crédits UE" Width="110px" />
                 <RadzenDataGridColumn TItem="SemestrePedagogiqueDto" Property="VolumeHoraireUE" Title="VH UE" Width="110px" />
                 <RadzenDataGridColumn TItem="SemestrePedagogiqueDto" Property="NombreUnitesEnseignement" Title="UE" Width="90px" />
@@ -86,26 +174,50 @@
 </RadzenStack>
 
 @code {
+    [SupplyParameterFromQuery(Name = "maquetteId")]
+    public long? MaquetteId { get; set; }
+
     private List<SemestrePedagogiqueDto> items = [];
+    private RadzenDataGrid<SemestrePedagogiqueDto>? semestresGrid;
     private List<LookupDto> maquettes = [];
+    private List<UniteEnseignementDto> unitesEnseignement = [];
+    private List<SemestrePedagogiqueDto> semestresDeLaMaquette = [];
+    private List<byte> availableSemestreNumbers = [];
     private SemestrePedagogiqueDto model = new();
+    private IEnumerable<long> selectedUniteEnseignementIds = [];
     private long? selectedMaquetteId;
     private bool showForm;
+    private bool uniteSelectionConfirmed;
+
+    private bool HasSelectedUnites => selectedUniteEnseignementIds.Any();
+
+    private string SelectedUnitesSummary
+        => string.Join(", ", unitesEnseignement
+            .Where(x => selectedUniteEnseignementIds.Contains(x.Id))
+            .Select(FormatUe));
 
     protected override async Task OnInitializedAsync()
     {
         await LoadLookups();
+        selectedMaquetteId = MaquetteId;
         await Load();
     }
 
     private async Task LoadLookups()
     {
         maquettes = await ProgrammeService.GetMaquettesLookupAsync();
+        await RefreshUnitesEnseignementAsync();
     }
 
     private async Task Load()
     {
         items = await ProgrammeService.GetSemestresAsync(selectedMaquetteId);
+        if (semestresGrid is not null) await semestresGrid.Reload();
+    }
+
+    private async Task OnFilterMaquetteChanged(object? _)
+    {
+        await Load();
     }
 
     private async Task ResetFilter()
@@ -116,17 +228,33 @@
 
     private async Task Create()
     {
-        model = await ProgrammeService.CreateDefaultSemestreAsync(selectedMaquetteId ?? maquettes.FirstOrDefault()?.Id);
+        model = new SemestrePedagogiqueDto
+        {
+            MaquettePedagogiqueId = selectedMaquetteId ?? 0,
+            Libelle = string.Empty,
+            OrdreAffichage = 0
+        };
+        selectedUniteEnseignementIds = [];
+        uniteSelectionConfirmed = false;
+        availableSemestreNumbers = [];
         showForm = true;
+
+        if (model.MaquettePedagogiqueId > 0)
+        {
+            await RefreshSemestresDeLaMaquetteAsync();
+            await RefreshUnitesEnseignementAsync();
+        }
     }
 
-    private void Edit(SemestrePedagogiqueDto item)
+    private async Task Edit(SemestrePedagogiqueDto item)
     {
         model = new SemestrePedagogiqueDto
         {
             Id = item.Id,
             MaquettePedagogiqueId = item.MaquettePedagogiqueId,
             MaquettePedagogiqueLibelle = item.MaquettePedagogiqueLibelle,
+            UniteEnseignementLibelle = item.UniteEnseignementLibelle,
+            UniteEnseignementIds = item.UniteEnseignementIds.ToList(),
             NumeroSemestre = item.NumeroSemestre,
             Libelle = item.Libelle,
             CreditsUE = item.CreditsUE,
@@ -134,13 +262,33 @@
             OrdreAffichage = item.OrdreAffichage,
             NombreUnitesEnseignement = item.NombreUnitesEnseignement
         };
+        selectedUniteEnseignementIds = item.UniteEnseignementIds.ToList();
+        uniteSelectionConfirmed = HasSelectedUnites;
         showForm = true;
+        await RefreshSemestresDeLaMaquetteAsync();
+        await RefreshUnitesEnseignementAsync();
     }
 
     private async Task Save(SemestrePedagogiqueDto _)
     {
         try
         {
+            if (!HasSelectedUnites)
+            {
+                NotifyError("Sélectionnez au moins une UE.");
+                return;
+            }
+
+            if (!uniteSelectionConfirmed)
+            {
+                NotifyError("Validez la sélection des UE avant d'enregistrer le semestre.");
+                return;
+            }
+
+            model.UniteEnseignementIds = selectedUniteEnseignementIds
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList();
             await ProgrammeService.SaveSemestreAsync(model);
             NotifySuccess();
             showForm = false;
@@ -167,6 +315,78 @@
     }
 
     private void Cancel() => showForm = false;
+    private async Task OnFormMaquetteChanged(object? _)
+    {
+        model.NumeroSemestre = 0;
+        selectedUniteEnseignementIds = [];
+        uniteSelectionConfirmed = false;
+        await RefreshSemestresDeLaMaquetteAsync();
+        await RefreshUnitesEnseignementAsync();
+    }
+
+    private void OnUnitesSelectionChanged(object? _)
+    {
+        selectedUniteEnseignementIds = selectedUniteEnseignementIds
+            .Where(id => id > 0)
+            .Distinct()
+            .ToList();
+        uniteSelectionConfirmed = false;
+    }
+
+    private void ValidateUniteEnseignementSelection()
+    {
+        selectedUniteEnseignementIds = selectedUniteEnseignementIds
+            .Where(id => id > 0)
+            .Distinct()
+            .ToList();
+        uniteSelectionConfirmed = HasSelectedUnites;
+    }
+
+    private async Task RefreshSemestresDeLaMaquetteAsync()
+    {
+        semestresDeLaMaquette = model.MaquettePedagogiqueId <= 0
+            ? []
+            : await ProgrammeService.GetSemestresAsync(model.MaquettePedagogiqueId);
+
+        var existingNumbers = semestresDeLaMaquette
+            .Where(x => x.Id != model.Id)
+            .Select(x => x.NumeroSemestre)
+            .ToHashSet();
+
+        availableSemestreNumbers = Enumerable.Range(1, 8)
+            .Select(x => (byte)x)
+            .Where(x => !existingNumbers.Contains(x) || x == model.NumeroSemestre)
+            .ToList();
+
+        if (!availableSemestreNumbers.Contains(model.NumeroSemestre))
+        {
+            model.NumeroSemestre = availableSemestreNumbers.FirstOrDefault();
+            if (model.NumeroSemestre > 0 && string.IsNullOrWhiteSpace(model.Libelle))
+            {
+                model.Libelle = $"Semestre {model.NumeroSemestre}";
+            }
+        }
+    }
+
+    private async Task RefreshUnitesEnseignementAsync()
+    {
+        unitesEnseignement = (await ProgrammeService.GetUnitesEnseignementAsync(
+                maquettePedagogiqueId: model.MaquettePedagogiqueId > 0 ? model.MaquettePedagogiqueId : null))
+            .OrderBy(x => x.Code)
+            .ThenBy(x => x.Libelle)
+            .ToList();
+
+        var availableIds = unitesEnseignement.Select(x => x.Id).ToHashSet();
+        selectedUniteEnseignementIds = selectedUniteEnseignementIds
+            .Where(availableIds.Contains)
+            .ToList();
+    }
+
+    private static string FormatUe(UniteEnseignementDto ue)
+        => string.IsNullOrWhiteSpace(ue.Code) ? ue.Libelle : $"{ue.Code} - {ue.Libelle}";
+
+    private static string FormatEc(ElementConstitutifDto ec)
+        => string.IsNullOrWhiteSpace(ec.Code) ? ec.Libelle : $"{ec.Code} - {ec.Libelle}";
     private void NotifySuccess() => NotificationService.Notify(NotificationSeverity.Success, "Succès", "Données enregistrées.");
     private void NotifyError(string message) => NotificationService.Notify(NotificationSeverity.Error, "Erreur", message);
 }

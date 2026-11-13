@@ -10,6 +10,7 @@ public interface IClassesPedagogiquesService
     Task<ClassePedagogiqueDto> CreateDefaultClassePedagogiqueAsync(CancellationToken cancellationToken = default);
     Task SaveClassePedagogiqueAsync(ClassePedagogiqueDto dto, CancellationToken cancellationToken = default);
     Task DeleteClassePedagogiqueAsync(long id, CancellationToken cancellationToken = default);
+    Task EnsureClassesForParcoursAsync(CancellationToken cancellationToken = default);
 
     Task<List<LookupDto>> GetParcoursAcademiquesLookupAsync(CancellationToken cancellationToken = default);
 }

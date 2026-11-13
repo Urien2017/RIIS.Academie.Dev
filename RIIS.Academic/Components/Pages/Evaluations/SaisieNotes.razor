@@ -1,26 +1,33 @@
 @page "/saisie-notes"
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Text
 @inject ISaisieNotesService SaisieNotesService
+@inject IEvaluationsService EvaluationsService
+@inject INotesCanevasExcelImportService NotesCanevasExcelImportService
+@inject INotesDocumentImportService NotesDocumentImportService
 @inject NotificationService NotificationService
+@inject NavigationManager Navigation
 
 <RadzenStack Gap="1rem">
     <RadzenCard>
         <RadzenStack Gap="0">
             <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-m-0" Text="Saisie des notes" />
-            <RadzenText Text="Saisie des notes par évaluation, classe pédagogique et étudiant." />
+            <RadzenText Text="Saisie des notes par classe pédagogique et étudiant, avec export d'un canevas semestriel." />
         </RadzenStack>
     </RadzenCard>
 
     <RadzenCard>
         <RadzenStack Gap="1rem">
             <RadzenText TextStyle="TextStyle.H6" Text="Sélection de la grille" />
+            <RadzenText Text="Sélectionnez l'année, la classe et le semestre pour générer le canevas correspondant. Les filtres UE, EC et type restent facultatifs." />
 
             <RadzenRow>
                 <RadzenColumn Size="12" SizeMD="3">
                     <RadzenFormField Text="Année académique" Style="width:100%">
-                        <RadzenDropDown Data="@anneesAcademiques"
+                        <RadzenDropDown TValue="long?" @key="anneesAcademiques" Data="@anneesAcademiques"
                                         TextProperty="Libelle"
                                         ValueProperty="Id"
-                                        @bind-Value="@selectedAnneeAcademiqueId"
+                                        Value="@selectedAnneeAcademiqueId"
                                         Change="@OnAnneeAcademiqueChanged"
                                         AllowClear="true"
                                         AllowFiltering="true"
@@ -31,14 +38,31 @@
                 </RadzenColumn>
 
                 <RadzenColumn Size="12" SizeMD="3">
-                    <RadzenFormField Text="Classe pédagogique" Style="width:100%">
-                        <RadzenDropDown Data="@classesPedagogiques"
+                    <RadzenFormField Text="Classe pédagogique (parcours)" Style="width:100%">
+                        <RadzenDropDown TValue="long?" @key="selectedAnneeAcademiqueId" Data="@classesPedagogiques"
                                         TextProperty="Libelle"
                                         ValueProperty="Id"
-                                        @bind-Value="@selectedClassePedagogiqueId"
+                                        Value="@selectedClassePedagogiqueId"
+                                        Change="@OnClassePedagogiqueChanged"
                                         AllowFiltering="true"
                                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                         Placeholder="Sélectionner une classe"
+                                        Style="width:100%" />
+                    </RadzenFormField>
+                </RadzenColumn>
+
+                <RadzenColumn Size="12" SizeMD="3">
+                    <RadzenFormField Text="Semestre pédagogique" Style="width:100%">
+                        <RadzenDropDown TValue="long?" @key="selectedClassePedagogiqueId" Data="@semestresPedagogiques"
+                                        TextProperty="Libelle"
+                                        ValueProperty="Id"
+                                        Value="@selectedSemestrePedagogiqueId"
+                                        Change="@OnSemestreChanged"
+                                        AllowClear="true"
+                                        AllowFiltering="true"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        Placeholder="Sélectionner un semestre"
+                                        Disabled="@(selectedClassePedagogiqueId is null)"
                                         Style="width:100%" />
                     </RadzenFormField>
                 </RadzenColumn>
@@ -53,7 +77,8 @@
                                         AllowClear="true"
                                         AllowFiltering="true"
                                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                        Placeholder="Toutes les UE"
+                                        Placeholder="Sélectionner un semestre d'abord"
+                                        Disabled="@(selectedSemestrePedagogiqueId is null)"
                                         Style="width:100%" />
                     </RadzenFormField>
                 </RadzenColumn>
@@ -68,7 +93,8 @@
                                         AllowClear="true"
                                         AllowFiltering="true"
                                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                        Placeholder="Tous les EC"
+                                        Placeholder="Sélectionner une UE"
+                                        Disabled="@(selectedSemestrePedagogiqueId is null || selectedUniteEnseignementId is null)"
                                         Style="width:100%" />
                     </RadzenFormField>
                 </RadzenColumn>
@@ -77,7 +103,7 @@
             <RadzenRow>
                 <RadzenColumn Size="12" SizeMD="3">
                     <RadzenFormField Text="Type" Style="width:100%">
-                        <RadzenDropDown Data="@typesEvaluation"
+                        <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@typesEvaluation"
                                         TextProperty="Text"
                                         ValueProperty="Value"
                                         @bind-Value="@selectedTypeEvaluation"
@@ -88,27 +114,334 @@
                     </RadzenFormField>
                 </RadzenColumn>
 
-                <RadzenColumn Size="12" SizeMD="7">
-                    <RadzenFormField Text="Évaluation" Style="width:100%">
+                <RadzenColumn Size="12" SizeMD="9">
+                    <RadzenFormField Text="Évaluation ciblée (facultatif)" Style="width:100%">
                         <RadzenDropDown Data="@evaluations"
                                         TextProperty="Libelle"
                                         ValueProperty="Id"
                                         @bind-Value="@selectedEvaluationAcademiqueId"
                                         AllowFiltering="true"
                                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                        Placeholder="Sélectionner l'évaluation à saisir"
+                                        Placeholder="Facultatif pour la saisie ciblée"
                                         Style="width:100%" />
                     </RadzenFormField>
                 </RadzenColumn>
+            </RadzenRow>
 
-                <RadzenColumn Size="12" SizeMD="2">
-                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" Gap="0.5rem" Style="height:100%">
-                        <RadzenButton Text="Charger" Icon="fact_check" ButtonStyle="ButtonStyle.Primary" Click="@LoadGrille" Disabled="@(!CanLoadGrille)" />
+            <RadzenRow class="rz-mt-2">
+                <RadzenColumn Size="12">
+                    <RadzenStack Orientation="Orientation.Horizontal"
+                                 AlignItems="AlignItems.Center"
+                                 JustifyContent="JustifyContent.End"
+                                 Gap="0.5rem"
+                                 Style="width:100%; flex-wrap:wrap">
+                        <RadzenButton Text="Exporter le canevas"
+                                      Icon="download"
+                                      ButtonStyle="ButtonStyle.Success"
+                                      Click="@ExportCanevas"
+                                      Disabled="@(!CanExportCanevas)"
+                                      Style="min-width:220px" />
+                        <RadzenButton Text="Exporter Options 2"
+                                      Icon="assignment"
+                                      ButtonStyle="ButtonStyle.Warning"
+                                      Click="@ExportOptions2"
+                                      Disabled="@(!CanExportCanevas)"
+                                      Style="min-width:220px" />
                     </RadzenStack>
                 </RadzenColumn>
             </RadzenRow>
+
+            @if (!CanExportCanevas)
+            {
+                <RadzenRow>
+                    <RadzenColumn Size="12">
+                        <RadzenText TextStyle="TextStyle.Caption"
+                                    class="rz-text-align-right"
+                                    Text="Sélectionnez une année, une classe et un semestre." />
+                    </RadzenColumn>
+                </RadzenRow>
+            }
         </RadzenStack>
     </RadzenCard>
+
+    <RadzenCard>
+        <RadzenStack Gap="0.5rem">
+            <RadzenText TextStyle="TextStyle.H6" Text="Importer un canevas Excel" />
+            <RadzenText Text="Sélectionnez un fichier généré par RIIS Academic après avoir saisi les notes." />
+            <div class="riis-file-picker">
+                <InputFile id="notes-canevas-file"
+                           class="riis-file-picker-input"
+                           OnChange="@ImportCanevas"
+                           accept=".xlsx" />
+                <label for="notes-canevas-file" class="riis-file-picker-button">
+                    <RadzenIcon Icon="upload_file" />
+                    <span>Choisir un fichier Excel</span>
+                </label>
+                <span class="riis-file-picker-name">@selectedFileName</span>
+            </div>
+            @if (importResult is not null && !importResult.IsValid)
+            {
+                <RadzenText TextStyle="TextStyle.Body2" class="rz-color-danger" Text="@ImportErrorsText" />
+            }
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenCard>
+        <RadzenStack Gap="0.75rem">
+            <RadzenText TextStyle="TextStyle.H6" Text="Importer une fiche Word ou un scan" />
+            <RadzenText Text="Chargez une fiche de report Word ou un document numérisé respectant le modèle : Matricules, Noms et prénoms, Notes/20." />
+            <div class="riis-file-picker">
+                <InputFile id="notes-document-file"
+                           class="riis-file-picker-input"
+                           OnChange="@AnalyseNotesDocument"
+                           accept=".docx,.pdf,.png,.jpg,.jpeg,.tif,.tiff" />
+                <label for="notes-document-file" class="riis-file-picker-button">
+                    <RadzenIcon Icon="document_scanner" />
+                    <span>Choisir une fiche Word ou un scan</span>
+                </label>
+                <span class="riis-file-picker-name">@selectedNotesDocumentFileName</span>
+            </div>
+
+            @if (notesDocumentPreview is not null)
+            {
+                <RadzenAlert AlertStyle="@(notesDocumentPreview.IsValid ? AlertStyle.Info : AlertStyle.Warning)"
+                             Variant="Variant.Flat"
+                             ShowIcon="true">
+                    @if (notesDocumentPreview.IsValid)
+                    {
+                        <span>@notesDocumentPreview.Lignes.Count ligne(s) extraite(s) depuis @notesDocumentPreview.SourceFormat.</span>
+                    }
+                    else
+                    {
+                        <span>@string.Join(" | ", notesDocumentPreview.Errors)</span>
+                    }
+                </RadzenAlert>
+
+                @if (notesDocumentPreview.TypeEvaluationExtrait is not null
+                    || !string.IsNullOrWhiteSpace(notesDocumentPreview.CycleLibelleExtrait)
+                    || !string.IsNullOrWhiteSpace(notesDocumentPreview.FiliereLibelleExtrait)
+                    || !string.IsNullOrWhiteSpace(notesDocumentPreview.ClasseLibelleExtrait)
+                    || notesDocumentPreview.NumeroSemestreExtrait is not null
+                    || !string.IsNullOrWhiteSpace(notesDocumentPreview.UniteEnseignementExtrait)
+                    || !string.IsNullOrWhiteSpace(notesDocumentPreview.ElementConstitutifExtrait))
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" ShowIcon="true">
+                        <span>
+                            Métadonnées détectées :
+                            @(!string.IsNullOrWhiteSpace(notesDocumentPreview.AnneeAcademiqueLibelleExtrait) ? $"Année {notesDocumentPreview.AnneeAcademiqueLibelleExtrait} | " : "")
+                            @(notesDocumentPreview.TypeEvaluationExtrait is null ? "Type non détecté" : GetTypeEvaluationLibelle(notesDocumentPreview.TypeEvaluationExtrait.Value))
+                            @(!string.IsNullOrWhiteSpace(notesDocumentPreview.CycleLibelleExtrait) ? $" | Cycle {notesDocumentPreview.CycleLibelleExtrait}" : "")
+                            @(!string.IsNullOrWhiteSpace(notesDocumentPreview.FiliereLibelleExtrait) ? $" | Filière {notesDocumentPreview.FiliereLibelleExtrait}" : "")
+                            @(!string.IsNullOrWhiteSpace(notesDocumentPreview.ClasseLibelleExtrait) ? $" | Classe {notesDocumentPreview.ClasseLibelleExtrait}" : "")
+                            @(notesDocumentPreview.NumeroSemestreExtrait is not null ? $" | Semestre {notesDocumentPreview.NumeroSemestreExtrait}" : "")
+                            @(!string.IsNullOrWhiteSpace(notesDocumentPreview.UniteEnseignementExtrait) ? $" | UE {notesDocumentPreview.UniteEnseignementExtrait}" : "")
+                            @(!string.IsNullOrWhiteSpace(notesDocumentPreview.ElementConstitutifExtrait) ? $" | EC {notesDocumentPreview.ElementConstitutifExtrait}" : "")
+                        </span>
+                    </RadzenAlert>
+                }
+
+                @if (notesDocumentPreview.Warnings.Count > 0)
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat" ShowIcon="true">
+                        @string.Join(" | ", notesDocumentPreview.Warnings)
+                    </RadzenAlert>
+                }
+
+                @if (notesDocumentPreview.Lignes.Count > 0)
+                {
+                    <RadzenDataGrid Data="@notesDocumentPreview.Lignes"
+                                    TItem="NotesDocumentRowDto"
+                                    AllowPaging="true"
+                                    AllowSorting="true"
+                                    AllowColumnResize="true"
+                                    PageSize="10">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="NotesDocumentRowDto" Property="Numero" Title="N°" Width="70px" />
+                            <RadzenDataGridColumn TItem="NotesDocumentRowDto" Property="Matricule" Title="Matricule" Width="160px" />
+                            <RadzenDataGridColumn TItem="NotesDocumentRowDto" Property="NomComplet" Title="Nom et prénoms" />
+                            <RadzenDataGridColumn TItem="NotesDocumentRowDto" Title="Note /20" Width="150px" Sortable="false" Filterable="false">
+                                <Template Context="ligne">
+                                    <div class="riis-note-editor">
+                                        <RadzenButton Icon="remove"
+                                                      Size="ButtonSize.Small"
+                                                      ButtonStyle="ButtonStyle.Light"
+                                                      Variant="Variant.Flat"
+                                                      Click="@(() => AdjustDocumentNote(ligne, -0.25m))"
+                                                      Disabled="@(ligne.Valeur <= 0m)" />
+                                        <InputNumber TValue="decimal?"
+                                                     @bind-Value="ligne.Valeur"
+                                                     min="0"
+                                                     max="20"
+                                                     step="0.25"
+                                                     class="riis-note-input"
+                                                     disabled="@(ligne.StatutPresence != StatutPresenceEvaluation.Present)" />
+                                        <RadzenButton Icon="add"
+                                                      Size="ButtonSize.Small"
+                                                      ButtonStyle="ButtonStyle.Light"
+                                                      Variant="Variant.Flat"
+                                                      Click="@(() => AdjustDocumentNote(ligne, 0.25m))"
+                                                      Disabled="@(ligne.Valeur >= 20m)" />
+                                    </div>
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="NotesDocumentRowDto" Title="Contrôle" Sortable="false" Filterable="false">
+                                <Template Context="ligne">
+                                    @{
+                                        TypeEvaluation? typeControle = notesDocumentPreview.TypeEvaluationExtrait
+                                            ?? selectedTypeEvaluation
+                                            ?? TypeEvaluation.SessionNormale;
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(ligne.Erreur))
+                                    {
+                                        <span class="rz-color-danger">@ligne.Erreur</span>
+                                    }
+                                    else if (typeControle is not null)
+                                    {
+                                        <span>@GetTypeEvaluationLibelle(typeControle.Value)</span>
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                }
+
+                <RadzenStack Orientation="Orientation.Horizontal"
+                             JustifyContent="JustifyContent.End"
+                             Gap="0.5rem"
+                             Style="flex-wrap:wrap">
+                    <RadzenButton Text="Effacer l'aperçu"
+                                  Icon="clear"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Click="@ClearNotesDocumentPreview" />
+                    <RadzenButton Text="Enregistrer les notes"
+                                  Icon="save"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Click="@ImporterNotesDocument"
+                                  Disabled="@(!CanImportNotesDocument || notesDocumentImporting)" />
+                </RadzenStack>
+                @if (!CanImportNotesDocument && !notesDocumentImporting)
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat" ShowIcon="true">
+                        @NotesDocumentImportState
+                    </RadzenAlert>
+                }
+            }
+        </RadzenStack>
+    </RadzenCard>
+
+    @if (showMissingEvaluationForm)
+    {
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
+                <RadzenTemplateForm TItem="EvaluationAcademiqueDto"
+                                    Data="@missingEvaluationModel"
+                                    Submit="@SaveMissingEvaluation">
+                    <RadzenStack Gap="1rem">
+                        <RadzenText TextStyle="TextStyle.H6"
+                                    TagName="TagName.H2"
+                                    class="riis-modal-title rz-m-0">
+                            Nouvelle évaluation détectée
+                        </RadzenText>
+
+                        <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" ShowIcon="true">
+                            Aucune évaluation de type
+                            <strong>@GetTypeEvaluationLibelle(missingEvaluationModel.Type)</strong>
+                            n'existe encore pour cet EC. Enregistrez-la pour poursuivre l'import des notes.
+                        </RadzenAlert>
+
+                        <RadzenRow>
+                            <RadzenColumn Size="12" SizeMD="6">
+                                <RadzenFormField Text="Parcours académique" Style="width:100%">
+                                    <RadzenTextBox Value="@missingEvaluationModel.ParcoursAcademiqueLibelle"
+                                                   Disabled="true"
+                                                   Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="3">
+                                <RadzenFormField Text="Semestre" Style="width:100%">
+                                    <RadzenTextBox Value="@missingEvaluationModel.SemestrePedagogiqueLibelle"
+                                                   Disabled="true"
+                                                   Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="3">
+                                <RadzenFormField Text="Type" Style="width:100%">
+                                    <RadzenTextBox Value="@GetTypeEvaluationLibelle(missingEvaluationModel.Type)"
+                                                   Disabled="true"
+                                                   Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                        </RadzenRow>
+
+                        <RadzenRow>
+                            <RadzenColumn Size="12" SizeMD="6">
+                                <RadzenFormField Text="UE" Style="width:100%">
+                                    <RadzenTextBox Value="@missingEvaluationModel.UniteEnseignementLibelle"
+                                                   Disabled="true"
+                                                   Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="6">
+                                <RadzenFormField Text="EC" Style="width:100%">
+                                    <RadzenTextBox Value="@missingEvaluationModel.ElementConstitutifLibelle"
+                                                   Disabled="true"
+                                                   Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                        </RadzenRow>
+
+                        <RadzenRow>
+                            <RadzenColumn Size="12" SizeMD="3">
+                                <RadzenFormField Text="Numéro" Style="width:100%">
+                                    <RadzenNumeric @bind-Value="missingEvaluationModel.Numero" Disabled="true" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="3">
+                                <RadzenFormField Text="Barème" Style="width:100%">
+                                    <RadzenNumeric @bind-Value="missingEvaluationModel.Bareme" Min="1" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="3">
+                                <RadzenFormField Text="Pondération %" Style="width:100%">
+                                    <RadzenNumeric @bind-Value="missingEvaluationModel.PonderationPourcentage" Min="0" Max="100" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="3">
+                                <RadzenFormField Text="Date" Style="width:100%">
+                                    <RadzenDatePicker @bind-Value="missingEvaluationModel.DateEvaluation"
+                                                      DateFormat="dd/MM/yyyy"
+                                                      Style="width:100%" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                        </RadzenRow>
+
+                        <RadzenFormField Text="Observation" Style="width:100%">
+                            <RadzenTextArea @bind-Value="missingEvaluationModel.Observation" Rows="3" />
+                        </RadzenFormField>
+
+                        <RadzenStack Orientation="Orientation.Horizontal"
+                                     JustifyContent="JustifyContent.End"
+                                     Gap="0.5rem">
+                            <RadzenButton Text="Annuler"
+                                          Icon="close"
+                                          ButtonStyle="ButtonStyle.Light"
+                                          Click="@CancelMissingEvaluation"
+                                          Disabled="@savingMissingEvaluation" />
+                            <RadzenButton Text="Enregistrer l'évaluation"
+                                          Icon="save"
+                                          ButtonType="ButtonType.Submit"
+                                          ButtonStyle="ButtonStyle.Primary"
+                                          Disabled="@savingMissingEvaluation" />
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenTemplateForm>
+            </RadzenCard>
+        </div>
+    }
 
     @if (grille is not null)
     {
@@ -135,23 +468,38 @@
         </RadzenCard>
 
         <RadzenCard>
-            <RadzenDataGrid Data="@grille.Lignes" TItem="SaisieNoteLigneDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="20">
+<RadzenDataGrid @ref="saisieNotesGrid" Data="@grille.Lignes" TItem="SaisieNoteLigneDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="20">
                 <Columns>
                     <RadzenDataGridColumn TItem="SaisieNoteLigneDto" Property="Matricule" Title="Matricule" Width="140px" />
                     <RadzenDataGridColumn TItem="SaisieNoteLigneDto" Property="NomComplet" Title="Étudiant" />
                     <RadzenDataGridColumn TItem="SaisieNoteLigneDto" Title="Note" Width="160px" Sortable="false" Filterable="false">
                         <Template Context="ligne">
-                            <RadzenNumeric @bind-Value="@ligne.Valeur"
-                                           Min="0m"
-                                           Max="@grille.Bareme"
-                                           Step="0.25m"
-                                           Disabled="@(ligne.StatutPresence != StatutPresenceEvaluation.Present)"
-                                           Style="width:100%" />
+                            <div class="riis-note-editor">
+                                <RadzenButton Icon="remove"
+                                              Size="ButtonSize.Small"
+                                              ButtonStyle="ButtonStyle.Light"
+                                              Variant="Variant.Flat"
+                                              Click="@(() => AdjustSaisieNote(ligne, -0.25m))"
+                                              Disabled="@(ligne.Valeur <= 0m)" />
+                                <InputNumber TValue="decimal?"
+                                             @bind-Value="ligne.Valeur"
+                                             min="0"
+                                             max="@grille.Bareme"
+                                             step="0.25"
+                                             class="riis-note-input"
+                                             disabled="@(ligne.StatutPresence != StatutPresenceEvaluation.Present)" />
+                                <RadzenButton Icon="add"
+                                              Size="ButtonSize.Small"
+                                              ButtonStyle="ButtonStyle.Light"
+                                              Variant="Variant.Flat"
+                                              Click="@(() => AdjustSaisieNote(ligne, 0.25m))"
+                                              Disabled="@(ligne.Valeur >= grille.Bareme)" />
+                            </div>
                         </Template>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn TItem="SaisieNoteLigneDto" Title="Présence" Width="220px" Sortable="false" Filterable="false">
                         <Template Context="ligne">
-                            <RadzenDropDown Data="@statutsPresence"
+                            <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@statutsPresence"
                                             TextProperty="Text"
                                             ValueProperty="Value"
                                             @bind-Value="@ligne.StatutPresence"
@@ -188,20 +536,93 @@
 </RadzenStack>
 
 @code {
+    [SupplyParameterFromQuery(Name = "evaluationId")]
+    public long? EvaluationId { get; set; }
+
     private List<LookupDto> anneesAcademiques = [];
     private List<LookupDto> classesPedagogiques = [];
+    private List<LookupDto> semestresPedagogiques = [];
     private List<LookupDto> unitesEnseignement = [];
     private List<LookupDto> elementsConstitutifs = [];
     private List<LookupDto> evaluations = [];
+    private RadzenDataGrid<SaisieNoteLigneDto>? saisieNotesGrid;
     private SaisieNotesGrilleDto? grille;
+    private NotesCanevasImportResultDto? importResult;
+    private NotesDocumentPreviewDto? notesDocumentPreview;
+    private NotesDocumentImportResultDto? notesDocumentImportResult;
+    private EvaluationAcademiqueDto missingEvaluationModel = new();
     private long? selectedAnneeAcademiqueId;
     private long? selectedClassePedagogiqueId;
+    private long? selectedSemestrePedagogiqueId;
     private long? selectedUniteEnseignementId;
     private long? selectedElementConstitutifId;
     private long? selectedEvaluationAcademiqueId;
     private TypeEvaluation? selectedTypeEvaluation;
+    private string selectedFileName = "Aucun fichier sélectionné";
+    private string selectedNotesDocumentFileName = "Aucun document sélectionné";
+    private bool notesDocumentImporting;
+    private bool showMissingEvaluationForm;
+    private bool savingMissingEvaluation;
 
     private bool CanLoadGrille => selectedEvaluationAcademiqueId is not null && selectedClassePedagogiqueId is not null;
+    private bool CanExportCanevas => selectedAnneeAcademiqueId is not null
+        && selectedClassePedagogiqueId is not null
+        && selectedSemestrePedagogiqueId is not null;
+    private string ImportErrorsText => importResult is null ? string.Empty : string.Join(" | ", importResult.Errors);
+    private string NotesDocumentImportState
+    {
+        get
+        {
+            if (notesDocumentPreview is null)
+            {
+                return "Sélectionnez une fiche Word ou un scan.";
+            }
+
+            var missing = new List<string>();
+            if (!notesDocumentPreview.IsValid) missing.Add("un aperçu valide");
+            if (selectedAnneeAcademiqueId is null) missing.Add("l'année académique");
+            if (selectedClassePedagogiqueId is null) missing.Add("la classe");
+            if (selectedSemestrePedagogiqueId is null) missing.Add("le semestre");
+            if (selectedElementConstitutifId is null
+                && !HasExtractedElementMetadata(notesDocumentPreview.ElementConstitutifExtrait))
+            {
+                missing.Add("l'EC");
+            }
+
+            if (selectedEvaluationAcademiqueId is null)
+            {
+                missing.Add(selectedTypeEvaluation is null
+                    ? "le type d'évaluation"
+                    : evaluations.Count == 0
+                        ? "l'évaluation à créer"
+                        : "l'évaluation ciblée");
+            }
+
+            return missing.Count == 0
+                ? "L'import est prêt."
+                : $"Import en attente : sélectionnez ou corrigez {string.Join(", ", missing)}.";
+        }
+    }
+    // Le document contient le contexte lorsqu'il a été résolu dans les listes
+    // ou lorsque les métadonnées Word permettent encore de le résoudre au clic.
+    // Cela évite de laisser le bouton désactivé alors que la fiche est complète.
+    private bool CanImportNotesDocument => notesDocumentPreview?.IsValid == true
+        && (selectedAnneeAcademiqueId is not null
+            || !string.IsNullOrWhiteSpace(notesDocumentPreview.AnneeAcademiqueLibelleExtrait))
+        && (selectedClassePedagogiqueId is not null
+            || !string.IsNullOrWhiteSpace(notesDocumentPreview.ClasseLibelleExtrait))
+        && (selectedSemestrePedagogiqueId is not null
+            || notesDocumentPreview.NumeroSemestreExtrait is not null)
+        && (selectedElementConstitutifId is not null
+            || HasExtractedElementMetadata(notesDocumentPreview.ElementConstitutifExtrait))
+        && selectedEvaluationAcademiqueId is not null;
+
+    private bool HasResolvedNotesDocumentContext => selectedAnneeAcademiqueId is not null
+        && selectedClassePedagogiqueId is not null
+        && selectedSemestrePedagogiqueId is not null
+        && (selectedElementConstitutifId is not null
+            || HasExtractedElementMetadata(notesDocumentPreview?.ElementConstitutifExtrait))
+        && (selectedEvaluationAcademiqueId is not null || selectedTypeEvaluation is not null);
 
     private readonly List<EnumOption<TypeEvaluation>> typesEvaluation =
     [
@@ -222,24 +643,93 @@
     protected override async Task OnInitializedAsync()
     {
         anneesAcademiques = await SaisieNotesService.GetAnneesAcademiquesLookupAsync();
-        unitesEnseignement = await SaisieNotesService.GetUnitesEnseignementLookupAsync();
+
+        if (EvaluationId is long evaluationId
+            && await InitializeFromEvaluationAsync(evaluationId))
+        {
+            return;
+        }
+
+        selectedAnneeAcademiqueId = anneesAcademiques.FirstOrDefault()?.Id;
         await RefreshClassesAsync();
         await RefreshElementsConstitutifsAsync();
         await RefreshEvaluationsAsync();
     }
 
+    private async Task<bool> InitializeFromEvaluationAsync(long evaluationId)
+    {
+        var context = await SaisieNotesService.GetEvaluationContextForEvaluationAsync(evaluationId);
+        if (context is null)
+        {
+            NotifyError("Impossible de retrouver la classe pédagogique associée à cette évaluation.");
+            return false;
+        }
+
+        selectedAnneeAcademiqueId = context.AnneeAcademiqueId;
+        selectedClassePedagogiqueId = context.ClassePedagogiqueId;
+        selectedSemestrePedagogiqueId = context.SemestrePedagogiqueId;
+        selectedUniteEnseignementId = context.UniteEnseignementId;
+        selectedElementConstitutifId = context.ElementConstitutifId;
+        selectedEvaluationAcademiqueId = evaluationId;
+
+        await RefreshClassesAsync();
+        await RefreshSemestresAsync();
+        await RefreshUnitesEnseignementAsync();
+        await RefreshElementsConstitutifsAsync();
+        await RefreshEvaluationsAsync();
+        await LoadGrille();
+        return grille is not null;
+    }
+
     private async Task OnAnneeAcademiqueChanged(object? _)
     {
+        selectedAnneeAcademiqueId = ToNullableLong(_);
         selectedClassePedagogiqueId = null;
+        selectedSemestrePedagogiqueId = null;
+        selectedUniteEnseignementId = null;
+        selectedElementConstitutifId = null;
         selectedEvaluationAcademiqueId = null;
+        semestresPedagogiques = [];
+        unitesEnseignement = [];
+        elementsConstitutifs = [];
         grille = null;
 
         await RefreshClassesAsync();
         await RefreshEvaluationsAsync();
     }
 
+    private async Task OnClassePedagogiqueChanged(object? _)
+    {
+        selectedClassePedagogiqueId = ToNullableLong(_);
+        selectedSemestrePedagogiqueId = null;
+        selectedUniteEnseignementId = null;
+        selectedElementConstitutifId = null;
+        selectedEvaluationAcademiqueId = null;
+        unitesEnseignement = [];
+        elementsConstitutifs = [];
+        grille = null;
+
+        await RefreshSemestresAsync();
+        await RefreshEvaluationsAsync();
+    }
+
+    private async Task OnSemestreChanged(object? value)
+    {
+        selectedSemestrePedagogiqueId = ToNullableLong(value);
+        selectedUniteEnseignementId = null;
+        selectedElementConstitutifId = null;
+        selectedEvaluationAcademiqueId = null;
+        unitesEnseignement = [];
+        elementsConstitutifs = [];
+        grille = null;
+        await RefreshUnitesEnseignementAsync();
+        await RefreshElementsConstitutifsAsync();
+        await RefreshEvaluationsAsync();
+    }
+
     private async Task OnUniteEnseignementChanged(object? _)
     {
+        selectedUniteEnseignementId = ToNullableLong(_);
         selectedElementConstitutifId = null;
         selectedEvaluationAcademiqueId = null;
         grille = null;
@@ -258,14 +748,51 @@
 
     private async Task RefreshClassesAsync()
     {
-        classesPedagogiques = await SaisieNotesService.GetClassesPedagogiquesLookupAsync();
+        classesPedagogiques = await SaisieNotesService.GetClassesPedagogiquesLookupAsync(selectedAnneeAcademiqueId);
         EnsureSelectedValueIsAvailable(classesPedagogiques, ref selectedClassePedagogiqueId);
+    }
+
+    private async Task RefreshSemestresAsync()
+    {
+        if (selectedAnneeAcademiqueId is null || selectedClassePedagogiqueId is null)
+        {
+            semestresPedagogiques = [];
+            return;
+        }
+
+        semestresPedagogiques = await SaisieNotesService.GetSemestresForClasseLookupAsync(
+            selectedAnneeAcademiqueId.Value,
+            selectedClassePedagogiqueId.Value);
+        EnsureSelectedValueIsAvailable(semestresPedagogiques, ref selectedSemestrePedagogiqueId);
     }
 
     private async Task RefreshElementsConstitutifsAsync()
     {
-        elementsConstitutifs = await SaisieNotesService.GetElementsConstitutifsLookupAsync(selectedUniteEnseignementId);
+        if (selectedSemestrePedagogiqueId is null || selectedUniteEnseignementId is null)
+        {
+            elementsConstitutifs = [];
+            selectedElementConstitutifId = null;
+            return;
+        }
+
+        elementsConstitutifs = await SaisieNotesService.GetElementsConstitutifsLookupAsync(
+            selectedUniteEnseignementId,
+            selectedSemestrePedagogiqueId);
         EnsureSelectedValueIsAvailable(elementsConstitutifs, ref selectedElementConstitutifId);
+    }
+
+    private async Task RefreshUnitesEnseignementAsync()
+    {
+        if (selectedSemestrePedagogiqueId is null)
+        {
+            unitesEnseignement = [];
+            selectedUniteEnseignementId = null;
+            return;
+        }
+
+        unitesEnseignement = await SaisieNotesService.GetUnitesEnseignementLookupAsync(
+            selectedSemestrePedagogiqueId);
+        EnsureSelectedValueIsAvailable(unitesEnseignement, ref selectedUniteEnseignementId);
     }
 
     private async Task RefreshEvaluationsAsync()
@@ -274,9 +801,15 @@
             selectedAnneeAcademiqueId,
             selectedUniteEnseignementId,
             selectedElementConstitutifId,
-            selectedTypeEvaluation);
+            selectedTypeEvaluation,
+            selectedSemestrePedagogiqueId);
 
         EnsureSelectedValueIsAvailable(evaluations, ref selectedEvaluationAcademiqueId);
+
+        if (selectedEvaluationAcademiqueId is null && evaluations.Count == 1)
+        {
+            selectedEvaluationAcademiqueId = evaluations[0].Id;
+        }
     }
 
     private async Task LoadGrille()
@@ -291,11 +824,634 @@
             grille = await SaisieNotesService.GetGrilleSaisieAsync(
                 selectedEvaluationAcademiqueId!.Value,
                 selectedClassePedagogiqueId!.Value);
+            if (saisieNotesGrid is not null) await saisieNotesGrid.Reload();
         }
         catch (Exception ex)
         {
             NotifyError(ex.Message);
         }
+    }
+
+    private void ExportCanevas()
+    {
+        if (!CanExportCanevas)
+        {
+            return;
+        }
+
+        var query = new List<string>
+        {
+            $"semestrePedagogiqueId={selectedSemestrePedagogiqueId!.Value}"
+        };
+        if (selectedUniteEnseignementId is not null)
+        {
+            query.Add($"uniteEnseignementId={selectedUniteEnseignementId.Value}");
+        }
+
+        if (selectedElementConstitutifId is not null)
+        {
+            query.Add($"elementConstitutifId={selectedElementConstitutifId.Value}");
+        }
+
+        if (selectedTypeEvaluation is not null)
+        {
+            query.Add($"typeEvaluation={(int)selectedTypeEvaluation.Value}");
+        }
+
+        var suffix = query.Count == 0 ? string.Empty : $"?{string.Join("&", query)}";
+        Navigation.NavigateTo(
+            $"/exports/notes/canevas/{selectedAnneeAcademiqueId!.Value}/{selectedClassePedagogiqueId!.Value}.xlsx{suffix}",
+            forceLoad: true);
+    }
+
+    private void ExportOptions2()
+    {
+        if (selectedAnneeAcademiqueId is not long anneeAcademiqueId
+            || selectedClassePedagogiqueId is not long classePedagogiqueId
+            || selectedSemestrePedagogiqueId is not long semestrePedagogiqueId)
+        {
+            return;
+        }
+
+        var query = new List<string>();
+        if (selectedUniteEnseignementId is not null)
+        {
+            query.Add($"uniteEnseignementId={selectedUniteEnseignementId.Value}");
+        }
+
+        if (selectedElementConstitutifId is not null)
+        {
+            query.Add($"elementConstitutifId={selectedElementConstitutifId.Value}");
+        }
+
+        if (selectedTypeEvaluation is not null)
+        {
+            query.Add($"typeEvaluation={(int)selectedTypeEvaluation.Value}");
+        }
+
+        var suffix = query.Count == 0 ? string.Empty : $"?{string.Join("&", query)}";
+        Navigation.NavigateTo(
+            $"/exports/notes/options2/{anneeAcademiqueId}/{classePedagogiqueId}/{semestrePedagogiqueId}.docx{suffix}",
+            forceLoad: true);
+    }
+
+    private async Task ImportCanevas(InputFileChangeEventArgs args)
+    {
+        var file = args.File;
+        if (file is null)
+        {
+            return;
+        }
+
+        selectedFileName = file.Name;
+
+        try
+        {
+            await using var stream = file.OpenReadStream(20 * 1024 * 1024);
+            importResult = await NotesCanevasExcelImportService.ImporterAsync(stream);
+
+            if (importResult.IsValid)
+            {
+                NotificationService.Notify(
+                    NotificationSeverity.Success,
+                    "Import terminé",
+                    $"{importResult.NotesTraitees} note(s) traitée(s). ");
+
+                if (CanLoadGrille)
+                {
+                    await LoadGrille();
+                }
+            }
+            else
+            {
+                NotifyError(string.Join(" | ", importResult.Errors));
+            }
+        }
+        catch (Exception ex)
+        {
+            importResult = new NotesCanevasImportResultDto();
+            importResult.Errors.Add(ex.Message);
+            NotifyError(ex.Message);
+        }
+    }
+
+    private async Task AnalyseNotesDocument(InputFileChangeEventArgs args)
+    {
+        var file = args.File;
+        if (file is null)
+        {
+            return;
+        }
+
+        selectedNotesDocumentFileName = file.Name;
+        notesDocumentPreview = null;
+        notesDocumentImportResult = null;
+
+        try
+        {
+            await using var stream = file.OpenReadStream(25 * 1024 * 1024);
+            notesDocumentPreview = await NotesDocumentImportService.AnalyserAsync(
+                stream,
+                file.Name);
+
+            selectedTypeEvaluation = notesDocumentPreview.TypeEvaluationExtrait
+                ?? selectedTypeEvaluation
+                ?? TypeEvaluation.SessionNormale;
+            await ApplyExtractedDocumentContextAsync();
+            await EnsureEvaluationForDocumentAsync();
+
+            if (notesDocumentPreview.IsValid)
+            {
+                NotificationService.Notify(
+                    NotificationSeverity.Info,
+                    "Aperçu prêt",
+                    $"{notesDocumentPreview.Lignes.Count} ligne(s) de notes ont été extraite(s). Vérifiez-les avant l'import.");
+            }
+            else
+            {
+                NotifyError(string.Join(" | ", notesDocumentPreview.Errors));
+            }
+        }
+        catch (Exception ex)
+        {
+            notesDocumentPreview = new NotesDocumentPreviewDto
+            {
+                FileName = file.Name,
+                Errors = [ex.Message]
+            };
+            NotifyError(ex.Message);
+        }
+    }
+
+    private async Task ImporterNotesDocument()
+    {
+        // Rejoue la résolution juste avant l'écriture : cela couvre le cas où
+        // le composant a été rendu pendant le chargement des listes ou si
+        // l'utilisateur a corrigé une sélection après l'analyse du document.
+        await ApplyExtractedDocumentContextAsync();
+        await EnsureEvaluationForDocumentAsync();
+
+        if (showMissingEvaluationForm)
+        {
+            return;
+        }
+
+        if (!CanImportNotesDocument || notesDocumentPreview is null)
+        {
+            NotifyError(NotesDocumentImportState);
+            return;
+        }
+
+        if (!HasResolvedNotesDocumentContext)
+        {
+            NotifyError(GetUnresolvedNotesDocumentContext());
+            return;
+        }
+
+        notesDocumentImporting = true;
+        try
+        {
+            notesDocumentImportResult = await NotesDocumentImportService.ImporterAsync(
+                notesDocumentPreview,
+                new NotesDocumentImportContextDto
+                {
+                    AnneeAcademiqueId = selectedAnneeAcademiqueId!.Value,
+                    ClassePedagogiqueId = selectedClassePedagogiqueId!.Value,
+                    SemestrePedagogiqueId = selectedSemestrePedagogiqueId!.Value,
+                    UniteEnseignementId = selectedUniteEnseignementId,
+                    ElementConstitutifId = selectedElementConstitutifId,
+                    EvaluationAcademiqueId = selectedEvaluationAcademiqueId,
+                    TypeEvaluation = selectedTypeEvaluation
+                });
+
+            if (notesDocumentImportResult.IsValid)
+            {
+                selectedEvaluationAcademiqueId = notesDocumentImportResult.EvaluationAcademiqueId;
+                NotificationService.Notify(
+                    NotificationSeverity.Success,
+                    "Import terminé",
+                    $"{notesDocumentImportResult.NotesTraitees} note(s) enregistrée(s).");
+                await LoadGrille();
+            }
+            else
+            {
+                NotifyError(string.Join(" | ", notesDocumentImportResult.Errors));
+            }
+        }
+        catch (Exception ex)
+        {
+            NotifyError(ex.Message);
+        }
+        finally
+        {
+            notesDocumentImporting = false;
+        }
+    }
+
+    private async Task EnsureEvaluationForDocumentAsync()
+    {
+        if (notesDocumentPreview?.IsValid != true
+            || selectedAnneeAcademiqueId is not long anneeId
+            || selectedClassePedagogiqueId is not long classeId
+            || selectedSemestrePedagogiqueId is not long semestreId
+            || selectedElementConstitutifId is not long elementId
+            || selectedTypeEvaluation is not TypeEvaluation typeEvaluation
+            || selectedEvaluationAcademiqueId is not null)
+        {
+            return;
+        }
+
+        await RefreshEvaluationsAsync();
+        if (selectedEvaluationAcademiqueId is not null || evaluations.Count > 0)
+        {
+            return;
+        }
+
+        var context = await SaisieNotesService.GetEvaluationContextAsync(
+            anneeId,
+            classeId,
+            semestreId,
+            elementId);
+        if (context is null)
+        {
+            return;
+        }
+
+        missingEvaluationModel = await EvaluationsService.CreateDefaultEvaluationAsync(
+            context.ParcoursAcademiqueId,
+            context.MaquetteElementConstitutifId,
+            typeEvaluation);
+
+        missingEvaluationModel.AnneeAcademiqueId = anneeId;
+        missingEvaluationModel.ParcoursAcademiqueId = context.ParcoursAcademiqueId;
+        missingEvaluationModel.MaquetteElementConstitutifId = context.MaquetteElementConstitutifId;
+        missingEvaluationModel.SemestrePedagogiqueId = semestreId;
+        missingEvaluationModel.SemestrePedagogiqueLibelle = semestresPedagogiques
+            .FirstOrDefault(x => x.Id == semestreId)?.Libelle ?? string.Empty;
+        missingEvaluationModel.UniteEnseignementId = selectedUniteEnseignementId ?? 0;
+        missingEvaluationModel.UniteEnseignementLibelle = unitesEnseignement
+            .FirstOrDefault(x => x.Id == selectedUniteEnseignementId)?.Libelle ?? string.Empty;
+        missingEvaluationModel.ElementConstitutifLibelle = elementsConstitutifs
+            .FirstOrDefault(x => x.Id == elementId)?.Libelle
+            ?? notesDocumentPreview.ElementConstitutifExtrait
+            ?? string.Empty;
+        missingEvaluationModel.Type = typeEvaluation;
+        missingEvaluationModel.TypeLibelle = GetTypeEvaluationLibelle(typeEvaluation);
+        showMissingEvaluationForm = true;
+    }
+
+    private async Task SaveMissingEvaluation(EvaluationAcademiqueDto _)
+    {
+        savingMissingEvaluation = true;
+        try
+        {
+            await EvaluationsService.SaveEvaluationAsync(missingEvaluationModel);
+
+            showMissingEvaluationForm = false;
+            selectedTypeEvaluation = missingEvaluationModel.Type;
+            selectedEvaluationAcademiqueId = null;
+            await RefreshEvaluationsAsync();
+
+            NotificationService.Notify(
+                NotificationSeverity.Success,
+                "Évaluation enregistrée",
+                "L'évaluation a été créée. Vous pouvez maintenant enregistrer les notes de la fiche.");
+        }
+        catch (Exception ex)
+        {
+            NotifyError(ex.Message);
+        }
+        finally
+        {
+            savingMissingEvaluation = false;
+        }
+    }
+
+    private void CancelMissingEvaluation()
+    {
+        showMissingEvaluationForm = false;
+    }
+
+    private void ClearNotesDocumentPreview()
+    {
+        notesDocumentPreview = null;
+        notesDocumentImportResult = null;
+        selectedNotesDocumentFileName = "Aucun document sélectionné";
+    }
+
+    private async Task ApplyExtractedDocumentContextAsync()
+    {
+        if (notesDocumentPreview is null)
+        {
+            return;
+        }
+
+        // Les identifiants d'une précédente fiche ne doivent jamais être
+        // réutilisés si le nouveau document contient un autre contexte.
+        var classeSelectionneeAvantImport = selectedClassePedagogiqueId;
+        if (!string.IsNullOrWhiteSpace(notesDocumentPreview.ClasseLibelleExtrait))
+        {
+            selectedClassePedagogiqueId = null;
+            selectedSemestrePedagogiqueId = null;
+            semestresPedagogiques = [];
+        }
+
+        selectedUniteEnseignementId = null;
+        selectedElementConstitutifId = null;
+
+        if (!string.IsNullOrWhiteSpace(notesDocumentPreview.AnneeAcademiqueLibelleExtrait))
+        {
+            var annee = anneesAcademiques.FirstOrDefault(x =>
+                string.Equals(
+                    NormalizeLookupText(x.Libelle),
+                    NormalizeLookupText(notesDocumentPreview.AnneeAcademiqueLibelleExtrait),
+                    StringComparison.OrdinalIgnoreCase));
+            if (annee is null)
+            {
+                selectedAnneeAcademiqueId = null;
+                selectedClassePedagogiqueId = null;
+                selectedSemestrePedagogiqueId = null;
+                classesPedagogiques = [];
+                semestresPedagogiques = [];
+            }
+            else if (selectedAnneeAcademiqueId != annee.Id)
+            {
+                selectedAnneeAcademiqueId = annee.Id;
+                selectedClassePedagogiqueId = null;
+                selectedSemestrePedagogiqueId = null;
+                await RefreshClassesAsync();
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(notesDocumentPreview.ClasseLibelleExtrait))
+        {
+            // Toujours relire la liste de l'année : le composant peut avoir été
+            // rendu avant la fin du chargement ou conserver une liste d'une
+            // ancienne année sélectionnée.
+            List<LookupDto> classesDeLAnnee = selectedAnneeAcademiqueId is long anneeId
+                ? await SaisieNotesService.GetClassesPedagogiquesLookupAsync(anneeId)
+                : [];
+            var classe = FindLookupContaining(
+                classesDeLAnnee,
+                notesDocumentPreview.ClasseLibelleExtrait);
+
+            // Certains dossiers historiques ne portent pas le même libellé de
+            // classe que le parcours affiché dans l'interface. On réessaie sur
+            // la liste complète, puis on déduit l'année depuis le libellé
+            // complet de la classe si cela est possible.
+            if (classe is null)
+            {
+                var toutesLesClasses = await SaisieNotesService.GetClassesPedagogiquesLookupAsync();
+                classe = FindLookupContaining(toutesLesClasses, notesDocumentPreview.ClasseLibelleExtrait);
+
+                if (classe is not null)
+                {
+                    var anneeDeLaClasse = anneesAcademiques.FirstOrDefault(x =>
+                        NormalizeLookupText(classe.Libelle)
+                            .Contains(NormalizeLookupText(x.Libelle), StringComparison.OrdinalIgnoreCase));
+
+                    if (anneeDeLaClasse is not null
+                        && selectedAnneeAcademiqueId != anneeDeLaClasse.Id)
+                    {
+                        selectedAnneeAcademiqueId = anneeDeLaClasse.Id;
+                        classesDeLAnnee = await SaisieNotesService
+                            .GetClassesPedagogiquesLookupAsync(anneeDeLaClasse.Id);
+                        classe = classesDeLAnnee.FirstOrDefault(x => x.Id == classe.Id);
+                    }
+                }
+            }
+
+            // Secours pour les fiches historiques dont la classe est un nom
+            // local (« Classe Kribi »). Les matricules restent liés au vrai
+            // parcours académique : si toutes les lignes appartiennent à une
+            // seule classe, cette relation permet de retrouver son identifiant.
+            if (classe is null && selectedAnneeAcademiqueId is long anneePourMatricules)
+            {
+                var classesDesMatricules = await SaisieNotesService
+                    .GetClassesForMatriculesLookupAsync(
+                        notesDocumentPreview.Lignes.Select(x => x.Matricule),
+                        anneePourMatricules);
+                if (classesDesMatricules.Count == 1)
+                {
+                    classe = classesDesMatricules[0];
+                    classesDeLAnnee = classesDeLAnnee.Count > 0
+                        ? classesDeLAnnee
+                        : await SaisieNotesService.GetClassesPedagogiquesLookupAsync(anneePourMatricules);
+                }
+            }
+
+            // Les anciennes fiches utilisent parfois un nom local comme
+            // « Classe Kribi ». Depuis la normalisation du modèle, la liste UI
+            // affiche le libellé du parcours et non ce nom local. Si l'utilisateur
+            // avait déjà choisi explicitement une classe, on la conserve plutôt
+            // que d'abandonner la résolution sur ce simple alias historique.
+            if (classe is null && classeSelectionneeAvantImport is long classeId)
+            {
+                classe = classesDeLAnnee.FirstOrDefault(x => x.Id == classeId)
+                    ?? classesPedagogiques.FirstOrDefault(x => x.Id == classeId);
+            }
+
+            if (classe is not null)
+            {
+                classesPedagogiques = classesDeLAnnee.Count > 0
+                    ? classesDeLAnnee
+                    : [classe];
+                selectedClassePedagogiqueId = classe.Id;
+                selectedSemestrePedagogiqueId = null;
+                await RefreshSemestresAsync();
+            }
+        }
+
+        if (notesDocumentPreview.NumeroSemestreExtrait is byte numeroSemestre)
+        {
+            var semestre = FindSemesterLookup(semestresPedagogiques, numeroSemestre);
+            if (semestre is not null)
+            {
+                selectedSemestrePedagogiqueId = semestre.Id;
+            }
+        }
+
+        await RefreshUnitesEnseignementAsync();
+
+        var allElements = selectedSemestrePedagogiqueId is long semestreId
+            ? await SaisieNotesService.GetElementsConstitutifsLookupAsync(
+                semestrePedagogiqueId: semestreId)
+            : [];
+        var elementCode = ExtractMetadataCode(notesDocumentPreview.ElementConstitutifExtrait);
+        var element = string.IsNullOrWhiteSpace(elementCode)
+            ? null
+            : allElements.FirstOrDefault(x => HasLookupCode(x.Libelle, elementCode));
+
+        var ueCode = ExtractMetadataCode(notesDocumentPreview.UniteEnseignementExtrait);
+        var unite = string.IsNullOrWhiteSpace(ueCode)
+            ? null
+            : unitesEnseignement.FirstOrDefault(x => HasLookupCode(x.Libelle, ueCode));
+
+        selectedUniteEnseignementId = unite?.Id;
+        elementsConstitutifs = unite is null
+            ? allElements
+            : await SaisieNotesService.GetElementsConstitutifsLookupAsync(
+                unite.Id,
+                selectedSemestrePedagogiqueId);
+
+        // L'EC trouvé par son code est l'identifiant métier le plus fiable.
+        // On le conserve même si le libellé UE de la fiche est légèrement
+        // différent ; l'importeur vérifiera ensuite que l'EC appartient bien
+        // au semestre sélectionné.
+        if (element is not null)
+        {
+            selectedElementConstitutifId = element.Id;
+        }
+
+        await RefreshEvaluationsAsync();
+    }
+
+    private string GetUnresolvedNotesDocumentContext()
+    {
+        if (notesDocumentPreview is null)
+        {
+            return NotesDocumentImportState;
+        }
+
+        var missing = new List<string>();
+        if (selectedAnneeAcademiqueId is null)
+        {
+            missing.Add($"année '{notesDocumentPreview.AnneeAcademiqueLibelleExtrait ?? "non détectée"}'");
+        }
+
+        if (selectedClassePedagogiqueId is null)
+        {
+            missing.Add($"classe '{notesDocumentPreview.ClasseLibelleExtrait ?? "non détectée"}'");
+        }
+
+        if (selectedSemestrePedagogiqueId is null)
+        {
+            var semestre = notesDocumentPreview.NumeroSemestreExtrait?.ToString(CultureInfo.InvariantCulture)
+                ?? notesDocumentPreview.SemestreLibelleExtrait
+                ?? "non détecté";
+            missing.Add($"semestre '{semestre}'");
+        }
+
+        if (selectedElementConstitutifId is null)
+        {
+            missing.Add($"EC '{notesDocumentPreview.ElementConstitutifExtrait ?? "non détecté"}'");
+        }
+
+        if (selectedEvaluationAcademiqueId is null && selectedTypeEvaluation is null)
+        {
+            missing.Add("type d'évaluation");
+        }
+
+        return missing.Count == 0
+            ? "Le contexte de la fiche est résolu, mais son import ne peut pas démarrer."
+            : $"Référentiel introuvable pour : {string.Join(", ", missing)}.";
+    }
+
+    private static LookupDto? FindLookupContaining(
+        IReadOnlyCollection<LookupDto> options,
+        string value)
+    {
+        var target = NormalizeLookupText(value);
+        var directMatch = options
+            .Select(x =>
+            {
+                var candidate = NormalizeLookupText(x.Libelle);
+                var exact = string.Equals(candidate, target, StringComparison.OrdinalIgnoreCase);
+                var candidateContainsTarget = candidate.Contains(target, StringComparison.OrdinalIgnoreCase);
+                var targetContainsCandidate = target.Contains(candidate, StringComparison.OrdinalIgnoreCase);
+                var rank = exact
+                    ? 0
+                    : candidateContainsTarget
+                        ? 1
+                        : targetContainsCandidate
+                            ? 2
+                            : 3;
+                var distance = Math.Abs(candidate.Length - target.Length);
+                return new { Option = x, Candidate = candidate, Rank = rank, Distance = distance };
+            })
+            .Where(x => x.Rank < 3)
+            .OrderBy(x => x.Rank)
+            .ThenBy(x => x.Distance)
+            .ThenBy(x => x.Option.Libelle.Length)
+            .Select(x => x.Option)
+            .FirstOrDefault();
+
+        if (directMatch is not null)
+        {
+            return directMatch;
+        }
+
+        // Les libellés de parcours/classes peuvent contenir l'année et des
+        // variantes éditoriales (par exemple « Ingénieur - Informatique »).
+        // Dans ce cas, les mots du libellé extrait restent plus fiables que
+        // la comparaison d'une chaîne continue.
+        var targetTokens = GetLookupTokens(value);
+        if (targetTokens.Count == 0)
+        {
+            return null;
+        }
+
+        return options
+            .Select(option =>
+            {
+                var candidateTokens = GetLookupTokens(option.Libelle);
+                var overlap = targetTokens.Count(token => candidateTokens.Contains(token));
+                var missing = candidateTokens.Count(token => !targetTokens.Contains(token));
+                return new { Option = option, Overlap = overlap, Missing = missing };
+            })
+            .Where(x => x.Overlap >= Math.Min(3, targetTokens.Count))
+            .OrderByDescending(x => x.Overlap)
+            .ThenBy(x => x.Missing)
+            .ThenByDescending(x => x.Option.Libelle.Length)
+            .Select(x => x.Option)
+            .FirstOrDefault();
+    }
+
+    private static HashSet<string> GetLookupTokens(string value)
+    {
+        var decomposed = value.Normalize(NormalizationForm.FormD);
+        var separated = new string(
+            decomposed
+                .Select(character => char.IsLetterOrDigit(character) ? character : ' ')
+                .ToArray());
+
+        return separated
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Select(token => token.ToUpperInvariant())
+            .Where(token => token.Length > 1)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static LookupDto? FindSemesterLookup(
+        IReadOnlyCollection<LookupDto> options,
+        byte numeroSemestre)
+    {
+        var number = numeroSemestre.ToString(CultureInfo.InvariantCulture);
+        return options.FirstOrDefault(x =>
+            x.Libelle.TrimStart().StartsWith($"{number} -", StringComparison.OrdinalIgnoreCase)
+            || NormalizeLookupText(x.Libelle).Contains($"SEMESTRE{number}", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string NormalizeLookupText(string? value)
+    {
+        var normalized = (value ?? string.Empty).Normalize(NormalizationForm.FormD);
+        return string.Concat(normalized.Where(char.IsLetterOrDigit)).ToUpperInvariant();
+    }
+
+    private static string? ExtractMetadataCode(string? value)
+        => string.IsNullOrWhiteSpace(value)
+            ? null
+            : value.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries)[0];
+
+    private static bool HasLookupCode(string? label, string code)
+        => string.Equals(ExtractMetadataCode(label), code, StringComparison.OrdinalIgnoreCase);
+
+    private static bool HasExtractedElementMetadata(string? value)
+    {
+        var code = ExtractMetadataCode(value);
+        return !string.IsNullOrWhiteSpace(code)
+            && (code.Contains("-EC", StringComparison.OrdinalIgnoreCase)
+                || code.StartsWith("EC", StringComparison.OrdinalIgnoreCase));
     }
 
     private void OnPresenceChanged(SaisieNoteLigneDto ligne)
@@ -305,6 +1461,15 @@
             ligne.Valeur = null;
         }
     }
+
+    private static void AdjustDocumentNote(NotesDocumentRowDto ligne, decimal delta)
+        => ligne.Valeur = ClampNote((ligne.Valeur ?? 0m) + delta, 20m);
+
+    private static void AdjustSaisieNote(SaisieNoteLigneDto ligne, decimal delta)
+        => ligne.Valeur = ClampNote((ligne.Valeur ?? 0m) + delta, 20m);
+
+    private static decimal ClampNote(decimal value, decimal maximum)
+        => Math.Clamp(Math.Round(value, 2, MidpointRounding.AwayFromZero), 0m, maximum);
 
     private async Task SaveNotes()
     {
@@ -325,9 +1490,20 @@
         }
     }
 
-    private void NotifySuccess() => NotificationService.Notify(NotificationSeverity.Success, "Succès", "Notes enregistrées.");
+    private void NotifySuccess(string message = "Notes enregistrées.")
+        => NotificationService.Notify(NotificationSeverity.Success, "Succès", message);
 
     private void NotifyError(string message) => NotificationService.Notify(NotificationSeverity.Error, "Erreur", message);
+
+    private static string GetTypeEvaluationLibelle(TypeEvaluation type)
+        => type switch
+        {
+            TypeEvaluation.ControleContinu => "CCON - Contrôle continu",
+            TypeEvaluation.ControleConnaissance => "CC - Contrôle de connaissance",
+            TypeEvaluation.SessionNormale => "SN - Session normale",
+            TypeEvaluation.SessionRattrapage => "SR - Session de rattrapage",
+            _ => type.ToString()
+        };
 
     private static void EnsureSelectedValueIsAvailable(IReadOnlyCollection<LookupDto> options, ref long? selectedValue)
     {
@@ -337,6 +1513,23 @@
         {
             selectedValue = null;
         }
+    }
+
+    private static long? ToNullableLong(object? value)
+    {
+        if (value is null)
+        {
+            return null;
+        }
+
+        if (value is long longValue)
+        {
+            return longValue;
+        }
+
+        return long.TryParse(value.ToString(), out var parsedValue)
+            ? parsedValue
+            : null;
     }
 
     private record EnumOption<TValue>(string Text, TValue Value);

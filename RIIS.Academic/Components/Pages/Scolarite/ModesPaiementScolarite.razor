@@ -25,9 +25,11 @@
 
     @if (showForm)
     {
-        <RadzenCard>
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
             <RadzenTemplateForm TItem="ModePaiementScolariteDto" Data="@model" Submit="@Save">
                 <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="riis-modal-title rz-m-0">@(model.Id == 0 ? "Nouveau mode de paiement" : "Modifier le mode de paiement")</RadzenText>
                     <RadzenRow>
                         <RadzenColumn Size="12" SizeMD="2">
                             <RadzenFormField Text="Code" Style="width:100%">
@@ -37,7 +39,7 @@
                         </RadzenColumn>
                         <RadzenColumn Size="12" SizeMD="5">
                             <RadzenFormField Text="Libelle" Style="width:100%">
-                                <RadzenTextBox @bind-Value="@model.Libelle" Name="Libelle" />
+                                <RadzenTextBox Value="@model.Libelle" Name="Libelle" @oninput="@OnLibelleInput" />
                             </RadzenFormField>
                             <RadzenRequiredValidator Component="Libelle" Text="Libelle obligatoire." />
                         </RadzenColumn>
@@ -58,11 +60,12 @@
                     </RadzenStack>
                 </RadzenStack>
             </RadzenTemplateForm>
-        </RadzenCard>
+            </RadzenCard>
+        </div>
     }
 
     <RadzenCard>
-        <RadzenDataGrid Data="@items" TItem="ModePaiementScolariteDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+        <RadzenDataGrid @ref="modesPaiementGrid" Data="@items" TItem="ModePaiementScolariteDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
             <Columns>
                 <RadzenDataGridColumn TItem="ModePaiementScolariteDto" Property="Code" Title="Code" Width="120px" />
                 <RadzenDataGridColumn TItem="ModePaiementScolariteDto" Property="Libelle" Title="Libelle" />
@@ -83,6 +86,7 @@
 
 @code {
     private List<ModePaiementScolariteDto> items = [];
+    private RadzenDataGrid<ModePaiementScolariteDto>? modesPaiementGrid;
     private ModePaiementScolariteDto model = new();
     private bool inclureInactifs;
     private bool showForm;
@@ -92,12 +96,23 @@
     private async Task Load()
     {
         items = await ModesPaiementScolariteService.GetModesPaiementScolariteAsync(inclureInactifs);
+        if (modesPaiementGrid is not null) await modesPaiementGrid.Reload();
     }
 
     private void Create()
     {
         model = ModesPaiementScolariteService.CreateDefaultModePaiementScolarite();
         showForm = true;
+    }
+
+    private void OnLibelleInput(ChangeEventArgs args)
+    {
+        model.Libelle = args.Value?.ToString() ?? string.Empty;
+
+        if (model.Id == 0 && !string.IsNullOrWhiteSpace(model.Libelle))
+        {
+            model.Code = ModesPaiementScolariteService.GenerateCodeFromLibelle(model.Libelle);
+        }
     }
 
     private void Edit(ModePaiementScolariteDto item)

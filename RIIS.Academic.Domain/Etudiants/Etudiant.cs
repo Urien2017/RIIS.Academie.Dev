@@ -3,7 +3,6 @@ namespace RIIS.Academic.Domain;
 public class Etudiant
 {
     public long Id { get; set; }
-    public string? Matricule { get; set; }
     public required string Nom { get; set; }
     public required string Prenoms { get; set; }
     public DateOnly DateNaissance { get; set; }
@@ -12,8 +11,10 @@ public class Etudiant
     public AptitudeMedicale AptitudeMedicale { get; set; }
     public required string Nationalite { get; set; }
     public string? RegionOrigine { get; set; }
-    public required string TelephonePrincipal { get; set; }
+    public string? TelephonePrincipal { get; set; }
     public string? TelephoneSecondaire { get; set; }
+    public string? TelephoneParent1 { get; set; }
+    public string? TelephoneParent2 { get; set; }
     public string? Email { get; set; }
     public string? NomPere { get; set; }
     public string? NomMere { get; set; }
@@ -28,4 +29,5 @@ public class Etudiant
     public ICollection<DossierAdministratif> DossiersAdministratifs { get; set; } = [];
     public ICollection<DossierAcademique> DossiersAcademiques { get; set; } = [];
     public ICollection<DossierFinancier> DossiersFinanciers { get; set; } = [];
+    public ICollection<DossierEtudiant> DossiersEtudiants { get; set; } = [];
 }

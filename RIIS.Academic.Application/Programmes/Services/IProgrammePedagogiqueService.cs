@@ -9,12 +9,18 @@ public interface IProgrammePedagogiqueService
     Task<List<MaquettePedagogiqueHierarchyDto>> GetMaquettesHierarchyAsync(
         long? anneeAcademiqueId = null,
         long? cycleFormationId = null,
+        long? niveauEtudeId = null,
         long? maquettePedagogiqueId = null,
         CancellationToken cancellationToken = default);
     Task<MaquettePedagogiqueDto?> GetMaquetteAsync(long id, CancellationToken cancellationToken = default);
-    MaquettePedagogiqueDto CreateDefaultMaquette(long? parcoursAcademiqueId = null);
+    MaquettePedagogiqueDto CreateDefaultMaquette();
+    Task<string> GenerateMaquetteCodeAsync(string? libelle, long excludeId = 0, CancellationToken cancellationToken = default);
     Task SaveMaquetteAsync(MaquettePedagogiqueDto dto, CancellationToken cancellationToken = default);
     Task DeleteMaquetteAsync(long id, CancellationToken cancellationToken = default);
+
+    Task<List<AffectationMaquetteDto>> GetAffectationsMaquettesAsync(long? maquettePedagogiqueId = null, long? parcoursAcademiqueId = null, CancellationToken cancellationToken = default);
+    Task SaveAffectationMaquetteAsync(AffectationMaquetteDto dto, CancellationToken cancellationToken = default);
+    Task DeleteAffectationMaquetteAsync(long id, CancellationToken cancellationToken = default);
 
     Task<List<SemestrePedagogiqueDto>> GetSemestresAsync(long? maquettePedagogiqueId = null, CancellationToken cancellationToken = default);
     Task<SemestrePedagogiqueDto?> GetSemestreAsync(long id, CancellationToken cancellationToken = default);
@@ -22,7 +28,10 @@ public interface IProgrammePedagogiqueService
     Task SaveSemestreAsync(SemestrePedagogiqueDto dto, CancellationToken cancellationToken = default);
     Task DeleteSemestreAsync(long id, CancellationToken cancellationToken = default);
 
-    Task<List<UniteEnseignementDto>> GetUnitesEnseignementAsync(long? semestrePedagogiqueId = null, CancellationToken cancellationToken = default);
+    Task<List<UniteEnseignementDto>> GetUnitesEnseignementAsync(
+        long? semestrePedagogiqueId = null,
+        long? maquettePedagogiqueId = null,
+        CancellationToken cancellationToken = default);
     Task<List<UniteEnseignementDto>> GetUnitesEnseignementByHierarchyAsync(
         long? anneeAcademiqueId = null,
         long? cycleFormationId = null,
@@ -36,13 +45,15 @@ public interface IProgrammePedagogiqueService
         long? semestrePedagogiqueId = null,
         CancellationToken cancellationToken = default);
     Task<UniteEnseignementDto?> GetUniteEnseignementAsync(long id, CancellationToken cancellationToken = default);
-    Task<UniteEnseignementDto> CreateDefaultUniteEnseignementAsync(long? semestrePedagogiqueId = null, CancellationToken cancellationToken = default);
+    Task<UniteEnseignementDto> CreateDefaultUniteEnseignementAsync(long? maquettePedagogiqueId = null, CancellationToken cancellationToken = default);
+    Task<string> GenerateUniteEnseignementCodeAsync(string? libelle, long excludeId = 0, CancellationToken cancellationToken = default);
     Task SaveUniteEnseignementAsync(UniteEnseignementDto dto, CancellationToken cancellationToken = default);
     Task DeleteUniteEnseignementAsync(long id, CancellationToken cancellationToken = default);
 
     Task<List<ElementConstitutifDto>> GetElementsConstitutifsAsync(long? uniteEnseignementId = null, CancellationToken cancellationToken = default);
     Task<ElementConstitutifDto?> GetElementConstitutifAsync(long id, CancellationToken cancellationToken = default);
     Task<ElementConstitutifDto> CreateDefaultElementConstitutifAsync(long? uniteEnseignementId = null, CancellationToken cancellationToken = default);
+    Task<string> GenerateElementConstitutifCodeAsync(long uniteEnseignementId, string? libelle, long excludeId = 0, CancellationToken cancellationToken = default);
     Task SaveElementConstitutifAsync(ElementConstitutifDto dto, CancellationToken cancellationToken = default);
     Task DeleteElementConstitutifAsync(long id, CancellationToken cancellationToken = default);
 
@@ -52,6 +63,7 @@ public interface IProgrammePedagogiqueService
     Task<List<LookupDto>> GetMaquettesLookupAsync(
         long? anneeAcademiqueId = null,
         long? cycleFormationId = null,
+        long? niveauEtudeId = null,
         CancellationToken cancellationToken = default);
     Task<List<LookupDto>> GetNiveauxEtudeLookupAsync(CancellationToken cancellationToken = default);
     Task<List<LookupDto>> GetSemestresLookupAsync(long? maquettePedagogiqueId = null, CancellationToken cancellationToken = default);

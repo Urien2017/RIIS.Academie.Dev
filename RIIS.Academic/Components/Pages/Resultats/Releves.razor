@@ -1,9 +1,11 @@
 @page "/releves"
 @inject IRelevesNotesService RelevesNotesService
+@inject IReleveNotePdfExportService ReleveNotePdfExportService
 @inject IReferentielsService ReferentielsService
 @inject IClassesPedagogiquesService ClassesPedagogiquesService
 @inject NavigationManager Navigation
 @inject NotificationService NotificationService
+@inject DialogService DialogService
 
 <RadzenStack Gap="1rem">
     <RadzenCard>
@@ -21,47 +23,17 @@
             <RadzenText TextStyle="TextStyle.H6" Text="Filtres de recherche" />
 
             <RadzenRow>
-                <RadzenColumn Size="12" SizeMD="3">
-                    <RadzenFormField Text="Année académique" Style="width:100%">
-                        <RadzenDropDown Data="@annees"
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenFormField Text="Parcours académique" Style="width:100%">
+                        <RadzenDropDown Data="@parcoursAcademiques"
                                         TextProperty="Libelle"
                                         ValueProperty="Id"
-                                        @bind-Value="@selectedAnneeAcademiqueId"
-                                        Change="@OnFilterChanged"
+                                        @bind-Value="@selectedParcoursAcademiqueId"
+                                        Change="@OnParcoursFilterChanged"
                                         AllowClear="true"
                                         AllowFiltering="true"
                                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                        Placeholder="Toutes les années"
-                                        Style="width:100%" />
-                    </RadzenFormField>
-                </RadzenColumn>
-
-                <RadzenColumn Size="12" SizeMD="3">
-                    <RadzenFormField Text="Cycle formation" Style="width:100%">
-                        <RadzenDropDown Data="@cyclesFormation"
-                                        TextProperty="Libelle"
-                                        ValueProperty="Id"
-                                        @bind-Value="@selectedCycleFormationId"
-                                        Change="@OnFilterChanged"
-                                        AllowClear="true"
-                                        AllowFiltering="true"
-                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                        Placeholder="Tous les cycles"
-                                        Style="width:100%" />
-                    </RadzenFormField>
-                </RadzenColumn>
-
-                <RadzenColumn Size="12" SizeMD="3">
-                    <RadzenFormField Text="Niveau" Style="width:100%">
-                        <RadzenDropDown Data="@niveaux"
-                                        TextProperty="Libelle"
-                                        ValueProperty="Id"
-                                        @bind-Value="@selectedNiveauEtudeId"
-                                        Change="@OnFilterChanged"
-                                        AllowClear="true"
-                                        AllowFiltering="true"
-                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                        Placeholder="Tous les niveaux"
+                                        Placeholder="Tous les parcours"
                                         Style="width:100%" />
                     </RadzenFormField>
                 </RadzenColumn>
@@ -109,14 +81,14 @@
                 <RadzenText TextStyle="TextStyle.Caption" Text="Le bouton Word génère le relevé annuel de l'étudiant sélectionné." />
             </RadzenStack>
 
-            <RadzenDataGrid Data="@filteredItems" TItem="ReleveNoteEtudiantDisponibleDto" AllowPaging="true" AllowSorting="true" PageSize="10">
+            <RadzenDataGrid @ref="relevesGrid" Data="@filteredItems" TItem="ReleveNoteEtudiantDisponibleDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" PageSize="10">
                 <Columns>
                     <RadzenDataGridColumn TItem="ReleveNoteEtudiantDisponibleDto" Property="Matricule" Title="Matricule" Width="150px" />
                     <RadzenDataGridColumn TItem="ReleveNoteEtudiantDisponibleDto" Property="EtudiantNomComplet" Title="Étudiant" />
                     <RadzenDataGridColumn TItem="ReleveNoteEtudiantDisponibleDto" Property="ParcoursLibelle" Title="Parcours" />
                     <RadzenDataGridColumn TItem="ReleveNoteEtudiantDisponibleDto" Property="NiveauLibelle" Title="Niveau" Width="160px" />
                     <RadzenDataGridColumn TItem="ReleveNoteEtudiantDisponibleDto" Property="AnneeAcademiqueLibelle" Title="Année" Width="140px" />
-                    <RadzenDataGridColumn TItem="ReleveNoteEtudiantDisponibleDto" Title="Actions" Width="420px" Sortable="false" Filterable="false">
+                    <RadzenDataGridColumn TItem="ReleveNoteEtudiantDisponibleDto" Title="Actions" Width="500px" Sortable="false" Filterable="false">
                         <Template Context="item">
                             <RadzenButton Text="Aperçu"
                                           Icon="visibility"
@@ -135,6 +107,18 @@
                                           ButtonStyle="ButtonStyle.Primary"
                                           class="rz-ml-1"
                                           Click="@(() => ExportWord(item))" />
+                            <RadzenButton Text="PDF"
+                                          Icon="picture_as_pdf"
+                                          Size="ButtonSize.Small"
+                                          ButtonStyle="ButtonStyle.Danger"
+                                          class="rz-ml-1"
+                                          Click="@(() => ExportPdf(item))" />
+                            <RadzenButton Text="Aperçu PDF"
+                                          Icon="preview"
+                                          Size="ButtonSize.Small"
+                                          ButtonStyle="ButtonStyle.Light"
+                                          class="rz-ml-1"
+                                          Click="@(() => PreviewPdf(item))" />
                             <RadzenButton Text="Modèle"
                                           Icon="article"
                                           Size="ButtonSize.Small"
@@ -167,12 +151,33 @@
                                       Icon="download"
                                       ButtonStyle="ButtonStyle.Primary"
                                       Click="@(() => ExportWord(selectedReleve.DossierAcademiqueId))" />
+                        <RadzenButton Text="Exporter PDF"
+                                      Icon="picture_as_pdf"
+                                      ButtonStyle="ButtonStyle.Danger"
+                                      Click="@(() => ExportPdf(selectedReleve.DossierAcademiqueId))" />
+                        <RadzenButton Text="Aperçu PDF"
+                                      Icon="preview"
+                                      ButtonStyle="ButtonStyle.Light"
+                                      Click="@(() => PreviewPdf(selectedReleve))" />
                         <RadzenButton Text="Exporter modèle"
                                       Icon="article"
                                       ButtonStyle="ButtonStyle.Secondary"
                                       Click="@(() => ExportTemplateWord(selectedReleve.DossierAcademiqueId))" />
                     </RadzenStack>
                 </RadzenStack>
+
+                @if (!string.IsNullOrWhiteSpace(selectedReleve.QrCodeDataUrl))
+                {
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.75rem">
+                        <img src="@selectedReleve.QrCodeDataUrl"
+                             alt="QR code du relevé"
+                             title="QR code du relevé"
+                             width="120"
+                             height="120"
+                             style="display:block; border:1px solid var(--rz-border-color); padding:0.25rem; background:#fff;" />
+                        <RadzenText TextStyle="TextStyle.Caption" Text="Identification du relevé" />
+                    </RadzenStack>
+                }
 
                 <RadzenRow>
                     <RadzenColumn Size="12" SizeMD="4">
@@ -194,7 +199,7 @@
                     <RadzenPanel Text="@($"{semestre.Libelle} - Moyenne : {FormatNote(semestre.Moyenne)} - Crédits : {FormatCredit(semestre.CreditsCapitalises)}/{FormatCredit(semestre.CreditsAttendus)}")"
                                  AllowCollapse="true"
                                  Collapsed="true">
-                        <RadzenDataGrid Data="@semestre.Lignes" TItem="ReleveNoteLigneDto" AllowPaging="true" PageSize="8" AllowSorting="true">
+                        <RadzenDataGrid Data="@semestre.Lignes" TItem="ReleveNoteLigneDto" AllowPaging="true" PageSize="8" AllowSorting="true" AllowColumnResize="true">
                             <Columns>
                                 <RadzenDataGridColumn TItem="ReleveNoteLigneDto" Property="UniteEnseignementLibelle" Title="UE (Unité d'enseignement)" />
                                 <RadzenDataGridColumn TItem="ReleveNoteLigneDto" Property="ElementConstitutifCode" Title="Code" Width="110px" />
@@ -221,14 +226,11 @@
     @code {
     private List<ReleveNoteEtudiantDisponibleDto> items = [];
     private List<ReleveNoteEtudiantDisponibleDto> filteredItems = [];
-    private List<LookupDto> annees = [];
-    private List<LookupDto> cyclesFormation = [];
-    private List<LookupDto> niveaux = [];
+    private RadzenDataGrid<ReleveNoteEtudiantDisponibleDto>? relevesGrid;
+    private List<LookupDto> parcoursAcademiques = [];
     private List<LookupDto> classes = [];
     private ReleveNoteAnnuelDto? selectedReleve;
-    private long? selectedAnneeAcademiqueId;
-    private long? selectedCycleFormationId;
-    private long? selectedNiveauEtudeId;
+    private long? selectedParcoursAcademiqueId;
     private long? selectedClassePedagogiqueId;
     private string? searchText;
 
@@ -240,19 +242,12 @@
 
     private async Task LoadLookups()
     {
-        annees = (await ReferentielsService.GetAnneesAcademiquesAsync())
-            .OrderByDescending(x => x.AnneeDebut)
-            .Select(x => new LookupDto { Id = x.Id, Libelle = x.Libelle })
-            .ToList();
-        cyclesFormation = (await ReferentielsService.GetCyclesFormationAsync())
-            .Where(x => x.EstActif)
-            .OrderBy(x => x.OrdreAffichage)
-            .Select(x => new LookupDto { Id = x.Id, Libelle = string.IsNullOrWhiteSpace(x.Code) ? x.Libelle : $"{x.Code} - {x.Libelle}" })
-            .ToList();
-        niveaux = (await ReferentielsService.GetNiveauxEtudeAsync())
-            .Where(x => x.EstActif)
-            .OrderBy(x => x.Numero)
-            .Select(x => new LookupDto { Id = x.Id, Libelle = x.Libelle })
+        parcoursAcademiques = (await ReferentielsService.GetParcoursAcademiquesAsync(inclureInactifs: false))
+            .Select(x => new LookupDto
+            {
+                Id = x.Id,
+                Libelle = string.IsNullOrWhiteSpace(x.Code) ? x.Libelle : $"{x.Code} - {x.Libelle}"
+            })
             .ToList();
         await RefreshClassesLookup();
     }
@@ -260,28 +255,34 @@
     private async Task Load()
     {
         items = await RelevesNotesService.GetEtudiantsDisponiblesAsync(
-            selectedAnneeAcademiqueId,
-            selectedCycleFormationId,
-            selectedNiveauEtudeId,
-            selectedClassePedagogiqueId);
+            parcoursAcademiqueId: selectedParcoursAcademiqueId,
+            classePedagogiqueId: selectedClassePedagogiqueId);
 
         ApplySearch();
+        if (relevesGrid is not null) await relevesGrid.Reload();
     }
 
     private async Task RefreshClassesLookup()
     {
-        var parcours = await ReferentielsService.GetParcoursAcademiquesAsync(
-            selectedAnneeAcademiqueId,
-            selectedCycleFormationId,
-            selectedNiveauEtudeId,
-            inclureInactifs: false);
-        var parcoursIds = parcours.Select(x => x.Id).ToHashSet();
-
         classes = (await ClassesPedagogiquesService.GetClassesPedagogiquesAsync())
-            .Where(x => parcoursIds.Contains(x.ParcoursAcademiqueId))
+            .Where(x => selectedParcoursAcademiqueId is null
+                || x.ParcoursAcademiqueId == selectedParcoursAcademiqueId)
             .OrderBy(x => x.Libelle)
             .Select(x => new LookupDto { Id = x.Id, Libelle = x.Libelle })
             .ToList();
+    }
+
+    private async Task OnParcoursFilterChanged(object? _)
+    {
+        await RefreshClassesLookup();
+
+        if (selectedClassePedagogiqueId is not null && classes.All(x => x.Id != selectedClassePedagogiqueId))
+        {
+            selectedClassePedagogiqueId = null;
+        }
+
+        selectedReleve = null;
+        await Load();
     }
 
     private async Task OnFilterChanged(object? _)
@@ -300,14 +301,13 @@
     private async Task OnSearchChanged(object? _)
     {
         ApplySearch();
+        if (relevesGrid is not null) await relevesGrid.Reload();
         await InvokeAsync(StateHasChanged);
     }
 
     private async Task ResetFilters()
     {
-        selectedAnneeAcademiqueId = null;
-        selectedCycleFormationId = null;
-        selectedNiveauEtudeId = null;
+        selectedParcoursAcademiqueId = null;
         selectedClassePedagogiqueId = null;
         searchText = null;
         selectedReleve = null;
@@ -339,6 +339,54 @@
 
     private void ExportWord(long dossierAcademiqueId)
         => Navigation.NavigateTo($"/exports/releves/{dossierAcademiqueId}.docx", forceLoad: true);
+
+    private void ExportPdf(ReleveNoteEtudiantDisponibleDto item)
+        => ExportPdf(item.DossierAcademiqueId);
+
+    private void ExportPdf(long dossierAcademiqueId)
+        => Navigation.NavigateTo($"/exports/releves/{dossierAcademiqueId}.pdf", forceLoad: true);
+
+    private async Task PreviewPdf(ReleveNoteEtudiantDisponibleDto item)
+        => await PreviewPdf(item.DossierAcademiqueId, item.EtudiantNomComplet);
+
+    private async Task PreviewPdf(ReleveNoteAnnuelDto releve)
+        => await PreviewPdf(releve.DossierAcademiqueId, releve.EtudiantNomComplet);
+
+    private async Task PreviewPdf(long dossierAcademiqueId, string studentName)
+    {
+        try
+        {
+            var export = await ReleveNotePdfExportService.ExporterReleveAnnuelAsync(
+                dossierAcademiqueId,
+                CancellationToken.None);
+
+            if (export is null)
+            {
+                NotifyError("Le relevé PDF ne peut pas être généré pour cet étudiant.");
+                return;
+            }
+
+            var pdfDataUrl = $"data:{export.ContentType};base64,{Convert.ToBase64String(export.Content)}";
+            await DialogService.OpenAsync<RelevePdfPreviewDialog>(
+                $"Aperçu PDF - {studentName}",
+                new Dictionary<string, object?>
+                {
+                    [nameof(RelevePdfPreviewDialog.PdfUrl)] = pdfDataUrl
+                },
+                new DialogOptions
+                {
+                    Width = "95vw",
+                    Height = "95vh",
+                    Resizable = true,
+                    Draggable = true,
+                    CloseDialogOnOverlayClick = true
+                });
+        }
+        catch (Exception ex)
+        {
+            NotifyError(ex.Message);
+        }
+    }
 
     private void ExportTemplateWord(ReleveNoteEtudiantDisponibleDto item)
         => ExportTemplateWord(item.DossierAcademiqueId);

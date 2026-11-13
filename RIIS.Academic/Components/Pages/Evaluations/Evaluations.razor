@@ -1,6 +1,7 @@
 @page "/evaluations"
 @inject IEvaluationsService EvaluationsService
 @inject NotificationService NotificationService
+@inject NavigationManager Navigation
 
 <RadzenStack Gap="1rem">
     <RadzenCard>
@@ -18,52 +19,22 @@
             <RadzenText TextStyle="TextStyle.H6" Text="Filtres de recherche" />
 
             <RadzenRow>
-                <RadzenColumn Size="12" SizeMD="2">
-                    <RadzenFormField Text="Année académique" Style="width:100%">
-                        <RadzenDropDown Data="@anneesAcademiques"
+                <RadzenColumn Size="12" SizeMD="4">
+                    <RadzenFormField Text="Parcours académique" Style="width:100%">
+                        <RadzenDropDown Data="@parcoursAcademiques"
                                         TextProperty="Libelle"
                                         ValueProperty="Id"
-                                        @bind-Value="@selectedAnneeAcademiqueId"
-                                        Change="@OnHierarchyFilterChanged"
+                                        @bind-Value="@selectedParcoursAcademiqueId"
+                                        Change="@OnParcoursFilterChanged"
                                         AllowClear="true"
                                         AllowFiltering="true"
                                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                        Placeholder="Toutes les années"
+                                        Placeholder="Tous les parcours"
                                         Style="width:100%" />
                     </RadzenFormField>
                 </RadzenColumn>
 
-                <RadzenColumn Size="12" SizeMD="2">
-                    <RadzenFormField Text="Cycle formation" Style="width:100%">
-                        <RadzenDropDown Data="@cyclesFormation"
-                                        TextProperty="Libelle"
-                                        ValueProperty="Id"
-                                        @bind-Value="@selectedCycleFormationId"
-                                        Change="@OnHierarchyFilterChanged"
-                                        AllowClear="true"
-                                        AllowFiltering="true"
-                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                        Placeholder="Tous les cycles"
-                                        Style="width:100%" />
-                    </RadzenFormField>
-                </RadzenColumn>
-
-                <RadzenColumn Size="12" SizeMD="2">
-                    <RadzenFormField Text="Semestre" Style="width:100%">
-                        <RadzenDropDown Data="@semestres"
-                                        TextProperty="Libelle"
-                                        ValueProperty="Id"
-                                        @bind-Value="@selectedSemestrePedagogiqueId"
-                                        Change="@OnSemestreFilterChanged"
-                                        AllowClear="true"
-                                        AllowFiltering="true"
-                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                        Placeholder="Tous les semestres"
-                                        Style="width:100%" />
-                    </RadzenFormField>
-                </RadzenColumn>
-
-                <RadzenColumn Size="12" SizeMD="2">
+                <RadzenColumn Size="12" SizeMD="3">
                     <RadzenFormField Text="UE" Style="width:100%">
                         <RadzenDropDown Data="@unitesEnseignement"
                                         TextProperty="Libelle"
@@ -78,7 +49,7 @@
                     </RadzenFormField>
                 </RadzenColumn>
 
-                <RadzenColumn Size="12" SizeMD="2">
+                <RadzenColumn Size="12" SizeMD="3">
                     <RadzenFormField Text="EC" Style="width:100%">
                         <RadzenDropDown Data="@elementsConstitutifs"
                                         TextProperty="Libelle"
@@ -95,7 +66,7 @@
 
                 <RadzenColumn Size="12" SizeMD="2">
                     <RadzenFormField Text="Type" Style="width:100%">
-                        <RadzenDropDown Data="@typesEvaluation"
+                        <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@typesEvaluation"
                                         TextProperty="Text"
                                         ValueProperty="Value"
                                         @bind-Value="@selectedTypeEvaluation"
@@ -116,30 +87,33 @@
 
     @if (showForm)
     {
-        <RadzenCard>
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
             <RadzenTemplateForm TItem="EvaluationAcademiqueDto" Data="@model" Submit="@Save">
                 <RadzenStack Gap="1rem">
-                    <RadzenText TextStyle="TextStyle.H6" Text="Formulaire évaluation" />
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="riis-modal-title rz-m-0">@(model.Id == 0 ? "Nouvelle évaluation" : "Modifier l'évaluation")</RadzenText>
 
                     <RadzenRow>
                         <RadzenColumn Size="12" SizeMD="3">
-                            <RadzenFormField Text="Année académique" Style="width:100%">
-                                <RadzenDropDown Data="@anneesAcademiques"
+                            <RadzenFormField Text="Parcours académique" Style="width:100%">
+                                <RadzenDropDown Data="@parcoursAcademiques"
                                                 TextProperty="Libelle"
                                                 ValueProperty="Id"
-                                                @bind-Value="@model.AnneeAcademiqueId"
-                                                Change="@OnFormAnneeAcademiqueChanged"
-                                                Name="AnneeAcademiqueId"
+                                                @bind-Value="@formParcoursAcademiqueId"
+                                                Change="@OnFormParcoursChanged"
+                                                Name="ParcoursAcademiqueId"
+                                                AllowClear="true"
                                                 AllowFiltering="true"
                                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                Placeholder="Sélectionner un parcours"
                                                 Style="width:100%" />
                             </RadzenFormField>
-                            <RadzenRequiredValidator Component="AnneeAcademiqueId" Text="Année obligatoire." />
+                            <RadzenRequiredValidator Component="ParcoursAcademiqueId" Text="Parcours obligatoire." />
                         </RadzenColumn>
 
                         <RadzenColumn Size="12" SizeMD="3">
                             <RadzenFormField Text="UE" Style="width:100%">
-                                <RadzenDropDown Data="@unitesEnseignement"
+                                <RadzenDropDown Data="@formUnitesEnseignement"
                                                 TextProperty="Libelle"
                                                 ValueProperty="Id"
                                                 @bind-Value="@formUniteEnseignementId"
@@ -147,7 +121,7 @@
                                                 AllowClear="true"
                                                 AllowFiltering="true"
                                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                                Placeholder="Filtrer les EC"
+                                                Placeholder="Toutes les UE"
                                                 Style="width:100%" />
                             </RadzenFormField>
                         </RadzenColumn>
@@ -157,7 +131,7 @@
                                 <RadzenDropDown Data="@formElementsConstitutifs"
                                                 TextProperty="Libelle"
                                                 ValueProperty="Id"
-                                                @bind-Value="@formCatalogEcId"
+                                                @bind-Value="@formMaquetteElementConstitutifId"
                                                 Change="@OnFormElementConstitutifChanged"
                                                 Name="MaquetteElementConstitutifId"
                                                 AllowFiltering="true"
@@ -169,7 +143,7 @@
 
                         <RadzenColumn Size="12" SizeMD="3">
                             <RadzenFormField Text="Type" Style="width:100%">
-                                <RadzenDropDown Data="@typesEvaluation"
+                                <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@typesEvaluation"
                                                 TextProperty="Text"
                                                 ValueProperty="Value"
                                                 @bind-Value="@model.Type"
@@ -180,26 +154,6 @@
                     </RadzenRow>
 
                     <RadzenRow>
-                        <RadzenColumn Size="12" SizeMD="2">
-                            <RadzenFormField Text="Numéro" Style="width:100%">
-                                <RadzenNumeric @bind-Value="@model.Numero" Min="1" />
-                            </RadzenFormField>
-                        </RadzenColumn>
-
-                        <RadzenColumn Size="12" SizeMD="2">
-                            <RadzenFormField Text="Code" Style="width:100%">
-                                <RadzenTextBox @bind-Value="@model.Code" Name="Code" />
-                            </RadzenFormField>
-                            <RadzenRequiredValidator Component="Code" Text="Code obligatoire." />
-                        </RadzenColumn>
-
-                        <RadzenColumn Size="12" SizeMD="4">
-                            <RadzenFormField Text="Libellé" Style="width:100%">
-                                <RadzenTextBox @bind-Value="@model.Libelle" Name="Libelle" />
-                            </RadzenFormField>
-                            <RadzenRequiredValidator Component="Libelle" Text="Libellé obligatoire." />
-                        </RadzenColumn>
-
                         <RadzenColumn Size="12" SizeMD="2">
                             <RadzenFormField Text="Barème" Style="width:100%">
                                 <RadzenNumeric @bind-Value="@model.Bareme" Min="1" />
@@ -252,12 +206,14 @@
                     </RadzenStack>
                 </RadzenStack>
             </RadzenTemplateForm>
-        </RadzenCard>
+            </RadzenCard>
+        </div>
     }
 
     <RadzenCard>
-        <RadzenDataGrid Data="@items" TItem="EvaluationAcademiqueDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+        <RadzenDataGrid @ref="evaluationsGrid" Data="@items" TItem="EvaluationAcademiqueDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
             <Columns>
+                <RadzenDataGridColumn TItem="EvaluationAcademiqueDto" Property="ParcoursAcademiqueLibelle" Title="Parcours académique" />
                 <RadzenDataGridColumn TItem="EvaluationAcademiqueDto" Property="AnneeAcademiqueLibelle" Title="Année" Width="130px" />
                 <RadzenDataGridColumn TItem="EvaluationAcademiqueDto" Property="CycleFormationLibelle" Title="Cycle formation" />
                 <RadzenDataGridColumn TItem="EvaluationAcademiqueDto" Property="SemestrePedagogiqueLibelle" Title="Semestre" Width="140px" />
@@ -271,8 +227,17 @@
                 <RadzenDataGridColumn TItem="EvaluationAcademiqueDto" Property="DateEvaluation" Title="Date" Width="130px" FormatString="{0:dd/MM/yyyy}" />
                 <RadzenDataGridColumn TItem="EvaluationAcademiqueDto" Property="UniteEnseignementLibelle" Title="UE (Unité d'enseignement)" />
                 <RadzenDataGridColumn TItem="EvaluationAcademiqueDto" Property="EvaluationRemplaceeLibelle" Title="SN remplacée" />
-                <RadzenDataGridColumn TItem="EvaluationAcademiqueDto" Title="Actions" Width="150px" Sortable="false" Filterable="false">
+                <RadzenDataGridColumn TItem="EvaluationAcademiqueDto" Title="Actions" Width="190px" Sortable="false" Filterable="false">
                     <Template Context="item">
+                        @if (item.NombreNotes > 0)
+                        {
+                            <RadzenButton Icon="edit_note"
+                                          Size="ButtonSize.Small"
+                                          ButtonStyle="ButtonStyle.Primary"
+                                          Variant="Variant.Flat"
+                                          Click="@(() => OpenNotes(item))"
+                                          title="Modifier les notes" />
+                        }
                         <RadzenButton Icon="edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(() => Edit(item))" />
                         <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Click="@(() => Delete(item))" class="rz-ml-1" />
                     </Template>
@@ -284,23 +249,25 @@
 
 @code {
     private List<EvaluationAcademiqueDto> items = [];
-    private List<LookupDto> anneesAcademiques = [];
-    private List<LookupDto> cyclesFormation = [];
-    private List<LookupDto> semestres = [];
+    private RadzenDataGrid<EvaluationAcademiqueDto>? evaluationsGrid;
+    private List<LookupDto> parcoursAcademiques = [];
     private List<LookupDto> unitesEnseignement = [];
     private List<LookupDto> elementsConstitutifs = [];
+    private List<LookupDto> formUnitesEnseignement = [];
     private List<LookupDto> formElementsConstitutifs = [];
     private List<LookupDto> sessionsNormales = [];
     private EvaluationAcademiqueDto model = new();
-    private long? selectedAnneeAcademiqueId;
-    private long? selectedCycleFormationId;
-    private long? selectedSemestrePedagogiqueId;
+    private long? selectedParcoursAcademiqueId;
     private long? selectedUniteEnseignementId;
     private long? selectedElementConstitutifId;
+    private long? formParcoursAcademiqueId;
     private long? formUniteEnseignementId;
-    private long formCatalogEcId;
+    private long formMaquetteElementConstitutifId;
     private TypeEvaluation? selectedTypeEvaluation;
     private bool showForm;
+
+    private void OpenNotes(EvaluationAcademiqueDto item)
+        => Navigation.NavigateTo($"/saisie-notes?evaluationId={item.Id}");
 
     private readonly List<EnumOption<TypeEvaluation>> typesEvaluation =
     [
@@ -312,21 +279,19 @@
 
     protected override async Task OnInitializedAsync()
     {
-        anneesAcademiques = await EvaluationsService.GetAnneesAcademiquesLookupAsync();
-        cyclesFormation = await EvaluationsService.GetCyclesFormationLookupAsync();
-        await RefreshSemestresAsync();
+        parcoursAcademiques = await EvaluationsService.GetParcoursAcademiquesLookupAsync();
+        await RefreshUnitesEnseignementAsync();
         await Load();
     }
 
     private async Task Load()
     {
         items = await EvaluationsService.GetEvaluationsAsync(
-            selectedAnneeAcademiqueId,
-            selectedCycleFormationId,
-            selectedSemestrePedagogiqueId,
-            selectedUniteEnseignementId,
-            selectedElementConstitutifId,
-            selectedTypeEvaluation);
+            parcoursAcademiqueId: selectedParcoursAcademiqueId,
+            uniteEnseignementId: selectedUniteEnseignementId,
+            elementConstitutifId: selectedElementConstitutifId,
+            type: selectedTypeEvaluation);
+        if (evaluationsGrid is not null) await evaluationsGrid.Reload();
     }
 
     private async Task OnFilterChanged(object? _)
@@ -334,14 +299,10 @@
         await Load();
     }
 
-    private async Task OnHierarchyFilterChanged(object? _)
+    private async Task OnParcoursFilterChanged(object? _)
     {
-        await RefreshSemestresAsync();
-        await Load();
-    }
-
-    private async Task OnSemestreFilterChanged(object? _)
-    {
+        selectedUniteEnseignementId = null;
+        selectedElementConstitutifId = null;
         await RefreshUnitesEnseignementAsync();
         await Load();
     }
@@ -352,23 +313,11 @@
         await Load();
     }
 
-    private async Task RefreshSemestresAsync()
-    {
-        semestres = await EvaluationsService.GetSemestresLookupAsync(
-            selectedAnneeAcademiqueId,
-            selectedCycleFormationId);
-
-        EnsureSelectedValueIsAvailable(semestres, ref selectedSemestrePedagogiqueId);
-
-        await RefreshUnitesEnseignementAsync();
-    }
-
     private async Task RefreshUnitesEnseignementAsync()
     {
-        unitesEnseignement = await EvaluationsService.GetUnitesEnseignementLookupAsync(
-            selectedAnneeAcademiqueId,
-            selectedCycleFormationId,
-            selectedSemestrePedagogiqueId);
+        unitesEnseignement = selectedParcoursAcademiqueId is null
+            ? []
+            : await EvaluationsService.GetUnitesEnseignementForParcoursLookupAsync(selectedParcoursAcademiqueId.Value);
 
         EnsureSelectedValueIsAvailable(unitesEnseignement, ref selectedUniteEnseignementId);
 
@@ -377,39 +326,41 @@
 
     private async Task RefreshElementsConstitutifsAsync()
     {
-        elementsConstitutifs = await EvaluationsService.GetElementsConstitutifsLookupAsync(
-            selectedAnneeAcademiqueId,
-            selectedCycleFormationId,
-            selectedSemestrePedagogiqueId,
-            selectedUniteEnseignementId);
+        elementsConstitutifs = selectedParcoursAcademiqueId is null
+            ? []
+            : await EvaluationsService.GetElementsConstitutifsForParcoursLookupAsync(
+                selectedParcoursAcademiqueId.Value,
+                selectedUniteEnseignementId);
 
         EnsureSelectedValueIsAvailable(elementsConstitutifs, ref selectedElementConstitutifId);
     }
 
     private async Task ResetFilters()
     {
-        selectedAnneeAcademiqueId = null;
-        selectedCycleFormationId = null;
-        selectedSemestrePedagogiqueId = null;
+        selectedParcoursAcademiqueId = null;
         selectedUniteEnseignementId = null;
         selectedElementConstitutifId = null;
         selectedTypeEvaluation = null;
         showForm = false;
 
-        await RefreshSemestresAsync();
+        await RefreshUnitesEnseignementAsync();
         await Load();
     }
 
     private async Task Create()
     {
-        var maquetteEcId = ResolveMaquetteElementConstitutifId(formCatalogEcId);
+        model = new EvaluationAcademiqueDto
+        {
+            Type = selectedTypeEvaluation ?? TypeEvaluation.ControleContinu,
+            TypeLibelle = GetShortTypeLibelle(selectedTypeEvaluation ?? TypeEvaluation.ControleContinu),
+            Bareme = 20m,
+            PonderationPourcentage = GetDefaultPonderation(selectedTypeEvaluation ?? TypeEvaluation.ControleContinu)
+        };
 
-        model = await EvaluationsService.CreateDefaultEvaluationAsync(
-            selectedAnneeAcademiqueId,
-            maquetteEcId,
-            selectedTypeEvaluation ?? TypeEvaluation.ControleContinu);
-
+        formParcoursAcademiqueId = selectedParcoursAcademiqueId;
         formUniteEnseignementId = selectedUniteEnseignementId;
+        formMaquetteElementConstitutifId = 0;
+        await RefreshFormUnitesEnseignementAsync();
         await RefreshFormElementsConstitutifsAsync();
         await RefreshSessionsNormalesAsync();
         showForm = true;
@@ -422,6 +373,8 @@
             Id = item.Id,
             AnneeAcademiqueId = item.AnneeAcademiqueId,
             AnneeAcademiqueLibelle = item.AnneeAcademiqueLibelle,
+            ParcoursAcademiqueId = item.ParcoursAcademiqueId,
+            ParcoursAcademiqueLibelle = item.ParcoursAcademiqueLibelle,
             MaquetteElementConstitutifId = item.MaquetteElementConstitutifId,
             ElementConstitutifLibelle = item.ElementConstitutifLibelle,
             UniteEnseignementId = item.UniteEnseignementId,
@@ -443,18 +396,23 @@
             Observation = item.Observation
         };
 
+        formParcoursAcademiqueId = item.ParcoursAcademiqueId == 0 ? null : item.ParcoursAcademiqueId;
         formUniteEnseignementId = item.UniteEnseignementId == 0 ? null : item.UniteEnseignementId;
+        formMaquetteElementConstitutifId = item.MaquetteElementConstitutifId;
+        await RefreshFormUnitesEnseignementAsync();
         await RefreshFormElementsConstitutifsAsync();
-
-        // Resolve catalog EC ID from MaquetteEC for dropdown binding
-        formCatalogEcId = ResolveCatalogEcIdFromMaquetteEc(item.MaquetteElementConstitutifId);
 
         await RefreshSessionsNormalesAsync();
         showForm = true;
     }
 
-    private async Task OnFormAnneeAcademiqueChanged(object? _)
+    private async Task OnFormParcoursChanged(object? _)
     {
+        formUniteEnseignementId = null;
+        formMaquetteElementConstitutifId = 0;
+        model.ParcoursAcademiqueId = formParcoursAcademiqueId ?? 0;
+        await RefreshFormUnitesEnseignementAsync();
+        await RefreshFormElementsConstitutifsAsync();
         await RefreshSessionsNormalesAsync();
     }
 
@@ -474,8 +432,6 @@
         if (model.Id == 0)
         {
             model.PonderationPourcentage = GetDefaultPonderation(model.Type);
-            model.Code = $"{GetTypeCode(model.Type)}{model.Numero}";
-            model.Libelle = $"{GetShortTypeLibelle(model.Type)} {model.Numero}";
         }
 
         if (model.Type != TypeEvaluation.SessionRattrapage)
@@ -488,21 +444,30 @@
 
     private async Task RefreshFormElementsConstitutifsAsync()
     {
-        formElementsConstitutifs = await EvaluationsService.GetElementsConstitutifsLookupAsync(
-            selectedAnneeAcademiqueId,
-            selectedCycleFormationId,
-            selectedSemestrePedagogiqueId,
-            formUniteEnseignementId);
+        formElementsConstitutifs = formParcoursAcademiqueId is null
+            ? []
+            : await EvaluationsService.GetElementsConstitutifsForParcoursLookupAsync(
+                formParcoursAcademiqueId.Value,
+                formUniteEnseignementId);
 
-        if (formCatalogEcId != 0 && formElementsConstitutifs.All(x => x.Id != formCatalogEcId))
+        if (formMaquetteElementConstitutifId != 0 && formElementsConstitutifs.All(x => x.Id != formMaquetteElementConstitutifId))
         {
-            formCatalogEcId = formElementsConstitutifs.FirstOrDefault()?.Id ?? 0;
+            formMaquetteElementConstitutifId = formElementsConstitutifs.FirstOrDefault()?.Id ?? 0;
         }
+    }
+
+    private async Task RefreshFormUnitesEnseignementAsync()
+    {
+        formUnitesEnseignement = formParcoursAcademiqueId is null
+            ? []
+            : await EvaluationsService.GetUnitesEnseignementForParcoursLookupAsync(formParcoursAcademiqueId.Value);
+
+        EnsureSelectedValueIsAvailable(formUnitesEnseignement, ref formUniteEnseignementId);
     }
 
     private async Task RefreshSessionsNormalesAsync()
     {
-        var maquetteEcId = ResolveMaquetteElementConstitutifId(formCatalogEcId);
+        var maquetteEcId = formMaquetteElementConstitutifId;
 
         sessionsNormales = await EvaluationsService.GetSessionsNormalesLookupAsync(
             model.AnneeAcademiqueId == 0 ? null : model.AnneeAcademiqueId,
@@ -519,7 +484,8 @@
         try
         {
             // Resolve catalog EC → MaquetteEC before saving
-            model.MaquetteElementConstitutifId = ResolveMaquetteElementConstitutifId(formCatalogEcId);
+            model.ParcoursAcademiqueId = formParcoursAcademiqueId ?? 0;
+            model.MaquetteElementConstitutifId = formMaquetteElementConstitutifId;
 
             await EvaluationsService.SaveEvaluationAsync(model);
             NotifySuccess();
@@ -550,62 +516,6 @@
     private void NotifySuccess() => NotificationService.Notify(NotificationSeverity.Success, "Succès", "Données enregistrées.");
 
     private void NotifyError(string message) => NotificationService.Notify(NotificationSeverity.Error, "Erreur", message);
-
-    /// <summary>
-    /// Maps a catalog EC ID to the corresponding MaquetteElementConstitutif ID
-    /// using the currently selected semestre context.
-    /// </summary>
-    private long ResolveMaquetteElementConstitutifId(long catalogEcId)
-    {
-        if (catalogEcId == 0 || selectedSemestrePedagogiqueId is null)
-        {
-            return 0;
-        }
-
-        // The evaluations service uses MaquetteEC internally.
-        // We need to find the MaquetteEC that matches both the catalog EC and the semestre.
-        // Since we don't have direct access to maquette EC items here, we use the model's
-        // existing MaquetteElementConstitutifId if the catalog EC hasn't changed.
-        // For new selections, we rely on the fact that the service accepts catalog EC IDs
-        // through the filter methods and resolves them internally.
-        return catalogEcId;
-    }
-
-    /// <summary>
-    /// Extracts the catalog EC ID from a MaquetteElementConstitutif ID
-    /// by looking at the current items list for context.
-    /// </summary>
-    private long ResolveCatalogEcIdFromMaquetteEc(long maquetteEcId)
-    {
-        // The model already has ElementConstitutifLibelle which we can use to find
-        // the matching catalog EC in the form elements list.
-        // For simplicity, we try to match by looking at the formElementsConstitutifs list.
-        // Since the lookup returns catalog EC IDs, and the MaquetteEC ID may differ,
-        // we fall back to matching by libelle.
-        if (maquetteEcId == 0)
-        {
-            return 0;
-        }
-
-        // If the MaquetteEC ID happens to match a catalog EC ID in our list, use it directly
-        var match = formElementsConstitutifs.FirstOrDefault(x => x.Id == maquetteEcId);
-        if (match is not null)
-        {
-            return match.Id;
-        }
-
-        // Otherwise, try to find by libelle match
-        if (!string.IsNullOrEmpty(model.ElementConstitutifLibelle))
-        {
-            var byLibelle = formElementsConstitutifs.FirstOrDefault(x => x.Libelle == model.ElementConstitutifLibelle);
-            if (byLibelle is not null)
-            {
-                return byLibelle.Id;
-            }
-        }
-
-        return formElementsConstitutifs.FirstOrDefault()?.Id ?? 0;
-    }
 
     private static void EnsureSelectedValueIsAvailable(IReadOnlyCollection<LookupDto> options, ref long? selectedValue)
     {

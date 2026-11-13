@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="QRCoder" Version="1.7.0" />
     <ProjectReference Include="..\RIIS.Academic.Domain\RIIS.Academic.Domain.csproj" />
   </ItemGroup>
 </Project>

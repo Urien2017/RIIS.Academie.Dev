@@ -25,11 +25,24 @@ public static class NotesSeeder
             .FirstOrDefaultAsync(x => x.Libelle == data.AnneeAcademique, cancellationToken)
             ?? throw new InvalidOperationException($"L'année académique '{data.AnneeAcademique}' est introuvable.");
 
-        var inscriptionsParMatricule = await context.Inscriptions
-            .Include(x => x.Etudiant)
+        var dossiersEtudiants = await context.DossiersEtudiants
+            .Where(x => x.ParcoursAcademique.AnneeAcademiqueId == anneeAcademique.Id)
+            .ToListAsync(cancellationToken);
+        var inscriptions = await context.Inscriptions
             .Include(x => x.ParcoursAcademique)
-            .Where(x => x.AnneeAcademiqueId == anneeAcademique.Id && x.Etudiant.Matricule != null)
-            .ToDictionaryAsync(x => Normalize(x.Etudiant.Matricule!), StringComparer.OrdinalIgnoreCase, cancellationToken);
+            .Where(x => x.AnneeAcademiqueId == anneeAcademique.Id)
+            .ToListAsync(cancellationToken);
+        var inscriptionsParMatricule = inscriptions
+            .Select(x => new
+            {
+                Inscription = x,
+                Dossier = dossiersEtudiants.FirstOrDefault(d =>
+                    d.EtudiantId == x.EtudiantId
+                    && d.ParcoursAcademiqueId == x.ParcoursAcademiqueId)
+            })
+            .Where(x => x.Dossier is not null)
+            .GroupBy(x => Normalize(x.Dossier!.Matricule), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(x => x.Key, x => x.First().Inscription, StringComparer.OrdinalIgnoreCase);
 
         var programmeCache = new Dictionary<ProgrammeCacheKey, ProgrammeSeedContext>();
 

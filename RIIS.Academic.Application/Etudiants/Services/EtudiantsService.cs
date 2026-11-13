@@ -6,7 +6,7 @@ namespace RIIS.Academic.Application.Etudiants.Services;
 
 public class EtudiantsService(
     IRepository<Etudiant> etudiants,
-    IMatriculeGenerator matriculeGenerator) : IEtudiantsService
+    IRepository<DossierEtudiant> dossiersEtudiants) : IEtudiantsService
 {
     public async Task<List<EtudiantDto>> GetEtudiantsAsync(
         string? recherche = null,
@@ -19,11 +19,9 @@ public class EtudiantsService(
         {
             items = items
                 .Where(x =>
-                    Contains(x.Matricule, normalizedSearch)
-                    || Contains(x.Nom, normalizedSearch)
+                    Contains(x.Nom, normalizedSearch)
                     || Contains(x.Prenoms, normalizedSearch)
-                    || Contains(x.TelephonePrincipal, normalizedSearch)
-                    || Contains(x.Email, normalizedSearch))
+                    || Contains($"{x.Nom} {x.Prenoms}", normalizedSearch))
                 .ToList();
         }
 
@@ -48,42 +46,20 @@ public class EtudiantsService(
             LieuNaissance = "Non renseigné",
             Sexe = Sexe.NonRenseigne,
             AptitudeMedicale = AptitudeMedicale.NonRenseignee,
-            Nationalite = "Camerounaise",
-            TelephonePrincipal = "Non renseigné"
+            Nationalite = "Camerounaise"
         };
 
     public async Task SaveEtudiantAsync(EtudiantDto dto, CancellationToken cancellationToken = default)
     {
-        dto.Matricule = NormalizeNullable(dto.Matricule);
         dto.Nom = RequireText(dto.Nom, "Le nom de l'étudiant est obligatoire.").ToUpperInvariant();
         dto.Prenoms = RequireText(dto.Prenoms, "Les prénoms de l'étudiant sont obligatoires.");
         dto.LieuNaissance = RequireText(dto.LieuNaissance, "Le lieu de naissance est obligatoire.");
         dto.Nationalite = RequireText(dto.Nationalite, "La nationalité est obligatoire.");
-        dto.TelephonePrincipal = RequireText(dto.TelephonePrincipal, "Le téléphone principal est obligatoire.");
-
-        if (dto.Id == 0 && dto.Matricule is null)
-        {
-            dto.Matricule = await matriculeGenerator.GenerateMatriculeAsync(cancellationToken);
-        }
-
-        if (dto.Matricule is not null)
-        {
-            var existing = await etudiants.ListAsync(cancellationToken);
-            var matriculeAlreadyUsed = existing.Any(x =>
-                x.Id != dto.Id
-                && string.Equals(x.Matricule, dto.Matricule, StringComparison.OrdinalIgnoreCase));
-
-            if (matriculeAlreadyUsed)
-            {
-                throw new InvalidOperationException($"Le matricule '{dto.Matricule}' est déjà utilisé.");
-            }
-        }
 
         if (dto.Id == 0)
         {
             await etudiants.AddAsync(new Etudiant
             {
-                Matricule = dto.Matricule,
                 Nom = dto.Nom,
                 Prenoms = dto.Prenoms,
                 DateNaissance = dto.DateNaissance,
@@ -92,8 +68,10 @@ public class EtudiantsService(
                 AptitudeMedicale = dto.AptitudeMedicale,
                 Nationalite = dto.Nationalite,
                 RegionOrigine = NormalizeNullable(dto.RegionOrigine),
-                TelephonePrincipal = dto.TelephonePrincipal,
+                TelephonePrincipal = NormalizeNullable(dto.TelephonePrincipal),
                 TelephoneSecondaire = NormalizeNullable(dto.TelephoneSecondaire),
+                TelephoneParent1 = NormalizeNullable(dto.TelephoneParent1),
+                TelephoneParent2 = NormalizeNullable(dto.TelephoneParent2),
                 Email = NormalizeNullable(dto.Email),
                 NomPere = NormalizeNullable(dto.NomPere),
                 NomMere = NormalizeNullable(dto.NomMere),
@@ -106,7 +84,6 @@ public class EtudiantsService(
             var entity = await etudiants.GetByIdAsync(dto.Id, cancellationToken);
             if (entity is null) return;
 
-            entity.Matricule = dto.Matricule;
             entity.Nom = dto.Nom;
             entity.Prenoms = dto.Prenoms;
             entity.DateNaissance = dto.DateNaissance;
@@ -115,8 +92,10 @@ public class EtudiantsService(
             entity.AptitudeMedicale = dto.AptitudeMedicale;
             entity.Nationalite = dto.Nationalite;
             entity.RegionOrigine = NormalizeNullable(dto.RegionOrigine);
-            entity.TelephonePrincipal = dto.TelephonePrincipal;
+            entity.TelephonePrincipal = NormalizeNullable(dto.TelephonePrincipal);
             entity.TelephoneSecondaire = NormalizeNullable(dto.TelephoneSecondaire);
+            entity.TelephoneParent1 = NormalizeNullable(dto.TelephoneParent1);
+            entity.TelephoneParent2 = NormalizeNullable(dto.TelephoneParent2);
             entity.Email = NormalizeNullable(dto.Email);
             entity.NomPere = NormalizeNullable(dto.NomPere);
             entity.NomMere = NormalizeNullable(dto.NomMere);
@@ -129,6 +108,14 @@ public class EtudiantsService(
 
     public async Task DeleteEtudiantAsync(long id, CancellationToken cancellationToken = default)
     {
+        var hasDossier = (await dossiersEtudiants.ListAsync(cancellationToken))
+            .Any(x => x.EtudiantId == id);
+        if (hasDossier)
+        {
+            throw new InvalidOperationException(
+                "Cet étudiant possède déjà un dossier et ne peut pas être supprimé.");
+        }
+
         await etudiants.DeleteByIdAsync(id, cancellationToken);
         await etudiants.SaveChangesAsync(cancellationToken);
     }
@@ -137,7 +124,6 @@ public class EtudiantsService(
         => new()
         {
             Id = entity.Id,
-            Matricule = entity.Matricule,
             Nom = entity.Nom,
             Prenoms = entity.Prenoms,
             DateNaissance = entity.DateNaissance,
@@ -148,6 +134,8 @@ public class EtudiantsService(
             RegionOrigine = entity.RegionOrigine,
             TelephonePrincipal = entity.TelephonePrincipal,
             TelephoneSecondaire = entity.TelephoneSecondaire,
+            TelephoneParent1 = entity.TelephoneParent1,
+            TelephoneParent2 = entity.TelephoneParent2,
             Email = entity.Email,
             NomPere = entity.NomPere,
             NomMere = entity.NomMere,

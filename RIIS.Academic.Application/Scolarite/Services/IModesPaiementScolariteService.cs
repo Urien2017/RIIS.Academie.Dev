@@ -10,6 +10,8 @@ public interface IModesPaiementScolariteService
 
     ModePaiementScolariteDto CreateDefaultModePaiementScolarite();
 
+    string GenerateCodeFromLibelle(string? libelle);
+
     Task SaveModePaiementScolariteAsync(
         ModePaiementScolariteDto dto,
         CancellationToken cancellationToken = default);

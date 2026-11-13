@@ -15,9 +15,11 @@
 
     @if (showForm)
     {
-        <RadzenCard>
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
             <RadzenTemplateForm TItem="NiveauEtudeDto" Data="@model" Submit="@Save">
                 <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="riis-modal-title rz-m-0">@(model.Id == 0 ? "Nouveau niveau" : "Modifier le niveau")</RadzenText>
                     <RadzenRow>
                         <RadzenColumn Size="12" SizeMD="3">
                             <RadzenFormField Text="Numéro" Style="width:100%">
@@ -41,11 +43,12 @@
                     </RadzenStack>
                 </RadzenStack>
             </RadzenTemplateForm>
-        </RadzenCard>
+            </RadzenCard>
+        </div>
     }
 
     <RadzenCard>
-        <RadzenDataGrid Data="@items" TItem="NiveauEtudeDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+        <RadzenDataGrid @ref="niveauxGrid" Data="@items" TItem="NiveauEtudeDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
             <Columns>
                 <RadzenDataGridColumn TItem="NiveauEtudeDto" Property="Numero" Title="Numéro" />
                 <RadzenDataGridColumn TItem="NiveauEtudeDto" Property="Libelle" Title="Libellé" />
@@ -65,6 +68,7 @@
 
 @code {
     private List<NiveauEtudeDto> items = [];
+    private RadzenDataGrid<NiveauEtudeDto>? niveauxGrid;
     private NiveauEtudeDto model = new();
     private bool showForm;
 
@@ -73,6 +77,7 @@
     private async Task Load()
     {
         items = await ReferentielsService.GetNiveauxEtudeAsync();
+        if (niveauxGrid is not null) await niveauxGrid.Reload();
     }
 
     private async Task Create()

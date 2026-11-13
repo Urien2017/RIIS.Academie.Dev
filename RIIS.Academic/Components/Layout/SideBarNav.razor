@@ -11,51 +11,110 @@
         </RadzenCard>
 
         <RadzenPanelMenu>
-            <RadzenPanelMenuItem Text="Tableau de bord" Icon="insights" Path="/" />
+            @if (CanAccess("/"))
+            {
+                <RadzenPanelMenuItem Text="Tableau de bord" Icon="insights" Path="/" />
+            }
+            @if (CanAccess("/dashboard-scolarite"))
+            {
+                <RadzenPanelMenuItem Text="Dashboard scolarité" Icon="payments" Path="/dashboard-scolarite" />
+            }
 
-            <RadzenPanelMenuItem Text="Référentiels" Icon="settings">
-                <RadzenPanelMenuItem Text="Année académique" Icon="calendar_month" Path="/referentiels/annees" />
-                <RadzenPanelMenuItem Text="Cycle" Icon="account_tree" Path="/referentiels/cycles" />
-                <RadzenPanelMenuItem Text="Filière" Icon="category" Path="/referentiels/filieres" />
-                <RadzenPanelMenuItem Text="Spécialité" Icon="workspace_premium" Path="/referentiels/specialites" />
-                <RadzenPanelMenuItem Text="Niveau" Icon="stairs" Path="/referentiels/niveaux" />
-                <RadzenPanelMenuItem Text="Parcours académiques" Icon="route" Path="/referentiels/parcours-academiques" />
-                <RadzenPanelMenuItem Text="Classes" Icon="co_present" Path="/classes-pedagogiques" />
-            </RadzenPanelMenuItem>
+            @if (CanAccessAny("/referentiels/annees", "/referentiels/cycles", "/referentiels/filieres", "/referentiels/specialites", "/referentiels/niveaux", "/referentiels/parcours-academiques", "/classes-pedagogiques"))
+            {
+                <RadzenPanelMenuItem Text="Référentiels" Icon="settings">
+                    @if (CanAccess("/referentiels/annees")) { <RadzenPanelMenuItem Text="Année académique" Icon="calendar_month" Path="/referentiels/annees" /> }
+                    @if (CanAccess("/referentiels/cycles")) { <RadzenPanelMenuItem Text="Cycle" Icon="account_tree" Path="/referentiels/cycles" /> }
+                    @if (CanAccess("/referentiels/filieres")) { <RadzenPanelMenuItem Text="Filière" Icon="category" Path="/referentiels/filieres" /> }
+                    @if (CanAccess("/referentiels/specialites")) { <RadzenPanelMenuItem Text="Spécialité" Icon="workspace_premium" Path="/referentiels/specialites" /> }
+                    @if (CanAccess("/referentiels/niveaux")) { <RadzenPanelMenuItem Text="Niveau" Icon="stairs" Path="/referentiels/niveaux" /> }
+                    @if (CanAccess("/referentiels/parcours-academiques")) { <RadzenPanelMenuItem Text="Parcours académiques" Icon="route" Path="/referentiels/parcours-academiques" /> }
+                    @if (CanAccess("/classes-pedagogiques")) { <RadzenPanelMenuItem Text="Classes" Icon="co_present" Path="/classes-pedagogiques" /> }
+                </RadzenPanelMenuItem>
+            }
 
-            <RadzenPanelMenuItem Text="Programme pédagogique" Icon="menu_book">
-                <RadzenPanelMenuItem Text="Maquette" Icon="schema" Path="/programme/maquettes" />
-                <RadzenPanelMenuItem Text="Semestre" Icon="view_timeline" Path="/programme/semestres" />
-                <RadzenPanelMenuItem Text="UE" Icon="view_module" Path="/programme/ue" />
-                <RadzenPanelMenuItem Text="EC" Icon="article" Path="/programme/ec" />
-            </RadzenPanelMenuItem>
+            @if (CanAccessAny("/programme/maquettes", "/programme/affectations-maquettes", "/programme/semestres", "/programme/ue", "/programme/ec"))
+            {
+                <RadzenPanelMenuItem Text="Programme pédagogique" Icon="menu_book">
+                    @if (CanAccess("/programme/maquettes")) { <RadzenPanelMenuItem Text="Maquette" Icon="schema" Path="/programme/maquettes" /> }
+                    @if (CanAccess("/programme/affectations-maquettes")) { <RadzenPanelMenuItem Text="Affectations" Icon="link" Path="/programme/affectations-maquettes" /> }
+                    @if (CanAccess("/programme/semestres")) { <RadzenPanelMenuItem Text="Semestre" Icon="view_timeline" Path="/programme/semestres" /> }
+                    @if (CanAccess("/programme/ue")) { <RadzenPanelMenuItem Text="UE" Icon="view_module" Path="/programme/ue" /> }
+                    @if (CanAccess("/programme/ec")) { <RadzenPanelMenuItem Text="EC" Icon="article" Path="/programme/ec" /> }
+                </RadzenPanelMenuItem>
+            }
 
-            <RadzenPanelMenuItem Text="Académique" Icon="school">
-                <RadzenPanelMenuItem Text="Étudiants" Icon="groups" Path="/etudiants" />
-                <RadzenPanelMenuItem Text="Dossier Etudiant" Icon="folder_shared" Path="/etudiants/dossier" />
-            </RadzenPanelMenuItem>
+            @if (CanAccessAny("/etudiants", "/etudiants/dossier"))
+            {
+                <RadzenPanelMenuItem Text="Académique" Icon="school">
+                    @if (CanAccess("/etudiants")) { <RadzenPanelMenuItem Text="Étudiants" Icon="groups" Path="/etudiants" /> }
+                    @if (CanAccess("/etudiants/dossier")) { <RadzenPanelMenuItem Text="Dossier Etudiant" Icon="folder_shared" Path="/etudiants/dossier" /> }
+                </RadzenPanelMenuItem>
+            }
 
-            <RadzenPanelMenuItem Text="Évaluations" Icon="fact_check">
-                <RadzenPanelMenuItem Text="Saisie des notes" Icon="edit_note" Path="/saisie-notes" />
-                <RadzenPanelMenuItem Text="Résultats" Icon="analytics" Path="/evaluations" />
-                <RadzenPanelMenuItem Text="Calcul des résultats" Icon="calculate" Path="/calcul-resultats" />
-                <RadzenPanelMenuItem Text="PV" Icon="article" Path="/pv" />
-                <RadzenPanelMenuItem Text="Relevés" Icon="description" Path="/releves" />
-            </RadzenPanelMenuItem>
+            @if (CanAccessAny("/saisie-notes", "/evaluations", "/calcul-resultats", "/pv", "/releves"))
+            {
+                <RadzenPanelMenuItem Text="Évaluations" Icon="fact_check">
+                    @if (CanAccess("/evaluations")){<RadzenPanelMenuItem Text="Gestions évaluations" Icon="analytics" Path="/evaluations" />}
+                    @if (CanAccess("/saisie-notes")) { <RadzenPanelMenuItem Text="Saisie des notes" Icon="edit_note" Path="/saisie-notes" /> }
+                    @if (CanAccess("/releves")) { <RadzenPanelMenuItem Text="Relevés" Icon="description" Path="/releves" /> }
+                    @if (CanAccess("/pv")) { <RadzenPanelMenuItem Text="PV" Icon="article" Path="/pv" /> }
+                </RadzenPanelMenuItem>
+            }
 
-            <RadzenPanelMenuItem Text="Scolarité" Icon="payments">
-                <RadzenPanelMenuItem Text="Types d'éléments" Icon="tune" Path="/scolarite/types-elements" />
-                <RadzenPanelMenuItem Text="Tarifs" Icon="price_change" Path="/scolarite/tarifs" />
-                <RadzenPanelMenuItem Text="Dossiers" Icon="folder_open" Path="/scolarite/dossiers" />
-                <RadzenPanelMenuItem Text="Finances" Icon="payments" Path="/scolarite/finances" />
-                <RadzenPanelMenuItem Text="Modes de paiement" Icon="account_balance_wallet" Path="/scolarite/modes-paiement" />
-            </RadzenPanelMenuItem>
+            @if (CanAccessAny("/scolarite/types-elements", "/scolarite/tarifs", "/scolarite/dossiers", "/scolarite/finances", "/scolarite/modes-paiement"))
+            {
+                <RadzenPanelMenuItem Text="Scolarité" Icon="payments">
+                    @if (CanAccess("/scolarite/modes-paiement"))
+                    {<RadzenPanelMenuItem Text="Modes de paiement" Icon="account_balance_wallet" Path="/scolarite/modes-paiement" />}
+                    @if (CanAccess("/scolarite/types-elements")) { <RadzenPanelMenuItem Text="Types d'éléments" Icon="tune" Path="/scolarite/types-elements" /> }
+                    @if (CanAccess("/scolarite/tarifs")) { <RadzenPanelMenuItem Text="Tarifs" Icon="price_change" Path="/scolarite/tarifs" /> }
+                    @if (CanAccess("/scolarite/finances")) { <RadzenPanelMenuItem Text="Dossiers Financiers" Icon="payments" Path="/scolarite/finances" /> }
+                </RadzenPanelMenuItem>
+            }
 
-            <RadzenPanelMenuItem Text="Menu detaillés" Icon="dashboard" Path="/Dashboard-docs" />
+            @if (CanAccessAny("/administration/roles", "/administration/users"))
+            {
+                <RadzenPanelMenuItem Text="Administration" Icon="admin_panel_settings">
+                    @if (CanAccess("/administration/roles")) { <RadzenPanelMenuItem Text="Gestion des rôles" Icon="manage_accounts" Path="/administration/roles" /> }
+                    @if (CanAccess("/administration/users")) { <RadzenPanelMenuItem Text="Utilisateurs" Icon="group" Path="/administration/users" /> }
+                </RadzenPanelMenuItem>
+            }
+
+            @if (CanAccess("/Dashboard-docs"))
+            {
+                <RadzenPanelMenuItem Text="Menu detaillés" Icon="dashboard" Path="/Dashboard-docs" />
+            }
         </RadzenPanelMenu>
     </RadzenStack>
 </RadzenSidebar>
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using RIIS.Academic.Application.Authorization.Services
+@inject IUtilisateursService UtilisateursService
+
 @code {
     [Parameter]
     public bool sidebarExpanded { get; set; }
+
+    private HashSet<string> permissionRoutes = new(StringComparer.OrdinalIgnoreCase);
+    private bool isAdmin;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        isAdmin = user.IsInRole("Admin");
+
+        if (!isAdmin && user.Identity?.IsAuthenticated == true)
+        {
+            permissionRoutes = await UtilisateursService.GetPermissionRoutesAsync(
+                user.Identity.Name ?? string.Empty);
+        }
+    }
+
+    private bool CanAccess(string route)
+        => isAdmin || permissionRoutes.Contains(route);
+
+    private bool CanAccessAny(params string[] routes)
+        => isAdmin || routes.Any(CanAccess);
 }

@@ -13,23 +13,26 @@
     <Compile Remove="Persistence\Seeders\NotesSeeder.cs" />
     <Compile Remove="Persistence\Seeders\OfficialProgrammeSeeder.cs" />
     <Compile Remove="Persistence\Seeders\PrepaTestNotesSeeder.cs" />
-    <Compile Remove="Persistence\Seeders\ProcesVerbalSeeder.cs" />
     <Compile Remove="Persistence\Seeders\ProgrammeSeeder.cs" />
     <Compile Remove="Persistence\Seeders\StudentsSeeder.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.10">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.12">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 	  <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.11" />
 	  <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.11" />
+	  <PackageReference Include="QuestPDF" Version="2026.6.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RIIS.Academic.Application\RIIS.Academic.Application.csproj" />
@@ -42,8 +45,19 @@
     <Content Include="Documents\Templates\ReleveNoteTemplate.docx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Documents\Templates\FicheReportOptions2.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Persistence\Seeders\Data\filieres-specialites.json" />
+    <EmbeddedResource Include="Persistence\Seeders\Data\programme-officiel-bts1.json" />
+    <EmbeddedResource Include="Persistence\Seeders\Data\programme-officiel-prepa-2026-2027.json" />
+    <EmbeddedResource Include="Persistence\Seeders\Data\Etudiants\etudiants-dossiers-2026-2027.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Persistence\Configurations\Inscriptions\" />
+    <Folder Include="Persistence\Seeders\Data\" />
+    <Folder Include="Persistence\Sqlite\Migrations\" />
   </ItemGroup>
 </Project>

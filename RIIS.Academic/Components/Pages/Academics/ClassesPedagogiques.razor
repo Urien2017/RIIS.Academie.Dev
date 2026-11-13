@@ -9,19 +9,21 @@
                 <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-m-0" Text="Classes pédagogiques" />
                 <RadzenText Text="Gestion des groupes pédagogiques par parcours." />
             </RadzenStack>
-            <RadzenButton Text="Nouvelle classe" Icon="add_circle" Click="@Create" ButtonStyle="ButtonStyle.Primary" />
+            <RadzenText TextStyle="TextStyle.Caption" Text="Une classe est créée automatiquement pour chaque programme académique." />
         </RadzenStack>
     </RadzenCard>
 
     @if (showForm)
     {
-        <RadzenCard>
+        <div class="riis-modal-backdrop">
+            <RadzenCard class="riis-modal">
             <RadzenTemplateForm TItem="ClassePedagogiqueDto" Data="@model" Submit="@Save">
                 <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H2" class="riis-modal-title rz-m-0">@(model.Id == 0 ? "Nouvelle classe" : "Modifier la classe")</RadzenText>
                     <RadzenRow>
                         <RadzenColumn Size="12" SizeMD="6">
                             <RadzenFormField Text="Parcours" Style="width:100%">
-                                <RadzenDropDown Data="@parcours" TextProperty="Libelle" ValueProperty="Id" @bind-Value="@model.ParcoursAcademiqueId" Name="ParcoursAcademiqueId" Style="width:100%" />
+                                <RadzenDropDown AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data="@parcours" TextProperty="Libelle" ValueProperty="Id" @bind-Value="@model.ParcoursAcademiqueId" Name="ParcoursAcademiqueId" Style="width:100%" />
                             </RadzenFormField>
                             <RadzenRequiredValidator Component="ParcoursAcademiqueId" Text="Parcours obligatoire." />
                         </RadzenColumn>
@@ -39,19 +41,19 @@
                     </RadzenStack>
                 </RadzenStack>
             </RadzenTemplateForm>
-        </RadzenCard>
+            </RadzenCard>
+        </div>
     }
 
     <RadzenCard>
-        <RadzenDataGrid Data="@items" TItem="ClassePedagogiqueDto" AllowPaging="true" AllowSorting="true" AllowFiltering="true" PageSize="10">
+<RadzenDataGrid @ref="classesGrid" Data="@items" TItem="ClassePedagogiqueDto" AllowPaging="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true" PageSize="10">
             <Columns>
                 <RadzenDataGridColumn TItem="ClassePedagogiqueDto" Property="ParcoursAcademiqueLibelle" Title="Parcours" />
                 <RadzenDataGridColumn TItem="ClassePedagogiqueDto" Property="Libelle" Title="Libellé" />
                 <RadzenDataGridColumn TItem="ClassePedagogiqueDto" Property="Effectif" Title="Effectif" Width="110px" />
-                <RadzenDataGridColumn TItem="ClassePedagogiqueDto" Title="Actions" Width="160px" Sortable="false" Filterable="false">
+                <RadzenDataGridColumn TItem="ClassePedagogiqueDto" Title="Actions" Width="80px" Sortable="false" Filterable="false">
                     <Template Context="item">
                         <RadzenButton Icon="edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(() => Edit(item))" />
-                        <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Click="@(() => Delete(item))" class="rz-ml-1" />
                     </Template>
                 </RadzenDataGridColumn>
             </Columns>
@@ -61,6 +63,7 @@
 
 @code {
     private List<ClassePedagogiqueDto> items = [];
+    private RadzenDataGrid<ClassePedagogiqueDto>? classesGrid;
     private List<LookupDto> parcours = [];
     private ClassePedagogiqueDto model = new();
     private bool showForm;
@@ -79,12 +82,7 @@
     private async Task Load()
     {
         items = await ClassesPedagogiquesService.GetClassesPedagogiquesAsync();
-    }
-
-    private async Task Create()
-    {
-        model = await ClassesPedagogiquesService.CreateDefaultClassePedagogiqueAsync();
-        showForm = true;
+        if (classesGrid is not null) await classesGrid.Reload();
     }
 
     private void Edit(ClassePedagogiqueDto item)
@@ -108,19 +106,6 @@
             NotifySuccess();
             showForm = false;
             await LoadLookups();
-            await Load();
-        }
-        catch (Exception ex)
-        {
-            NotifyError(ex.Message);
-        }
-    }
-
-    private async Task Delete(ClassePedagogiqueDto item)
-    {
-        try
-        {
-            await ClassesPedagogiquesService.DeleteClassePedagogiqueAsync(item.Id);
             await Load();
         }
         catch (Exception ex)

@@ -51,13 +51,15 @@ public class ProcesVerbalExcelExportService(IProcesVerbauxService procesVerbauxS
 
     private static string BuildWorksheetXml(ProcesVerbalDto procesVerbal)
     {
-        var ecHeaders = BuildEcHeaders(procesVerbal);
-        var totalColumns = ecHeaders.Count == 0 ? 6 : 2 + (ecHeaders.Count * 4) + 4;
+        var ecHeaders = ProcesVerbalExportProjection.BuildEcHeaders(procesVerbal);
+        var headerLabels = ProcesVerbalExportProjection.GetHeaderLabels(procesVerbal);
+        var totalEcColumns = ecHeaders.Sum(x => x.Columns.Count);
+        var totalColumns = ecHeaders.Count == 0 ? 6 : 2 + totalEcColumns + 4;
         var lastColumn = ColumnName(totalColumns);
         var rows = new StringBuilder();
         var merges = new List<string>();
 
-        rows.Append(Row(1, [TextCell(1, 1, procesVerbal.Titre.ToUpperInvariant(), 1)]));
+        rows.Append(Row(1, [TextCell(1, 1, ProcesVerbalExportProjection.BuildCompactTitle(procesVerbal).ToUpperInvariant(), 1)]));
         merges.Add($"A1:{lastColumn}1");
 
         rows.Append(Row(2, [TextCell(2, 1, $"{procesVerbal.TypeLibelle} - {procesVerbal.SemestrePedagogiqueLibelle}", 2)]));
@@ -67,25 +69,48 @@ public class ProcesVerbalExcelExportService(IProcesVerbauxService procesVerbauxS
             TextCell(4, 1, "Cycle", 3),
             TextCell(4, 2, procesVerbal.CycleFormationLibelle, 4),
             TextCell(4, 4, "Parcours", 3),
-            TextCell(4, 5, procesVerbal.ParcoursLibelle, 4)
+            TextCell(4, 5, headerLabels.Parcours, 4)
         ]));
-        rows.Append(Row(5, [
-            TextCell(5, 1, "Classe", 3),
-            TextCell(5, 2, procesVerbal.ClassePedagogiqueLibelle, 4),
-            TextCell(5, 4, "Année académique", 3),
-            TextCell(5, 5, procesVerbal.AnneeAcademiqueLibelle, 4)
-        ]));
-        rows.Append(Row(6, [
-            TextCell(6, 1, "Session", 3),
-            TextCell(6, 2, procesVerbal.CodeSession ?? string.Empty, 4),
-            TextCell(6, 4, "Statut", 3),
-            TextCell(6, 5, procesVerbal.StatutLibelle, 4)
-        ]));
+        if (string.IsNullOrWhiteSpace(headerLabels.Classe))
+        {
+            rows.Append(Row(5, [
+                TextCell(5, 1, "Année académique", 3),
+                TextCell(5, 2, procesVerbal.AnneeAcademiqueLibelle, 4),
+                TextCell(5, 4, "Session", 3),
+                TextCell(5, 5, procesVerbal.CodeSession ?? string.Empty, 4)
+            ]));
+        }
+        else
+        {
+            rows.Append(Row(5, [
+                TextCell(5, 1, "Classe", 3),
+                TextCell(5, 2, headerLabels.Classe, 4),
+                TextCell(5, 4, "Année académique", 3),
+                TextCell(5, 5, procesVerbal.AnneeAcademiqueLibelle, 4)
+            ]));
+        }
+        rows.Append(string.IsNullOrWhiteSpace(headerLabels.Classe)
+            ? Row(6, [
+                TextCell(6, 1, "Statut", 3),
+                TextCell(6, 2, procesVerbal.StatutLibelle, 4),
+                TextCell(6, 4, "Étudiants", 3),
+                NumberCell(6, 5, procesVerbal.NombreLignes, 4)
+            ])
+            : Row(6, [
+                TextCell(6, 1, "Session", 3),
+                TextCell(6, 2, procesVerbal.CodeSession ?? string.Empty, 4),
+                TextCell(6, 4, "Statut", 3),
+                TextCell(6, 5, procesVerbal.StatutLibelle, 4)
+            ]));
         rows.Append(Row(7, [
-            TextCell(7, 1, "Étudiants", 3),
-            NumberCell(7, 2, procesVerbal.NombreLignes, 4),
-            TextCell(7, 4, "Décisions", 3),
-            TextCell(7, 5, $"Validés : {procesVerbal.NombreValides} | Rattrapage : {procesVerbal.NombreRattrapage} | Non délibérés : {procesVerbal.NombreNonDeliberes}", 4)
+            TextCell(7, 1, string.IsNullOrWhiteSpace(headerLabels.Classe) ? "Décisions" : "Étudiants", 3),
+            string.IsNullOrWhiteSpace(headerLabels.Classe)
+                ? TextCell(7, 2, $"Validés : {procesVerbal.NombreValides} | Rattrapage : {procesVerbal.NombreRattrapage} | Non délibérés : {procesVerbal.NombreNonDeliberes}", 4)
+                : NumberCell(7, 2, procesVerbal.NombreLignes, 4),
+            TextCell(7, 4, string.IsNullOrWhiteSpace(headerLabels.Classe) ? string.Empty : "Décisions", 3),
+            TextCell(7, 5, string.IsNullOrWhiteSpace(headerLabels.Classe)
+                ? string.Empty
+                : $"Validés : {procesVerbal.NombreValides} | Rattrapage : {procesVerbal.NombreRattrapage} | Non délibérés : {procesVerbal.NombreNonDeliberes}", 4)
         ]));
 
         if (ecHeaders.Count == 0)
@@ -126,7 +151,7 @@ public class ProcesVerbalExcelExportService(IProcesVerbauxService procesVerbauxS
     </sheetView>
   </sheetViews>
   <sheetFormatPr defaultRowHeight="18"/>
-  {BuildColumnsXml(totalColumns, ecHeaders.Count)}
+        {BuildColumnsXml(totalColumns, ecHeaders)}
   <sheetData>
     {rows}
   </sheetData>
@@ -166,7 +191,7 @@ public class ProcesVerbalExcelExportService(IProcesVerbauxService procesVerbauxS
 
     private static void BuildDetailsTable(
         ProcesVerbalDto procesVerbal,
-        IReadOnlyCollection<ProcesVerbalElementConstitutifLigneDto> ecHeaders,
+        IReadOnlyCollection<ProcesVerbalExportProjection.EcHeader> ecHeaders,
         StringBuilder rows,
         List<string> merges)
     {
@@ -182,9 +207,9 @@ public class ProcesVerbalExcelExportService(IProcesVerbauxService procesVerbauxS
         var columnIndex = 3;
         foreach (var ec in ecHeaders)
         {
-            firstHeader.Add(TextCell(10, columnIndex, ec.ElementConstitutifLibelle, 5));
-            merges.Add($"{ColumnName(columnIndex)}10:{ColumnName(columnIndex + 3)}10");
-            columnIndex += 4;
+            firstHeader.Add(TextCell(10, columnIndex, ec.Label, 5));
+            merges.Add($"{ColumnName(columnIndex)}10:{ColumnName(columnIndex + ec.Columns.Count - 1)}10");
+            columnIndex += ec.Columns.Count;
         }
 
         firstHeader.Add(TextCell(10, columnIndex, "Crédits", 5));
@@ -210,12 +235,12 @@ public class ProcesVerbalExcelExportService(IProcesVerbauxService procesVerbauxS
             TextCell(11, 2, string.Empty, 5)
         };
 
-        foreach (var _ in ecHeaders)
+        foreach (var ec in ecHeaders)
         {
-            secondHeader.Add(TextCell(11, secondHeader.Count + 1, "CCON", 5));
-            secondHeader.Add(TextCell(11, secondHeader.Count + 1, "CC", 5));
-            secondHeader.Add(TextCell(11, secondHeader.Count + 1, "SN", 5));
-            secondHeader.Add(TextCell(11, secondHeader.Count + 1, "MOY", 5));
+            foreach (var column in ec.Columns)
+            {
+                secondHeader.Add(TextCell(11, secondHeader.Count + 1, column, 5));
+            }
         }
 
         secondHeader.Add(TextCell(11, secondHeader.Count + 1, string.Empty, 5));
@@ -237,10 +262,15 @@ public class ProcesVerbalExcelExportService(IProcesVerbauxService procesVerbauxS
             foreach (var ec in ecHeaders)
             {
                 var detail = ligne.ElementsConstitutifs.FirstOrDefault(x => x.Key == ec.Key);
-                cells.Add(NumberCell(rowIndex, columnIndex++, detail?.MoyenneCcon, 6));
-                cells.Add(NumberCell(rowIndex, columnIndex++, detail?.MoyenneCc, 6));
-                cells.Add(NumberCell(rowIndex, columnIndex++, detail?.MoyenneSn, 6));
-                cells.Add(NoteCell(rowIndex, columnIndex++, detail?.MoyenneFinale));
+                foreach (var column in ec.Columns)
+                {
+                    var value = column == "MOY"
+                        ? detail?.MoyenneFinale
+                        : ProcesVerbalExportProjection.GetEvaluationAverage(detail, column);
+                    cells.Add(column == "MOY"
+                        ? NoteCell(rowIndex, columnIndex++, value)
+                        : NumberCell(rowIndex, columnIndex++, value, 6));
+                }
             }
 
             cells.Add(NumberCell(rowIndex, columnIndex++, ligne.CreditsAcquis, 10));
@@ -252,23 +282,18 @@ public class ProcesVerbalExcelExportService(IProcesVerbauxService procesVerbauxS
         }
     }
 
-    private static List<ProcesVerbalElementConstitutifLigneDto> BuildEcHeaders(ProcesVerbalDto procesVerbal)
-        => procesVerbal.Lignes
-            .SelectMany(x => x.ElementsConstitutifs)
-            .GroupBy(x => x.Key)
-            .Select(x => x.First())
-            .ToList();
-
-    private static string BuildColumnsXml(int totalColumns, int ecCount)
+    private static string BuildColumnsXml(
+        int totalColumns,
+        IReadOnlyCollection<ProcesVerbalExportProjection.EcHeader> ecHeaders)
     {
         var columns = new StringBuilder("<cols>");
         columns.Append("""<col min="1" max="1" width="16" customWidth="1"/>""");
         columns.Append("""<col min="2" max="2" width="32" customWidth="1"/>""");
 
-        if (ecCount > 0)
+        if (ecHeaders.Count > 0)
         {
             var ecStart = 3;
-            var ecEnd = 2 + (ecCount * 4);
+            var ecEnd = 2 + ecHeaders.Sum(x => x.Columns.Count);
             columns.Append($"""<col min="{ecStart}" max="{ecEnd}" width="9" customWidth="1"/>""");
             columns.Append($"""<col min="{ecEnd + 1}" max="{totalColumns - 1}" width="11" customWidth="1"/>""");
             columns.Append($"""<col min="{totalColumns}" max="{totalColumns}" width="18" customWidth="1"/>""");
@@ -331,7 +356,13 @@ public class ProcesVerbalExcelExportService(IProcesVerbauxService procesVerbauxS
     {
         var name = string.Join(
             "-",
-            new[] { "pv", procesVerbal.AnneeAcademiqueLibelle, procesVerbal.CodeSession, procesVerbal.ClassePedagogiqueLibelle }
+            new[]
+            {
+                "pv",
+                procesVerbal.AnneeAcademiqueLibelle,
+                procesVerbal.CodeSession,
+                ProcesVerbalExportProjection.GetHeaderLabels(procesVerbal).Parcours
+            }
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .Select(x => x!)
                 .Select(Slug));

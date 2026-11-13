@@ -26,5 +26,7 @@ public class ReleveNoteAnnuelDto
     public decimal CreditsRequis { get; set; } = 60m;
     public string Decision { get; set; } = string.Empty;
     public string Mention { get; set; } = string.Empty;
+    public string QrCodeContent { get; set; } = string.Empty;
+    public string QrCodeDataUrl { get; set; } = string.Empty;
     public string DecisionMention => $"DECISION : {Decision} MENTION : {Mention}";
 }

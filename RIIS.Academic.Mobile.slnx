@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="RIIS.Academic.Mobile/RIIS.Academic.Mobile.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
+</Solution>

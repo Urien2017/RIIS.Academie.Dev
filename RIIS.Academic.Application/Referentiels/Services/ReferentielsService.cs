@@ -8,6 +8,7 @@ public class ReferentielsService(
     IRepository<AnneeAcademique> anneesAcademiques,
     IRepository<CycleFormation> cyclesFormation,
     IRepository<ParcoursAcademique> parcoursAcademiques,
+    IRepository<ClassePedagogique> classesPedagogiques,
     IRepository<Filiere> filieres,
     IRepository<Specialite> specialites,
     IRepository<NiveauEtude> niveauxEtude) : IReferentielsService
@@ -275,9 +276,11 @@ public class ReferentielsService(
             ? GenerateParcoursAcademiqueLibelle(annee, cycle, niveau, filiere, specialite)
             : dto.Libelle.Trim();
 
+        ParcoursAcademique programme;
+
         if (dto.Id == 0)
         {
-            await parcoursAcademiques.AddAsync(new ParcoursAcademique
+            programme = new ParcoursAcademique
             {
                 AnneeAcademiqueId = dto.AnneeAcademiqueId,
                 CycleFormationId = dto.CycleFormationId,
@@ -287,24 +290,40 @@ public class ReferentielsService(
                 Code = code,
                 Libelle = libelle,
                 EstActive = dto.EstActive
-            }, cancellationToken);
+            };
+
+            await parcoursAcademiques.AddAsync(programme, cancellationToken);
         }
         else
         {
-            var entity = await parcoursAcademiques.GetByIdAsync(dto.Id, cancellationToken);
-            if (entity is null) return;
+            programme = await parcoursAcademiques.GetByIdAsync(dto.Id, cancellationToken)
+                ?? throw new InvalidOperationException("Le programme académique est introuvable.");
 
-            entity.AnneeAcademiqueId = dto.AnneeAcademiqueId;
-            entity.CycleFormationId = dto.CycleFormationId;
-            entity.NiveauEtudeId = dto.NiveauEtudeId;
-            entity.FiliereId = dto.FiliereId;
-            entity.SpecialiteId = dto.SpecialiteId;
-            entity.Code = code;
-            entity.Libelle = libelle;
-            entity.EstActive = dto.EstActive;
+            programme.AnneeAcademiqueId = dto.AnneeAcademiqueId;
+            programme.CycleFormationId = dto.CycleFormationId;
+            programme.NiveauEtudeId = dto.NiveauEtudeId;
+            programme.FiliereId = dto.FiliereId;
+            programme.SpecialiteId = dto.SpecialiteId;
+            programme.Code = code;
+            programme.Libelle = libelle;
+            programme.EstActive = dto.EstActive;
         }
 
         await parcoursAcademiques.SaveChangesAsync(cancellationToken);
+
+        var classe = (await classesPedagogiques.ListAsync(cancellationToken))
+            .FirstOrDefault(x => x.ParcoursAcademiqueId == programme.Id);
+
+        if (classe is null)
+        {
+            await classesPedagogiques.AddAsync(new ClassePedagogique
+            {
+                ParcoursAcademiqueId = programme.Id,
+                Libelle = BuildClasseLibelle(programme),
+                Effectif = 0
+            }, cancellationToken);
+            await classesPedagogiques.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task DeleteParcoursAcademiqueAsync(long id, CancellationToken cancellationToken = default)
@@ -368,10 +387,73 @@ public class ReferentielsService(
 
     public FiliereDto CreateDefaultFiliere() => new();
 
+    public async Task<string> GenerateFiliereCodeAsync(
+        string? libelle,
+        long excludeId = 0,
+        CancellationToken cancellationToken = default)
+    {
+        var key = NormalizeLibelleKey(libelle);
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return string.Empty;
+        }
+
+        var ignoredWords = new HashSet<string> { "DE", "DES", "DU", "D", "ET", "EN", "A", "AU", "AUX", "LA", "LE", "LES" };
+        var words = key.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(word => !ignoredWords.Contains(word))
+            .ToList();
+
+        if (words.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var baseCode = words.Count == 1
+            ? words[0][..Math.Min(3, words[0].Length)]
+            : $"{words[0][0]}{words[1][..Math.Min(2, words[1].Length)]}";
+
+        var existingCodes = (await filieres.ListAsync(cancellationToken))
+            .Where(x => x.Id != excludeId)
+            .Select(x => x.Code)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (!existingCodes.Contains(baseCode))
+        {
+            return baseCode;
+        }
+
+        for (var suffix = 2; suffix <= 999; suffix++)
+        {
+            var candidate = $"{baseCode}{suffix}";
+            if (!existingCodes.Contains(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        throw new InvalidOperationException("Impossible de générer un code unique pour cette filière.");
+    }
+
     public async Task SaveFiliereAsync(FiliereDto dto, CancellationToken cancellationToken = default)
     {
-        dto.Code = NormalizeCode(dto.Code, "Le code de la filière est obligatoire.");
         dto.Libelle = RequireText(dto.Libelle, "Le libellé de la filière est obligatoire.");
+
+        if (dto.Id == 0)
+        {
+            dto.Code = await GenerateFiliereCodeAsync(dto.Libelle, cancellationToken: cancellationToken);
+        }
+        else
+        {
+            dto.Code = NormalizeCode(dto.Code, "Le code de la filière est obligatoire.");
+        }
+
+        var existingCodes = await filieres.ListAsync(cancellationToken);
+        if (existingCodes.Any(x => x.Id != dto.Id
+            && string.Equals(x.Code, dto.Code, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException($"Le code de filière '{dto.Code}' existe déjà.");
+        }
 
         if (dto.Id == 0)
         {
@@ -440,10 +522,13 @@ public class ReferentielsService(
             .ToList();
     }
 
-    public SpecialiteDto CreateDefaultSpecialite(long? filiereId = null, long? cycleFormationId = null)
-        => new() { CycleFormationId = cycleFormationId, FiliereId = filiereId ?? 0 };
+    public SpecialiteDto CreateDefaultSpecialite(long? filiereId = null)
+        => new() { FiliereId = filiereId ?? 0 };
 
-    public async Task<string> GenerateSpecialiteCodeAsync(string? libelle, CancellationToken cancellationToken = default)
+    public async Task<string> GenerateSpecialiteCodeAsync(
+        string? libelle,
+        long excludeId = 0,
+        CancellationToken cancellationToken = default)
     {
         var key = NormalizeLibelleKey(libelle);
         if (string.IsNullOrWhiteSpace(key))
@@ -451,19 +536,28 @@ public class ReferentielsService(
             return string.Empty;
         }
 
-        var specialiteItems = await specialites.ListAsync(cancellationToken);
-        var existingSpecialite = specialiteItems
-            .Where(x => !string.IsNullOrWhiteSpace(x.Code) && NormalizeLibelleKey(x.Libelle) == key)
-            .OrderByDescending(x => x.EstActive)
-            .ThenBy(x => x.Id)
-            .FirstOrDefault();
+        var baseCode = GenerateSpecialiteCodeFallback(key);
+        var existingCodes = (await specialites.ListAsync(cancellationToken))
+            .Where(x => x.Id != excludeId)
+            .Select(x => x.Code)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        if (existingSpecialite is not null)
+        if (!existingCodes.Contains(baseCode))
         {
-            return NormalizeCode(existingSpecialite.Code, "Le code de la spécialité est obligatoire.");
+            return baseCode;
         }
 
-        return GenerateSpecialiteCodeFallback(key);
+        for (var suffix = 2; suffix <= 999; suffix++)
+        {
+            var candidate = $"{baseCode}{suffix}";
+            if (!existingCodes.Contains(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        throw new InvalidOperationException("Impossible de générer un code unique pour cette spécialité.");
     }
 
     private static string GenerateSpecialiteCodeFallback(string normalizedLibelle)
@@ -540,6 +634,15 @@ public class ReferentielsService(
         Specialite specialite)
         => $"{annee.Libelle} - {cycle.Libelle} {niveau.Libelle} - {filiere.Libelle} - {specialite.Libelle}";
 
+    private static string BuildClasseLibelle(ParcoursAcademique programme)
+    {
+        var libelle = string.IsNullOrWhiteSpace(programme.Libelle)
+            ? programme.Code
+            : programme.Libelle;
+
+        return libelle.Length <= 200 ? libelle : libelle[..200];
+    }
+
     private static async Task<TEntity> GetRequiredAsync<TEntity>(
         IRepository<TEntity> repository,
         long id,
@@ -557,10 +660,18 @@ public class ReferentielsService(
         }
 
         dto.Libelle = RequireText(dto.Libelle, "Le libellé de la spécialité est obligatoire.");
-        dto.Code = dto.Id == 0 || string.IsNullOrWhiteSpace(dto.Code)
-            ? await GenerateSpecialiteCodeAsync(dto.Libelle, cancellationToken)
-            : NormalizeCode(dto.Code, "Le code de la spécialité est obligatoire.");
+        dto.Code = await GenerateSpecialiteCodeAsync(
+            dto.Libelle,
+            dto.Id,
+            cancellationToken);
         dto.Code = NormalizeCode(dto.Code, "Le code de la spécialité est obligatoire.");
+
+        var existingCodes = await specialites.ListAsync(cancellationToken);
+        if (existingCodes.Any(x => x.Id != dto.Id
+            && string.Equals(x.Code, dto.Code, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException($"Le code de spécialité '{dto.Code}' existe déjà.");
+        }
 
         Specialite? specialite;
 
@@ -587,7 +698,46 @@ public class ReferentielsService(
             specialite.EstActive = dto.EstActive;
         }
 
+        if (dto.Id != 0)
+        {
+            await SynchronizeParcoursForSpecialiteAsync(specialite, cancellationToken);
+        }
+
         await specialites.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task SynchronizeParcoursForSpecialiteAsync(
+        Specialite specialite,
+        CancellationToken cancellationToken)
+    {
+        var parcoursItems = await parcoursAcademiques.ListAsync(cancellationToken);
+        var parcoursConcernes = parcoursItems.Where(x => x.SpecialiteId == specialite.Id).ToList();
+        if (parcoursConcernes.Count == 0)
+        {
+            return;
+        }
+
+        var annees = await anneesAcademiques.ListAsync(cancellationToken);
+        var cycles = await cyclesFormation.ListAsync(cancellationToken);
+        var niveaux = await niveauxEtude.ListAsync(cancellationToken);
+        var filieresItems = await filieres.ListAsync(cancellationToken);
+
+        foreach (var parcours in parcoursConcernes)
+        {
+            var annee = annees.FirstOrDefault(x => x.Id == parcours.AnneeAcademiqueId);
+            var cycle = cycles.FirstOrDefault(x => x.Id == parcours.CycleFormationId);
+            var niveau = niveaux.FirstOrDefault(x => x.Id == parcours.NiveauEtudeId);
+            parcours.FiliereId = specialite.FiliereId;
+            var filiere = filieresItems.FirstOrDefault(x => x.Id == specialite.FiliereId);
+
+            if (annee is null || cycle is null || niveau is null || filiere is null)
+            {
+                continue;
+            }
+
+            parcours.Code = GenerateParcoursAcademiqueCode(annee, cycle, niveau, filiere, specialite);
+            parcours.Libelle = GenerateParcoursAcademiqueLibelle(annee, cycle, niveau, filiere, specialite);
+        }
     }
 
     public async Task DeleteSpecialiteAsync(long id, CancellationToken cancellationToken = default)
